@@ -61,12 +61,10 @@ html *
 }
 
 .subtitle{
-    font-family: Montserrat, Arial, sans-serif;
     font-size: 40px;
 }
 
 .text{
-    font-family: Montserrat, Arial, sans-serif;
     font-size: 32px;
 }
 
@@ -86,6 +84,7 @@ html *
 .schulte-btn{
     padding-left: 0px;
     padding-right: 0px;
+    padding-bottom: 6px;
     height: 100px;
     width: 400px;
     background-color: #FFCD4D;
@@ -98,15 +97,15 @@ html *
 }
 
 .text-btn {
+    width: 400px;
     background: none;
     border: none;
     text-decoration: dashed underline 1px;
-    text-underline-offset: 0.1em;
+    text-underline-offset: 0.2em;
     visibility: hidden;
 }
 
 h2{
-    font-family: Montserrat, Arial, sans-serif;
     font-weight: 600;
     font-size: 80px;
     margin-top: 60px;
@@ -114,9 +113,27 @@ h2{
 }
 
 h3{
-    font-family: Montserrat, Arial, sans-serif;
     font-weight: 600;
     font-size: 40px;
+}
+
+.custom-popover {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 10px;
+    --bs-btn-font-size:0.7rem; 
+    --bs-btn-border-radius:24px; 
+    --bs-btn-bg:#e0e0e0;
+    --bs-btn-border-color:#e0e0e0;
+    --bs-btn-color:#000;
+    --bs-popover-max-width: 400px;
+    --bs-btn-hover-color: #000;
+    --bs-btn-hover-bg: #c9c9c9;
+    --bs-btn-hover-border-color: #c9c9c9;
+}
+
+.popover {
+    --bs-popover-max-width: 400px;
 }
 
 li{
@@ -161,23 +178,31 @@ li{
     align-items: center;
     justify-content: center;
     background-color: #E9E9E9;
-    font-family: Montserrat, Arial, sans-serif;
     font-weight: 600;
     font-size: 44px;
     filter: var(--cell-blur);
     cursor: var(--cell-cursor);
-    transition: background-color 70ms;
+    transition: background-color 100ms;
     transition-timing-function: ease-in-out;
 }
 
 .text-in-tests {
-    font-family: Montserrat, Arial, sans-serif;
     font-weight: 600;
     font-size: 44px;
 }
 
-#find_number_title, #find_number, #schulte_timer{
+#find_number_title, #find_number{
     visibility: hidden;
+    font-size: 40px;
+}
+
+#schulte_timer{
+    visibility: hidden;
+    font-size: 36px;
+}
+
+.no-paddings {
+    padding: 0px;
 }
 
 #stop-button{
@@ -196,26 +221,12 @@ li{
     color: #000;
 }
 
-
-
-/* .row{
-    background-color: rgba(255,0,0,0.1);
-}
-
-.col{
-    border: 1px solid rgba(0,0,255,0.1);
-} */
-
-
-
 .btn-outline-primary{
     --bs-btn-color:#000;
     --bs-btn-border-color:#e0e0e0;
     --bs-btn-active-color:#000;
     --bs-btn-active-bg:#e0e0e0;
     --bs-btn-active-border-color:#e0e0e0;
-
-    font-family: Montserrat, Arial, sans-serif;
     font-weight: 600;
     font-size: 16px;
 }
