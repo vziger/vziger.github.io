@@ -6,6 +6,11 @@
         <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
         <link rel="stylesheet" href="stylesheets/main.css">
         <script src="js/schulte_scripts.js"></script>
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", ready);
+          </script>
         <title>Таблица Шульте</title>
     </head>
     <body>
@@ -14,8 +19,14 @@
                 <div class="col">
                     <div class="row align-items-top">
                         <div class = "col-8">
-                            <div class="d-flex justify-content-center">
+                            <div class="d-flex justify-content-center align-items-center">
                                 <h2>Таблица Шульте</h2>
+                                <button type="button" class="btn btn-secondary no-paddings custom-popover"
+                                        data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
+                                        data-bs-title="Таблица Шульте"
+                                        data-bs-content="Таблица со&nbsp;случайно расположенными числами или буквами.<br><br>Cлужит для проверки и&nbsp;развития быстроты нахождения этих объектов в&nbsp;определённом порядке.<br><br>Упражнения с таблицами улучшают периферическое зрительное восприятие, что важно для скорочтения.<br><br>Разработана первоначально для исследования свойств внимания немецким психиатром и&nbsp;психотерапевтом Вальтером Шульте">?
+                                </button>
+                                
                             </div>
                         </div>
                     </div>
@@ -54,7 +65,7 @@
                                 <div class="all-switchers-container">
                                     <div class = "switch-container">
                                         <div class="row align-items-center">
-                                            <div class="col-3">Размер</div>
+                                            <div class="col-3 no-paddings">Размер</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — table size">
                                                     <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-1" autocomplete="off" data-size="3" onclick="selected_size_switcher(3)">
@@ -74,7 +85,7 @@
                                     </div>
                                     <div class = "switch-container">
                                         <div class="row align-items-center">
-                                            <div class="col-3">Тип</div>
+                                            <div class="col-3 no-paddings">Тип</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — table type">
                                                     <input type="radio" class="btn-check" name="btnradio-type" id="btnradio-type-1" autocomplete="off" data-type="1" checked>
@@ -86,10 +97,9 @@
                                             </div>
                                         </div>
                                     </div>
-                                   
                                     <div class = "switch-container">
                                         <div class="row align-items-center">
-                                            <div class="col-3">Подсказка</div>
+                                            <div class="col-3 no-paddings">Подсказка</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — hint">
                                                     <input type="radio" class="btn-check" name="btnradio-hint" id="btnradio-hint-1" autocomplete="off" data-hint="1" checked>
@@ -101,25 +111,25 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
                                 </div> <!-- div all-switchers-container -->
                                 <div class="results-container">
-                                    <div class="row justify-content-center text-in-tests" id="schulte_timer">00:00</div>
-                                    <div class="row justify-content-center text-in-tests" id="find_number_title">Найдите число</div>
-                                    <div class="row justify-content-center text-in-tests" id="find_number">1</div>
+                                    <div class="row justify-content-start" id="schulte_timer">00:00</div>
+                                    <div class="row justify-content-start text-in-tests">
+                                        <div class="col-10 no-paddings align-items-center" id="find_number_title">Найдите число:</div>
+                                        <div class="col-1 no-paddings align-items-center" id="find_number">1</div>
+                                    </div>
+                                    <div class="row justify-content-center text-in-tests">&nbsp;</div>
                                 </div>
                                 <div class="start-stop-container">
-                                    <div class="row justify-content-center">
-                                            
-                                            <button class="schulte-btn" id="start-button" onclick="start_schulte()">Начать&nbsp;тест</button>
-                                            <button class="schulte-btn" id="again-button" onclick="start_schulte()">Начать&nbsp;снова</button>
-                                            <button class="schulte-btn" id="stop-button" onclick="stop_schulte()">Остановить</button>
-                                            <button class="text-btn" id="show-settings" onclick="show_settings()">Показать настройки</a>
-                                        
+                                    <div class="row justify-content-start">
+                                        <button class="schulte-btn" id="start-button" onclick="start_schulte()">Начать&nbsp;тест</button>
+                                        <button class="schulte-btn" id="again-button" onclick="start_schulte()">Начать&nbsp;снова</button>
+                                        <button class="schulte-btn" id="stop-button" onclick="stop_schulte()">Остановить</button>
+                                        <button class="text-btn" id="show-settings" onclick="show_settings()">Показать настройки</a>
                                     </div>
                                 </div>
                             </div> <!-- div col align-items-center find-char-text -->
-                        </div>
+                        </div> <!-- row align-items-top-->
                     </div> <!-- div table-container -->
                 </div> <!-- div col -->
             </div> <!-- row block -->
