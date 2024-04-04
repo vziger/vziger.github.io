@@ -1,0 +1,221 @@
+:root {
+    --cell-cursor: default;
+    --cell-blur: blur(8px);
+ }
+
+
+@font-face {
+    font-family: 'Kurale';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Kurale Regular'),
+         url(../fonts/Kurale-Regular.otf) format('opentype'),
+         url(../fonts/Kurale-Regular.woff2) format('woff2'),
+         url(../fonts/Kurale-Regular.woff) format('woff'),
+         url(../fonts/Kurale-Regular.ttf) format('truetype');
+  }
+
+  @font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    font-display: fallback;
+    src: local('Montserrat Regular'),
+         local('Montserrat-Regular'),
+         url(../fonts/Montserrat-Regular.otf) format('opentype'),
+         url(../fonts/Montserrat-Regular.woff2) format('woff2'),
+         url(../fonts/Montserrat-Regular.woff) format('woff'),
+         url(../fonts/Montserrat-Regular.ttf) format('truetype');
+  }
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 600;
+    font-display: fallback;
+    src: local('Montserrat Semibold'),
+         local('Montserrat SemiBold'),
+         local('Montserrat-Semibold'),
+         local('Montserrat-SemiBold'),
+         local('Montserrat Semi Bold'),
+         local('Montserrat-Semi-Bold'),
+         url(../fonts/Montserrat-SemiBold.otf) format('opentype'),
+         url(../fonts/Montserrat-SemiBold.woff2) format('woff2'),
+         url(../fonts/Montserrat-SemiBold.woff) format('woff'),
+         url(../fonts/Montserrat-SemiBold.ttf) format('truetype');
+}
+
+html *
+{
+    font-family: Montserrat, Arial, sans-serif;
+}
+.block{
+    margin-bottom: 48px;
+}
+
+.main_title{
+    font-family: Kurale, Arial, sans-serif;
+    font-size: 120px;
+    line-height: 120px;
+}
+
+.subtitle{
+    font-family: Montserrat, Arial, sans-serif;
+    font-size: 40px;
+}
+
+.text{
+    font-family: Montserrat, Arial, sans-serif;
+    font-size: 32px;
+}
+
+.main-btn{
+    padding-left: 90px;
+    padding-right: 90px;
+    height: 100px;
+    background-color: #FFCD4D;
+    font-size: 40px;
+    border-radius: 28px;
+    border: 0px solid #FFCD4D;
+}
+.main-btn:hover{
+    background-color: #ffc022;
+}
+
+.schulte-btn{
+    padding-left: 0px;
+    padding-right: 0px;
+    height: 100px;
+    width: 400px;
+    background-color: #FFCD4D;
+    font-size: 36px;
+    border-radius: 32px;
+    border: 0px solid #FFCD4D;
+}
+.schulte-btn:hover{
+    background-color: #ffc022;
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    text-decoration: dashed underline 1px;
+    text-underline-offset: 0.1em;
+    visibility: hidden;
+}
+
+h2{
+    font-family: Montserrat, Arial, sans-serif;
+    font-weight: 600;
+    font-size: 80px;
+    margin-top: 60px;
+    margin-bottom: 48px;
+}
+
+h3{
+    font-family: Montserrat, Arial, sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+}
+
+li{
+    padding-bottom: 12px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(5, 120px);
+    gap: 2px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.table_container{
+    padding-bottom: 100px;
+}
+
+.switch-container{
+    margin-top: 12px;
+    margin-bottom: 24px;
+}
+
+.all-switchers-container {
+    height: 198px;
+}
+
+.results-container {
+    margin-top: 12px;
+    display: none;
+    height: 198px;
+}
+
+.start-stop-container {
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+.cell {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #E9E9E9;
+    font-family: Montserrat, Arial, sans-serif;
+    font-weight: 600;
+    font-size: 44px;
+    filter: var(--cell-blur);
+    cursor: var(--cell-cursor);
+    transition: background-color 70ms;
+    transition-timing-function: ease-in-out;
+}
+
+.text-in-tests {
+    font-family: Montserrat, Arial, sans-serif;
+    font-weight: 600;
+    font-size: 44px;
+}
+
+#find_number_title, #find_number, #schulte_timer{
+    visibility: hidden;
+}
+
+#stop-button{
+    background-color: transparent;
+    border: solid #FFCD4D 3px; 
+    display: none;
+}
+
+#again-button{
+    display: none;
+}
+
+#show-settings {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    color: #000;
+}
+
+
+
+/* .row{
+    background-color: rgba(255,0,0,0.1);
+}
+
+.col{
+    border: 1px solid rgba(0,0,255,0.1);
+} */
+
+
+
+.btn-outline-primary{
+    --bs-btn-color:#000;
+    --bs-btn-border-color:#e0e0e0;
+    --bs-btn-active-color:#000;
+    --bs-btn-active-bg:#e0e0e0;
+    --bs-btn-active-border-color:#e0e0e0;
+
+    font-family: Montserrat, Arial, sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+}
