@@ -1,3 +1,39 @@
+let timer_id
+let timer_node
+
+let btn_start
+let btn_again
+let btn_stop
+let btn_show_settings
+
+let switch_hint_node
+let all_switchers_container
+let results_container
+
+let find_number_title_node
+let find_number_node
+
+
+function ready() {
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+    
+    timer_node = document.getElementById('schulte_timer')
+
+    btn_start = document.getElementById('start-button')
+    btn_again = document.getElementById('again-button')
+    btn_stop = document.getElementById('stop-button')
+    btn_show_settings = document.getElementById('show-settings')
+
+    switch_hint_node = document.getElementById('switch-hint')
+    all_switchers_container = document.getElementsByClassName('all-switchers-container')
+    results_container = document.getElementsByClassName('results-container')
+
+    find_number_title_node = document.getElementById('find_number_title')
+    find_number_node = document.getElementById('find_number')
+}
+
+
 function delete_elements(list_of_elements) {
     for (let i = list_of_elements.length - 1; i >=0 ; --i) {
         list_of_elements[i].remove()
@@ -45,39 +81,34 @@ function show_settings() {
     const root = document.documentElement;
     root.style.setProperty('--cell-blur', 'blur(8px)');
     root.style.setProperty('--cell-cursor', 'default');
-    all_switchers_container = document.getElementsByClassName('all-switchers-container')
-    results_container = document.getElementsByClassName('results-container')
-    display_hide_containers(all_switchers_container, 'block')
-    display_hide_containers(results_container, 'none')
-    find_number_title_node.style.setProperty('visibility', 'hidden')
-    find_number_node.style.setProperty('visibility', 'hidden')
-    btn_show_settings.style.setProperty('visibility', 'hidden')
-    btn_start.style.setProperty('display', 'inline-block');
+    
+    display_hide_containers(all_switchers_container, 'block');
+    display_hide_containers(results_container, 'none');
+
+    find_number_title_node.style.setProperty('visibility', 'hidden');
+    find_number_node.style.setProperty('visibility', 'hidden');
+    
+    btn_show_settings.style.setProperty('visibility', 'hidden');
+    btn_start.style.setProperty('display', 'block');
     btn_again.style.setProperty('display', 'none');
 }
 
-let timer_id
-let btn_start
-let btn_again
-let btn_stop
-let btn_show_settings
-let switch_hint_node
-let all_switchers_container
-let results_container
-let find_number_title_node
-let find_number_node
-
 function stop_schulte() {
-    const root = document.documentElement;
     clearInterval(timer_id);
-    btn_stop.style.setProperty('display', 'none');
-    btn_start.style.setProperty('display', 'inline-block');
+
+    const root = document.documentElement;
     root.style.setProperty('--cell-blur', 'blur(8px)');
     root.style.setProperty('--cell-cursor', 'default');
-    display_hide_containers(all_switchers_container, 'block')
-    display_hide_containers(results_container, 'none')
-    find_number_title_node.style.setProperty('visibility', 'hidden')
-    find_number_node.style.setProperty('visibility', 'hidden')
+    
+    display_hide_containers(all_switchers_container, 'block');
+    display_hide_containers(results_container, 'none');
+    
+    find_number_title_node.style.setProperty('visibility', 'hidden');
+    find_number_node.style.setProperty('visibility', 'hidden');
+
+    btn_stop.style.setProperty('display', 'none');
+    btn_start.style.setProperty('display', 'block');
+    
 }
 
 function start_schulte(){
@@ -87,10 +118,14 @@ function start_schulte(){
 
     const TABLE_SIZE_SELECTED = document.querySelector('input[type="radio"][name="btnradio-size"]:checked').getAttribute('data-size')
     const TABLE_TYPE_SELECTED = document.querySelector('input[type="radio"][name="btnradio-type"]:checked').getAttribute('data-type')
+    const TABLE_HINT_SELECTED = document.querySelector('input[type="radio"][name="btnradio-hint"]:checked').getAttribute('data-hint')
+
 
     const TABLE_TYPE_DIGITS  = 1
-	const TABLE_TYPE_LETTERS = 2
-	const TABLE_TYPE_GORBOV  = 3
+    const TABLE_TYPE_LETTERS = 2
+    const TABLE_TYPE_GORBOV  = 3
+
+    const TABLE_HINT_SHOW = 1
 
     const NUMBER_ELEMENTS = TABLE_SIZE_SELECTED * TABLE_SIZE_SELECTED
     let cells_data        = new Array(NUMBER_ELEMENTS)
@@ -101,32 +136,20 @@ function start_schulte(){
     
     let current_char_pos = 0
 
-    let timer_node = document.getElementById('schulte_timer')
-    find_number_title_node = document.getElementById('find_number_title')
-    find_number_node = document.getElementById('find_number')
-
-    btn_start = document.getElementById('start-button')
-    btn_again = document.getElementById('again-button')
-    btn_stop = document.getElementById('stop-button')
-    btn_show_settings = document.getElementById('show-settings')
-
-    switch_hint_node = document.getElementById('switch-hint')
-    all_switchers_container = document.getElementsByClassName('all-switchers-container')
-    results_container = document.getElementsByClassName('results-container')
-
     timer_node.style.setProperty('visibility', 'visible')
     
     find_number_title_node.style.setProperty('visibility', 'hidden')
 	find_number_node.style.setProperty('visibility', 'hidden')
 
-    if (!switch_hint_node.checked) {
+
+    if (TABLE_HINT_SELECTED == TABLE_HINT_SHOW) {
         find_number_title_node.style.setProperty('visibility', 'visible')
         find_number_node.style.setProperty('visibility', 'visible')
     }
 
     btn_start.style.setProperty('display', 'none')
     btn_again.style.setProperty('display', 'none')
-    btn_stop.style.setProperty('display', 'inline-block')
+    btn_stop.style.setProperty('display', 'block')
     btn_show_settings.style.setProperty('visibility', 'hidden')
 
     display_hide_containers(all_switchers_container, 'none')
@@ -138,13 +161,13 @@ function start_schulte(){
     switch (+TABLE_TYPE_SELECTED) {
         case TABLE_TYPE_DIGITS:
             cells_data = generate_numbers_array(NUMBER_ELEMENTS)
-            find_number_title_node.innerHTML = 'Найдите число'
+            find_number_title_node.innerHTML = 'Найдите число: '
             console.log(cells_data)
             console.log(current_char_pos)
             break
         case TABLE_TYPE_LETTERS:
             cells_data = ELEMENTS_ALPHABET_RU.split('').slice(0, NUMBER_ELEMENTS)
-            find_number_title_node.innerHTML = 'Найдите букву'
+            find_number_title_node.innerHTML = 'Найдите букву: '
             console.log(cells_data)
             console.log(current_char_pos)
             break
@@ -205,28 +228,33 @@ function start_schulte(){
     function check_click(event) {
         let cell = event.target || event.srcElement;
         if (cell.innerHTML == '' + straight_data[current_char_pos] && current_char_pos == NUMBER_ELEMENTS - 1) {
-            // stop_schulte()
-            btn_stop.style.setProperty('display', 'none')
-            btn_again.style.setProperty('display', 'inline-block')
-            btn_show_settings.style.setProperty('visibility', 'visible')
             clearInterval(timer_id);
+
+            btn_stop.style.setProperty('display', 'none')
+            btn_again.style.setProperty('display', 'block')
+            btn_show_settings.style.setProperty('visibility', 'visible')
+
             blink(cell)
+
             find_number_title_node.style.setProperty('visibility', 'visible')
             find_number_node.style.setProperty('visibility', 'visible')
-            find_number_title_node.innerHTML = 'Сделано ошибок'
+            find_number_title_node.innerHTML = 'Всего ошибок: '
             find_number_node.innerHTML = number_errors
             current_char_pos++
+
             console.log('Верно!!! → ' + cell.innerHTML)
         }
         if (cell.innerHTML == '' + straight_data[current_char_pos]) {
-            console.log('Верно!!! → ' + cell.innerHTML);
             current_char_pos++
             find_number_node.innerHTML = straight_data[current_char_pos]
             blink(cell);
+
+            console.log('Верно!!! → ' + cell.innerHTML);
         }
         else {
             console.log('number_errors = ' + number_errors);
             number_errors++
+            
             console.log('НЕ Верно!!! → ' + cell.innerHTML);
             console.log('number_errors = ' + number_errors);
         }
@@ -236,7 +264,7 @@ function start_schulte(){
         cell.style.setProperty('background-color','#63BE63')
             setTimeout(function() {
                 cell.style.setProperty('background-color','#E9E9E9');
-            }, 30)
+            }, 50)
     }
 
 }
