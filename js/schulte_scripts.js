@@ -87,15 +87,10 @@ function start_schulte(){
 
     const TABLE_SIZE_SELECTED = document.querySelector('input[type="radio"][name="btnradio-size"]:checked').getAttribute('data-size')
     const TABLE_TYPE_SELECTED = document.querySelector('input[type="radio"][name="btnradio-type"]:checked').getAttribute('data-type')
-    // const TABLE_ORDER_SELECTED = document.querySelector('input[type="radio"][name="btnradio-char-order"]:checked').getAttribute('data-order')
 
     const TABLE_TYPE_DIGITS  = 1
 	const TABLE_TYPE_LETTERS = 2
 	const TABLE_TYPE_GORBOV  = 3
-
-    // const TABLE_ORDER_DIRECT  = 1
-    // const TABLE_ORDER_RANDOM  = 2
-    // const TABLE_ORDER_REVERSE = 3
 
     const NUMBER_ELEMENTS = TABLE_SIZE_SELECTED * TABLE_SIZE_SELECTED
     let cells_data        = new Array(NUMBER_ELEMENTS)
@@ -164,17 +159,6 @@ function start_schulte(){
 
     kanzas_city_shuffle(cells_data);
     set_data_to_cells(cells_data, NUMBER_ELEMENTS)
-
-    // if (TABLE_TYPE_SELECTED != TABLE_TYPE_GORBOV) {
-    //     if (TABLE_ORDER_SELECTED == TABLE_ORDER_RANDOM) {
-    //         console.log(cells_data)
-    //         cells_data = kanzas_city_shuffle(cells_data);
-    //         console.log(cells_data)
-    //     } else if (TABLE_ORDER_SELECTED == TABLE_ORDER_REVERSE) {
-    //         cells_data.reverse();
-    //         console.log(cells_data)
-    //     }
-    // }
 
     function timer() {
         timer_seconds++;
