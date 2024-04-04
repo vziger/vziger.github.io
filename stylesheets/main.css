@@ -221,6 +221,18 @@ li{
     color: #000;
 }
 
+
+
+/* .row{
+    background-color: rgba(255,0,0,0.1);
+}
+
+.col{
+    border: 1px solid rgba(0,0,255,0.1);
+} */
+
+
+
 .btn-outline-primary{
     --bs-btn-color:#000;
     --bs-btn-border-color:#e0e0e0;
