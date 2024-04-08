@@ -70,16 +70,16 @@
                                             <div class="col-3 no-paddings">Размер</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — table size">
-                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-1" autocomplete="off" data-size="3" onclick="selected_size_switcher(3)">
+                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-1" autocomplete="off" data-size="3" onclick="draw_table(3)">
                                                     <label class="btn btn-outline-primary" for="btnradio-size-1">3 × 3</label>
                                                 
-                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-2" autocomplete="off" data-size="4" onclick="selected_size_switcher(4)">
+                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-2" autocomplete="off" data-size="4" onclick="draw_table(4)">
                                                     <label class="btn btn-outline-primary" for="btnradio-size-2">4 × 4</label>
                                                 
-                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-3" autocomplete="off" data-size="5" checked onclick="selected_size_switcher(5)">
+                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-3" autocomplete="off" data-size="5" checked onclick="draw_table(5)">
                                                     <label class="btn btn-outline-primary" for="btnradio-size-3">5 × 5</label>
                 
-                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-4" autocomplete="off" data-size="6" onclick="selected_size_switcher(6)">
+                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-4" autocomplete="off" data-size="6" onclick="draw_table(6)">
                                                     <label class="btn btn-outline-primary" for="btnradio-size-4">6 × 6</label>
                                                 </div>
                                             </div>
@@ -90,15 +90,44 @@
                                             <div class="col-3 no-paddings">Тип</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — table type">
-                                                    <input type="radio" class="btn-check" name="btnradio-type" id="btnradio-type-1" autocomplete="off" data-type="1" checked>
+                                                    <input type="radio" class="btn-check" name="btnradio-type" id="btnradio-type-1" autocomplete="off" data-type="1" checked onclick="make_disabled_start_symbol(true)">
                                                     <label class="btn btn-outline-primary" for="btnradio-type-1">Числовая</label>
                                                 
-                                                    <input type="radio" class="btn-check" name="btnradio-type" id="btnradio-type-2" data-type="2" autocomplete="off">
+                                                    <input type="radio" class="btn-check" name="btnradio-type" id="btnradio-type-2" data-type="2" autocomplete="off" onclick="make_disabled_start_symbol(false)">
                                                     <label class="btn btn-outline-primary" for="btnradio-type-2">Буквенная</label>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    <div class = "switch-container" style = "margin-top: -12px; margin-bottom: 0;">
+                                        <div class="row align-items-center">
+                                            <div class="col-3 no-paddings">
+                                                <label for="start_symbol" class="col-form-label">Первый символ</label>
+                                            </div>
+                                            <div class="col-2">
+                                                <input type="text" maxlength="1" id="start_symbol" class="form-control" aria-describedby="help_inline" value="1" disabled autocomplete="off" pattern="(^[а-яА-ЯЁё]$)|(^$)|^(?=\s*$)|^(?!.*\S)" required>
+                                            </div>
+                                            <div class="col-auto no-paddings">
+                                                <span id="help_inline" class="form-text">
+                                                  —&nbsp;&nbsp;&nbsp;кириллица, 1&nbsp;буква
+                                                </span>
+                                              </div>
+                                        </div>
+                                    </div>
+                                    <div class = "switch-container">
+                                        <div class="row align-items-center">
+                                            <div class="col-3 no-paddings">Порядок символов</div>
+                                            <div class="col">
+                                                <div class="btn-group" role="group" aria-label="Button group — character order">
+                                                    <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-1" data-order="1" autocomplete="off" checked>
+                                                    <label class="btn btn-outline-primary" for="btnradio-char-order-1">Прямой</label>
+                                                
+                                                    <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-2" data-order="2" autocomplete="off">
+                                                    <label class="btn btn-outline-primary" for="btnradio-char-order-2">Обратный</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>  
                                     <div class = "switch-container">
                                         <div class="row align-items-center">
                                             <div class="col-3 no-paddings">Подсказка</div>
@@ -114,20 +143,28 @@
                                         </div>
                                     </div>
                                 </div> <!-- div all-switchers-container -->
+                                <!-- <div class="results-container">
+                                    <div class="row justify-content-center" id="schulte_timer">00:00</div>
+                                    <div class="row justify-content-center text-in-tests" id="find_number_title">Найдите число</div>
+                                    <div class="row justify-content-center text-in-tests" id="find_number">&nbsp;</div>
+                                </div> -->
                                 <div class="results-container">
                                     <div class="row justify-content-start" id="schulte_timer">00:00</div>
                                     <div class="row justify-content-start text-in-tests">
-                                        <div class="col-10 no-paddings align-items-center" id="find_number_title">Найдите число:</div>
+                                        <div class="col-10 no-paddings align-items-center" id="find_number_title">Найдите число</div>
                                         <div class="col-1 no-paddings align-items-center" id="find_number">1</div>
                                     </div>
                                     <div class="row justify-content-center text-in-tests">&nbsp;</div>
                                 </div>
                                 <div class="start-stop-container">
                                     <div class="row justify-content-start">
-                                        <button class="schulte-btn" id="start-button" onclick="start_schulte()">Начать&nbsp;тест</button>
-                                        <button class="schulte-btn" id="again-button" onclick="start_schulte()">Начать&nbsp;снова</button>
-                                        <button class="schulte-btn" id="stop-button" onclick="stop_schulte()">Остановить</button>
-                                        <button class="text-btn" id="show-settings" onclick="show_settings()">Показать настройки</button>
+                                        <button class="schulte-btn" id="start_button" onclick="start_schulte()">Начать&nbsp;тест</button>
+                                        <button class="schulte-btn" id="again_button" onclick="start_schulte()">Начать&nbsp;снова</button>
+                                        <button class="schulte-btn" id="stop_button" onclick="stop_schulte()">Остановить</button>
+                                        <button class="text-btn" id="show_settings" onclick="show_settings()">Показать настройки</button>
+                                    </div>
+                                    <div class="row justify-content-center" id="switchers_error">
+                                        &nbsp;
                                     </div>
                                 </div>
                             </div> <!-- div col align-items-center find-char-text -->
@@ -135,6 +172,6 @@
                     </div> <!-- div table-container -->
                 </div> <!-- div col -->
             </div> <!-- row block -->
-        </div> <!-- dic container -->
+        </div> <!-- div container -->
     </body>
 </html>
