@@ -1,6 +1,11 @@
 :root {
     --cell-cursor: default;
     --cell-blur: blur(8px);
+    --cell-size: 120px;
+    --cell-background-color: #e9e9e9;
+    --cell-blink-color: #63BE63;
+    --asterisk-shift-pdt: 16px;
+    --all-controls-block-height: 330px;
  }
 
 
@@ -102,7 +107,6 @@ html *
     border: none;
     text-decoration: dashed underline 1px;
     text-underline-offset: 0.2em;
-    visibility: hidden;
 }
 
 h2{
@@ -146,7 +150,7 @@ li{
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(5, 120px);
+    grid-template-columns: repeat(5, var(--cell-size));
     gap: 2px;
     transition: transform 0.3s ease, background-color 0.3s ease;
 }
@@ -161,13 +165,13 @@ li{
 }
 
 .all-switchers-container {
-    height: 198px;
+    height: var(--all-controls-block-height);
 }
 
 .results-container {
     margin-top: 12px;
     display: none;
-    height: 198px;
+    height: var(--all-controls-block-height);
 }
 
 .start-stop-container {
@@ -176,12 +180,12 @@ li{
 }
 
 .cell {
-    width: 120px;
-    height: 120px;
+    width: var(--cell-size);
+    height: var(--cell-size);
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #E9E9E9;
+    background-color: var(--cell-background-color);
     font-weight: 600;
     font-size: 44px;
     filter: var(--cell-blur);
@@ -195,6 +199,14 @@ li{
     font-size: 44px;
 }
 
+.no-paddings {
+    padding: 0px;
+}
+
+#help_inline{
+    visibility: hidden;
+}
+
 #find_number_title, #find_number{
     visibility: hidden;
     font-size: 40px;
@@ -205,25 +217,41 @@ li{
     font-size: 36px;
 }
 
-.no-paddings {
-    padding: 0px;
-}
-
-#stop-button{
+#stop_button{
     background-color: transparent;
     border: solid #FFCD4D 3px; 
     display: none;
 }
 
-#again-button{
+#again_button{
     display: none;
 }
 
-#show-settings {
+#show_settings {
     margin-top: 12px;
     margin-bottom: 12px;
     color: #000;
+    display: none;
 }
+
+#switchers_error {
+    visibility: hidden;
+    color: rgb(255, 62, 95);
+    width: 400px;
+    margin-top: 8px;
+}
+
+
+
+/* .row{
+    background-color: rgba(255,0,0,0.1);
+}
+
+.col{
+    border: 1px solid rgba(0,0,255,0.1);
+} */
+
+
 
 .btn-outline-primary{
     --bs-btn-color:#000;
@@ -233,4 +261,9 @@ li{
     --bs-btn-active-border-color:#e0e0e0;
     font-weight: 600;
     font-size: 16px;
+}
+
+  
+#start_symbol:invalid {
+    background-color: lightpink;
 }
