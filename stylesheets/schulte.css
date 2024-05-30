@@ -1,0 +1,390 @@
+:root {
+    --cell-cursor: default;
+    --cell-blur: blur(8px);
+    --cell-size: 120px;
+    --cell-background-color: #e9e9e9;
+    --cell-blink-color: #63BE63;
+    --asterisk-shift-pdt: 16px;
+    --all-controls-block-height: 330px;
+
+    /* running point */
+    --box-for-dot-size: 608px;
+    --dot-size: 48px;
+ }
+
+
+/* @font-face {
+    font-family: 'Kurale';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Kurale Regular'),
+         url(../fonts/Kurale-Regular.otf) format('opentype'),
+         url(../fonts/Kurale-Regular.woff2) format('woff2'),
+         url(../fonts/Kurale-Regular.woff) format('woff'),
+         url(../fonts/Kurale-Regular.ttf) format('truetype');
+} */
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    font-display: fallback;
+    src: local('Montserrat Regular'),
+         local('Montserrat-Regular'),
+         url(../fonts/Montserrat-Regular.otf) format('opentype'),
+         url(../fonts/Montserrat-Regular.woff2) format('woff2'),
+         url(../fonts/Montserrat-Regular.woff) format('woff'),
+         url(../fonts/Montserrat-Regular.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 600;
+    font-display: fallback;
+    src: local('Montserrat Semibold'),
+         local('Montserrat SemiBold'),
+         local('Montserrat-Semibold'),
+         local('Montserrat-SemiBold'),
+         local('Montserrat Semi Bold'),
+         local('Montserrat-Semi-Bold'),
+         url(../fonts/Montserrat-SemiBold.otf) format('opentype'),
+         url(../fonts/Montserrat-SemiBold.woff2) format('woff2'),
+         url(../fonts/Montserrat-SemiBold.woff) format('woff'),
+         url(../fonts/Montserrat-SemiBold.ttf) format('truetype');
+}
+
+html *
+{
+    font-family: Montserrat, Arial, sans-serif;
+}
+.block{
+    margin-bottom: 48px;
+}
+
+.main_title{
+    font-family: Kurale, Arial, sans-serif;
+    font-size: 120px;
+    line-height: 120px;
+}
+
+.subtitle{
+    font-size: 40px;
+}
+
+.text{
+    font-size: 32px;
+}
+
+.main-btn{
+    padding-left: 90px;
+    padding-right: 90px;
+    height: 100px;
+    background-color: #FFCD4D;
+    font-size: 40px;
+    border-radius: 28px;
+    border: 0px solid #FFCD4D;
+}
+.main-btn:hover{
+    background-color: #ffc022;
+}
+
+.schulte-btn{
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-bottom: 6px;
+    height: 100px;
+    width: 400px;
+    background-color: #FFCD4D;
+    font-size: 36px;
+    border-radius: 28px;
+    border: 0px solid #FFCD4D;
+}
+.schulte-btn:hover{
+    background-color: #ffc022;
+}
+
+.text-btn {
+    width: 400px;
+    background: none;
+    border: none;
+    text-decoration: dashed underline 1px;
+    text-underline-offset: 0.2em;
+}
+
+h2{
+    font-weight: 600;
+    font-size: 80px;
+    margin-top: 60px;
+    margin-bottom: 48px;
+}
+
+h2#schulte_title {
+    padding-left: 15px;
+}
+
+h3{
+    font-weight: 600;
+    font-size: 40px;
+}
+
+.custom-popover {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 10px;
+    --bs-btn-font-size:0.7rem; 
+    --bs-btn-border-radius:24px; 
+    --bs-btn-bg:#e0e0e0;
+    --bs-btn-border-color:#e0e0e0;
+    --bs-btn-color:#000;
+    --bs-popover-max-width: 400px;
+    --bs-btn-hover-color: #000;
+    --bs-btn-hover-bg: #c9c9c9;
+    --bs-btn-hover-border-color: #c9c9c9;
+}
+
+.popover {
+    --bs-popover-max-width: 285px;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0!important;
+}
+
+li{
+    padding-bottom: 12px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(5, var(--cell-size));
+    gap: 2px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.table_container{
+    padding-bottom: 100px;
+}
+
+.switch-container{
+    margin-top: 12px;
+    margin-bottom: 24px;
+}
+
+.all-switchers-container {
+    height: var(--all-controls-block-height);
+}
+
+.all-switchers-container-diag{
+    margin-bottom: 64px;
+}
+
+.results-container {
+    margin-top: 12px;
+    display: none;
+    height: var(--all-controls-block-height);
+}
+
+.start-stop-container {
+    margin-top: 24px;
+    margin-bottom: 24px;
+    z-index: 30;
+}
+
+.cell {
+    width: var(--cell-size);
+    height: var(--cell-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--cell-background-color);
+    font-weight: 600;
+    font-size: 44px;
+    filter: var(--cell-blur);
+    cursor: var(--cell-cursor);
+    transition: background-color 100ms;
+    transition-timing-function: ease-in-out;
+}
+
+.text-in-tests {
+    font-weight: 600;
+    font-size: 44px;
+}
+
+#help_inline{
+    visibility: hidden;
+}
+
+#find_number_title, #find_number{
+    visibility: hidden;
+    font-size: 40px;
+}
+
+#exercise_timer{
+    z-index: 30;
+    visibility: hidden;
+    font-size: 36px;
+    transition: position 1s ease-out;
+    transition: left 1s ease-out;
+    transition: top 1s ease-out;
+}
+
+#stop_button{
+    background-color: transparent;
+    border: solid #FFCD4D 3px; 
+    display: none;
+}
+
+#again_button{
+    display: none;
+}
+
+#show_settings {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    color: #000;
+    display: none;
+}
+
+#switchers_error {
+    visibility: hidden;
+    color: rgb(255, 62, 95);
+    width: 400px;
+    margin-top: 8px;
+}
+
+
+
+/* .row{
+    background-color: rgba(255,0,0,0.1);
+}
+
+.col{
+    border: 1px solid rgba(0,0,255,0.1);
+} */
+
+
+
+.btn-outline-primary{
+    --bs-btn-color:#000;
+    --bs-btn-border-color:#e0e0e0;
+    --bs-btn-active-color:#000;
+    --bs-btn-active-bg:#e0e0e0;
+    --bs-btn-active-border-color:#e0e0e0;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+  
+#start_symbol:invalid {
+    background-color: lightpink;
+}
+
+
+/* running dot */
+.btn-text-left{
+    text-align: start;
+}
+
+#box_for_dot {
+    position: relative;
+    width: var(--box-for-dot-size);
+    height: var(--box-for-dot-size);
+    border: 1px solid #e0e0e0;
+    background-color: #fff;
+    transition: width 2s ease-out;
+    transition: height 2s ease-out;
+    transition: position 2s ease-out;
+    transition: left 2s ease-out;
+    transition: top 2s ease-out;
+    z-index: 20;
+}
+
+#running_dot {
+    position: absolute;
+    background-color: red;
+    top: 0px;
+    left: 0px;
+    width: var(--dot-size);
+    height: var(--dot-size);
+    border-radius: calc(var(--dot-size)/2);
+}
+
+#box_background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    z-index: 10;
+    display: none;
+    transition: position 1s ease-out;
+}
+
+#draw_line {
+    width: 608px;
+    height: 608px;
+}
+
+.moving-dot-down {
+    -moz-transform: translate(50, 50); /* Для Firefox */
+    -ms-transform: translate(50, 50); /* Для IE */
+    -webkit-transform: translate(50, 50); /* Для Safari, Chrome, iOS */
+    -o-transform: translate(50, 50); /* Для Opera */
+    transform: translate(50, 50);
+}
+
+.moving-dot-up {
+    -moz-transform: translate(-50, -50); /* Для Firefox */
+    -ms-transform: translate(-50, -50); /* Для IE */
+    -webkit-transform: translate(-50, -50); /* Для Safari, Chrome, iOS */
+    -o-transform: translate(-50, -50); /* Для Opera */
+    transform: translate(-50, -50);
+}
+
+.temp-dots{
+    position: absolute;
+    background-color: red;
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+}
+
+#input_velocity:invalid {
+    background-color: lightpink;
+}
+
+#fullscreen_text_container {
+    cursor: pointer;
+}
+
+#fullscreen_checkbox {
+    padding: 10px;
+}
+
+#fullscreen_checkbox:hover{
+    cursor: pointer;
+}
+
+button[name="btn-change-velocity"]{
+    border-color: #e0e0e0;
+}
+button[name="btn-change-velocity"]:hover{
+    border-color: var(--bs-btn-hover-bg);
+}
+
+
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0;
+}
+
+input[type='number'],
+input[type="number"]:hover,
+input[type="number"]:focus {
+    appearance: none;
+    -moz-appearance: textfield;
+}
