@@ -1,177 +1,116 @@
 <!doctype html>
-<html lang="ru">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
-        <link rel="stylesheet" href="stylesheets/main.css">
-        <script src="js/schulte_scripts.js"></script>
-        <script src="js/popper.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-        <script>
-            document.addEventListener("DOMContentLoaded", ready);
-          </script>
-        <title>Таблица Шульте</title>
-    </head>
-    <body>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+    <link rel="stylesheet" href="stylesheets/main.css">
+    <link rel="preload" href="fonts/Kurale-Regular.woff2" as="font" type="font/woff2" crossorigin ></link>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <title>Ирина Текшева — нейропсихолог</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg sticky-top navbar-white bg-white sticky-top">
         <div class="container">
-            <div class="row block">
-                <div class="col">
-                    <div class="row align-items-top">
-                        <div class = "col-8">
-                            <div class="d-flex justify-content-center align-items-center">
-                                <h2 id="schulte_title">Таблица Шульте</h2>
-                                <button type="button" class="btn btn-secondary no-paddings custom-popover"
-                                        data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
-                                        data-bs-title="Таблица Шульте"
-                                        data-bs-content="Таблица с&nbsp;расположенными случайно&nbsp;цифрами или буквами.<br><br>
-                                        Используется для тренировки скорости нахождения объектов, улучшения периферического зрения&nbsp;и&nbsp;скорочтения.<br><br>
-                                        Разработана немецким психотерапевтом и&nbsp;психиатром Вальтером Шульте для изучения свойств внимания<br>&nbsp;">?
-                                </button>
-                                
-                            </div>
-                        </div>
+            <div class="row">
+                <!-- <div class="col"> -->
+                    <div class="container-fluid">
+                        <!-- <a class="navbar-brand" href="#">Fixed top</a> -->
+                        <div class="collapse navbar-collapse">
+                            <ul class="navbar-nav">
+                                <li class="nav-item p-0">
+                                    <!-- <p class="p-2 m-0">Главная</p> -->
+                                    <!-- <a class="nav-link active" style="padding-left: 0;" aria-current="page" href="#">Home</a> -->
+                                </li>
+                                <li class="nav-item dropdown p-0">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Тренажёры
+                                    </a>
+                                    <ul class="dropdown-menu pb-2">
+                                        <li class="py-1"><a class="dropdown-item" href="schulte.html">Таблица Шульте</a></li>
+                                        <li class="pb-1"><a class="dropdown-item" href="running_dot.html">Бегающая точка</a></li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item p-0">
+                                    <a class="nav-link" href="#contacts">Контакты</a>
+                                </li>
+                            </ul>
+                          </div>
                     </div>
-                    <div class="table-container">
-                        <div class="row align-items-top">
-                            <div class = "col">
-                                <div class="grid justify-content-center">
-                                    <div class="cell" style="padding-top: 16px;" data-number="1">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="2">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="3">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="4">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="5">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="6">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="7">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="8">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="9">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="10">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="11">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="12">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="13">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="14">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="15">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="16">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="17">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="18">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="19">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="20">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="21">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="22">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="23">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="24">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="25">*</div>
-                                </div> <!-- div grid -->
-                            </div> <!-- div col -->
-                            <div class="col-4 align-items-center find-char-text">
-                                <div class="all-switchers-container">
-                                    <div class = "switch-container">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 no-paddings">Размер</div>
-                                            <div class="col">
-                                                <div class="btn-group" role="group" aria-label="Button group — table size">
-                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-1" autocomplete="off" data-size="3" onclick="draw_table(3)">
-                                                    <label class="btn btn-outline-primary" for="btnradio-size-1">3 × 3</label>
-                                                
-                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-2" autocomplete="off" data-size="4" onclick="draw_table(4)">
-                                                    <label class="btn btn-outline-primary" for="btnradio-size-2">4 × 4</label>
-                                                
-                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-3" autocomplete="off" data-size="5" checked onclick="draw_table(5)">
-                                                    <label class="btn btn-outline-primary" for="btnradio-size-3">5 × 5</label>
-                
-                                                    <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-4" autocomplete="off" data-size="6" onclick="draw_table(6)">
-                                                    <label class="btn btn-outline-primary" for="btnradio-size-4">6 × 6</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class = "switch-container">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 no-paddings">Тип</div>
-                                            <div class="col">
-                                                <div class="btn-group" role="group" aria-label="Button group — table type">
-                                                    <input type="radio" class="btn-check" name="btnradio-type" id="btnradio-type-1" autocomplete="off" data-type="1" checked onclick="make_disabled_start_symbol(true)">
-                                                    <label class="btn btn-outline-primary" for="btnradio-type-1">Числовая</label>
-                                                
-                                                    <input type="radio" class="btn-check" name="btnradio-type" id="btnradio-type-2" data-type="2" autocomplete="off" onclick="make_disabled_start_symbol(false)">
-                                                    <label class="btn btn-outline-primary" for="btnradio-type-2">Буквенная</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class = "switch-container" style = "margin-top: -12px; margin-bottom: 0;">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 no-paddings">
-                                                <label for="start_symbol" class="col-form-label">Первый символ</label>
-                                            </div>
-                                            <div class="col-2">
-                                                <input type="text" maxlength="1" id="start_symbol" class="form-control" aria-describedby="help_inline" value="1" disabled autocomplete="off" pattern="(^[а-яА-ЯЁё]$)|(^$)|^(?=\s*$)|^(?!.*\S)" required>
-                                            </div>
-                                            <div class="col-auto no-paddings">
-                                                <span id="help_inline" class="form-text">
-                                                  —&nbsp;&nbsp;&nbsp;кириллица, 1&nbsp;буква
-                                                </span>
-                                              </div>
-                                        </div>
-                                    </div>
-                                    <div class = "switch-container">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 no-paddings">Порядок символов</div>
-                                            <div class="col">
-                                                <div class="btn-group" role="group" aria-label="Button group — character order">
-                                                    <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-1" data-order="1" autocomplete="off" checked>
-                                                    <label class="btn btn-outline-primary" for="btnradio-char-order-1">Прямой</label>
-                                                
-                                                    <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-2" data-order="2" autocomplete="off">
-                                                    <label class="btn btn-outline-primary" for="btnradio-char-order-2">Обратный</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>  
-                                    <div class = "switch-container">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 no-paddings">Подсказка</div>
-                                            <div class="col">
-                                                <div class="btn-group" role="group" aria-label="Button group — hint">
-                                                    <input type="radio" class="btn-check" name="btnradio-hint" id="btnradio-hint-1" autocomplete="off" data-hint="1" checked>
-                                                    <label class="btn btn-outline-primary" for="btnradio-hint-1">Показать</label>
-                                                
-                                                    <input type="radio" class="btn-check" name="btnradio-hint" id="btnradio-hint-2" data-hint="2" autocomplete="off">
-                                                    <label class="btn btn-outline-primary" for="btnradio-hint-2">Скрыть</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> <!-- div all-switchers-container -->
-                                <!-- <div class="results-container">
-                                    <div class="row justify-content-center" id="schulte_timer">00:00</div>
-                                    <div class="row justify-content-center text-in-tests" id="find_number_title">Найдите число</div>
-                                    <div class="row justify-content-center text-in-tests" id="find_number">&nbsp;</div>
-                                </div> -->
-                                <div class="results-container">
-                                    <div class="row justify-content-start" id="schulte_timer">00:00</div>
-                                    <div class="row justify-content-start text-in-tests">
-                                        <div class="col-10 no-paddings align-items-center" id="find_number_title">Найдите число</div>
-                                        <div class="col-1 no-paddings align-items-center" id="find_number">1</div>
-                                    </div>
-                                    <div class="row justify-content-center text-in-tests">&nbsp;</div>
-                                </div>
-                                <div class="start-stop-container">
-                                    <div class="row justify-content-start">
-                                        <button class="schulte-btn" id="start_button" onclick="start_schulte()">Начать&nbsp;тест</button>
-                                        <button class="schulte-btn" id="again_button" onclick="start_schulte()">Начать&nbsp;снова</button>
-                                        <button class="schulte-btn" id="stop_button" onclick="stop_schulte()">Остановить</button>
-                                        <button class="text-btn" id="show_settings" onclick="show_settings()">Показать настройки</button>
-                                    </div>
-                                    <div class="row justify-content-center" id="switchers_error">
-                                        &nbsp;
-                                    </div>
-                                </div>
-                            </div> <!-- div col align-items-center find-char-text -->
-                        </div> <!-- row align-items-top-->
-                    </div> <!-- div table-container -->
-                </div> <!-- div col -->
-            </div> <!-- row block -->
-        </div> <!-- div container -->
-    </body>
+                <!-- </div> -->
+            </div>
+        </div>
+    </nav>
+    <div class="container" style="margin-top: 60px;">
+        <div class="row" style="margin-bottom: 120px;">
+            <div class="col">
+                <div class="main-title">Ирина Текшева</div>
+                <div class="subtitle">нейропсихолог</div>
+                <div class="d-flex align-items-end" style="height: 37%;">
+                    <form action="#contacts">
+                        <button class="main-btn">Записаться</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col">
+                <div><img class="float-end" src="img/photo.png" alt="Ирина Тешева, нейропсихолог">
+                </div>
+              </div>
+        </div>
+        <div class="row block">
+            <div class="col-10">
+                <h2>Обо мне</h2>
+                <div class="text">
+                    <p>В&nbsp;профессию психолога я&nbsp;пришла более 10&nbsp;лет назад, оставив за&nbsp;плечами опыт многолетней работы в&nbsp;области автоматизации и&nbsp;управления в&nbsp;крупнейших проектных институтах нефтегазовой и&nbsp;космической области, опыт работы научным сотрудником и&nbsp;преподавателем ВУЗа. Этот опыт стал прочным фундаментом и&nbsp;определил многие принципы, которыми я&nbsp;руководствуюсь в&nbsp;моей текущей практике&nbsp;&mdash; системность, четкая структура, научность и&nbsp;доказательность, контроль результатов, автоматизация рутинной работы.</p>
+
+                    <p>С&nbsp;2014&nbsp;года, после рождения детей, начался мой путь переобучения в&nbsp;психолого-педагогическом направлении. В&nbsp;первую очередь меня интересовали разные подходы к&nbsp;развитию мышления. Я&nbsp;изучала и&nbsp;практиковала ТРИЗ-педагогику, внедрение игровых методик в&nbsp;обучение дошкольников в&nbsp;детских развивающих центрах, занималась организацией интеллектуальных игротек для подростков и&nbsp;взрослых. В&nbsp;2018 году я&nbsp;получила должность помощника руководителя ДОУ, где мы&nbsp;с&nbsp;коллегами внедряли систему ровеснического образования Е.&nbsp;Е.&nbsp;Шулешко под руководством Н.&nbsp;И.&nbsp;Титовой (2018-2019&nbsp;г.). С&nbsp;теплом и&nbsp;благодарностью вспоминаю обучение у&nbsp;Е.&nbsp;Е.&nbsp;Кравцовой, А.&nbsp;П. Ершовой и&nbsp;С.&nbsp;В.&nbsp;Плахотникова.</p>
+
+                    <p>2019 год запомнился новым поворотом в&nbsp;работе и&nbsp;началом работы с&nbsp;особенными детьми. Моей опорой стали курсы профессиональной переподготовки по&nbsp;направлению &laquo;Нейропсихология&raquo;, а&nbsp;затем в&nbsp;2021&nbsp;г. &laquo;Клиническая психология&raquo; в&nbsp;Московском институте психоанализа. В&nbsp;2023 году я&nbsp;закончила магистратуру по&nbsp;направлению &laquo;Психология&raquo; на&nbsp;кафедре клинической психологии под руководством Н.&nbsp;Л.&nbsp;Белопольской.</p>
+
+                    <p>Начиная с&nbsp;2021&nbsp;года, я&nbsp;работаю школьным нейропсихологом в&nbsp;сети частных школ &laquo;Смартскул&raquo;, а&nbsp;также с&nbsp;2019 года веду частную психологическую практику.</p>
+
+                    <p>В&nbsp;какой&nbsp;бы области я&nbsp;ни&nbsp;работала, на&nbsp;моем пути встречаю людей, чьи идеи и&nbsp;научные школы развивают науку. Я&nbsp;благодарна судьбе за&nbsp;возможность учиться очно и&nbsp;онлайн у&nbsp;классиков нейропсихологии Т.&nbsp;В.&nbsp;Ахутиной, Т.&nbsp;Г.&nbsp;Визель, Ю.&nbsp;В.&nbsp;Микадзе, А.&nbsp;В.&nbsp;Семенович, Н.&nbsp;Я.&nbsp;Семаго и&nbsp;т.&nbsp;д. Прочной основой своего образования и&nbsp;взглядов на&nbsp;коррекционный процесс я&nbsp;обязана М.&nbsp;И.&nbsp;Каменецкой и&nbsp;сотрудникам Центра практической нейропсихологии, где учусь и&nbsp;прохожу супервизии регулярно.</p>
+                </div>
+            </div>
+        </div>
+        <div class="row block">
+            <div class="col-10">
+                <h2>Образование</h2>
+                <ol class="text">
+                    <li class="mb-3">Московский Институт Психоанализа,<br>Кафедра клинической психологии, 2023<br>магистр по направлению «Психология», диплом с отличием. <br>Диссертация: «Стратегии решения арифметических задач у&nbsp;школьников с&nbsp;несформированностью пространственных представлений»</li>
+                    <h3 style="font-size: 36px;line-height: 48px;">Дипломы о&nbsp;переквалификации с&nbsp;правом ведения&nbsp;профессиональной деятельности</h3>
+                    <li>Московский институт психоанализа, 2021<br>«Клиническая психология», 1500&nbsp;ак.ч.</li>
+                    <li>Московский институт психоанализа, 2020<br>«Нейропсихология», 1500&nbsp;ак.ч.</li>
+                    <li>Московский институт профессиональной переподготовки и&nbsp;повышения квалификации педагогов, 2020<br>«Детская психологическая помощь и&nbsp;психокоррекция», 600&nbsp;ак.ч.</li>
+                    <li>Федеральный институт повышения квалификации и&nbsp;переподготовки, 2019<br>«Педагог-дефектолог», 580 ак.ч</li>
+                </ol>
+                <a class="simple-link" href="diplomas.html">Все дипломы (40)</a>
+            </div>
+        </div>
+
+        <div class="row block">
+            <div class="col">
+                <h2>Услуги</h2>
+                <div class="text">
+                    <p>Нейродиагностика онлайн и очно (Коммунарка), дети и взрослые</p>
+                    <p>Нейрокоррекционные занятия с детьми</p>
+                    <p>Обучающие игротеки @igroteam</p>
+                    <p>Коррекционные онлайн занятия</p>
+                </div>
+                <!-- <button class="main-btn">Записаться на консультацию</button> -->
+            </div>
+        </div>
+        <div class="row block">
+            <div class="col">
+                <h2 id="contacts">Контакты</h2>
+                <div class="text">
+                    <p>+7 926 111-11-11 — WhatsApp, Telegram</p>
+                    <p>my_mail@example.ru</p>
+                    <p>@teksheva_neuro</p>
+                </div>
+            </div>
+        </div>
+        <div style="margin-bottom: 120px;">&nbsp;</div>
+    </div>
+  </body>
 </html>

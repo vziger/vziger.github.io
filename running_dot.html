@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+        <link rel="stylesheet" href="stylesheets/schulte.css">
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/running_dot.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", ready);
+          </script>
+        <title>Бегающая точка</title>
+    </head>
+    <body>
+        <div id="navbar"></div>
+        <nav class="navbar fixed-top w-25">
+            <div class="container-fluid">
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="width: 300px;">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Меню</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                            <li class="nav-item">
+                                <a class="nav-link" aria-current="page" href="index.html">Главная</a>
+                            </li>
+                            <p class="p-2 m-0">Тренажёры</p>
+                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
+                                <li class="nav-item pb-1 ps-3"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
+                            <!-- <li class="nav-item dropdown p-0">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Тренажёры
+                                </a>
+                                <ul class="dropdown-menu pb-2">
+                                    <li class="py-1"><a class="dropdown-item" href="schulte.html">Таблица Шульте</a></li>
+                                    <li class="pb-1"><a class="dropdown-item" href="running_dot.html">Бегающая точка</a></li>
+                                </ul>
+                            </li>  -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row block">
+                <div class="col">
+                    <div class="row align-items-start">
+                        <div class = "col-8">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <h2 id="schulte_title">Бегающая точка</h2>
+                            </div>
+                        </div> <!-- div col-8 -->
+                    </div>  <!-- div row align-items-start -->
+                    <div class="table-container">
+                        <div class="row align-items-start">
+                            <div class = "col" style="z-index:10">
+                                <div class="row justify-content-center">
+                                    <div class="p-0" id="box_for_dot">
+                                        <canvas id="draw_line" width="608" height="608"></canvas>
+                                        <div class="dot" id="running_dot"></div>
+                                    </div>
+                                    <div id="box_background">&nbsp;</div>
+                                </div>
+                            </div> <!-- div col -->
+                            <div class="col-4 align-items-center">
+                                <div class="all-switchers-container-diag">
+                                    <div class = "switch-container">
+                                        <div class="row align-items-start">
+                                            <div class="col-4" style="padding: 6px 0 6px;" >Направление движения</div>
+                                            <div class="col">
+                                                <div class="btn-group-vertical" role="group" aria-label="Button group — direction">
+                                                    <input type="radio" class="btn-check" name="btnradio-direction" id="btnradio-direction-1" autocomplete="off" data-direction="1">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-direction-1">По горизонтали</label>
+                                                
+                                                    <input type="radio" class="btn-check" name="btnradio-direction" id="btnradio-direction-2" autocomplete="off" data-direction="2">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-direction-2">По вертикали</label>
+                                                
+                                                    <input type="radio" class="btn-check" name="btnradio-direction" id="btnradio-direction-3" autocomplete="off" data-direction="3" checked>
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-direction-3">Диагональ 1</label>
+                
+                                                    <input type="radio" class="btn-check" name="btnradio-direction" id="btnradio-direction-4" autocomplete="off" data-direction="4">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-direction-4">Диагональ 2</label>
+
+                                                    <input type="radio" class="btn-check" name="btnradio-direction" id="btnradio-direction-5" autocomplete="off" data-direction="5">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-direction-5">«Бесконечность»&nbsp;</label>
+<!-- 
+                                                    <input type="radio" class="btn-check" name="btnradio-direction" id="btnradio-direction-6" autocomplete="off" data-direction="6">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-direction-6">Хаотично</label> -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container direction -->
+                                    <div class = "switch-container">
+                                        <div class="row align-items-start">
+                                            <div class="col-4" style="padding: 6px 0 6px;">Скорость</div>
+                                            <div class="col">
+                                                <div class="btn-group-vertical" role="group" aria-label="Button group — velocity" style="display:none">
+                                                    <input type="radio" class="btn-check" name="btnradio-velocity" id="btnradio-velocity-1" autocomplete="off" data-velocity="1" checked onclick="">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-velocity-1">Низкая</label>
+                                                
+                                                    <input type="radio" class="btn-check" name="btnradio-velocity" id="btnradio-velocity-2" autocomplete="off" data-velocity="2" onclick="">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-velocity-2">Нормальная&nbsp;</label>
+                                                
+                                                    <input type="radio" class="btn-check" name="btnradio-velocity" id="btnradio-velocity-3" autocomplete="off" data-velocity="3" onclick="">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-velocity-3">Высокая</label>
+                                                </div>
+                                                <div class="input-group" style="width: 66%;">
+                                                    <input type="number" min="1" max="10" class="form-control" id="input_velocity" placeholder="1 ... 10" value="1" autocomplete="off" required aria-label="velocity switcher">
+                                                    <button class="btn btn-outline-secondary" type="button" id="btn_velocity_decrease" name="btn-change-velocity" data-change="-1" style="font-weight:800;">—</button>
+                                                    <button class="btn btn-outline-secondary" type="button" id="btn_velocity_increase" name="btn-change-velocity" data-change="1" style="font-size: 30px; line-height: 30px;">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container velocity -->
+                                    <div class="switch-container">
+                                        <div class="row align-items-start">
+                                            <div class="col-4 p-0" id="fullscreen_text_container">На весь экран</div>
+                                            <div class="col">
+                                                <div>
+                                                    <label for="fullscreen_checkbox" style="cursor: pointer; width: 66%;"">
+                                                        <input class="form-check-input m-0" name="fullscreen_checkbox" type="checkbox" id="fullscreen_checkbox" checked aria-label="turn on fullscreen mode">
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container display -->
+                                </div> <!-- div all-switchers-container -->
+                                <div class="results-container">
+                                    <div class="row justify-content-start" id="exercise_timer">00:00</div>
+                                    <div class="row justify-content-center text-in-tests">&nbsp;</div>
+                                </div>
+                                <div class="start-stop-container" id="start_stop_container">
+                                    <div class="row justify-content-start">
+                                        <button class="schulte-btn" id="start_button" onclick="start_running()">Начать&nbsp;тест</button>
+                                        <button class="schulte-btn" id="stop_button" onclick="stop_running()">Остановить</button>
+                                        <button class="text-btn" id="show_settings" onclick="show_settings()">Показать настройки</button>
+                                    </div>
+                                    <div class="row justify-content-center" id="switchers_error">
+                                        &nbsp;
+                                    </div>
+                                </div>
+                            </div> <!-- div col-4 align-items-center -->
+                            <!-- <div class="col"><p>Настройки</p></div> -->
+                        </div> <!-- row align-items-start-->
+                    </div> <!-- div table-container -->
+
+                </div>  <!-- div col -->
+            </div>  <!-- div row block -->
+        </div> <!-- div container -->
+    </body>
+</html>
