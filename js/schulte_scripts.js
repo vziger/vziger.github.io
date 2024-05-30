@@ -9,7 +9,7 @@ const TABLE_ORDER_REVERSE = 2
 
 const TABLE_HINT_SHOW = 1
 
-let timer_id
+let exercise_timer_id
 let timer_node
 
 let entered_first_symbol = 'А'
@@ -35,7 +35,7 @@ function ready() {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
     const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
     
-    timer_node = document.getElementById('schulte_timer')
+    timer_node = document.getElementById('exercise_timer')
 
     btn_start = document.getElementById('start_button')
     btn_again = document.getElementById('again_button')
@@ -159,23 +159,6 @@ function blink(cell) {
 }
 
 
-function seconds_to_time(total_seconds) {
-    let hours   = Math.floor(total_seconds / 3600)
-    let minutes = Math.floor((total_seconds - (hours * 3600)) / 60)
-    let seconds = total_seconds - (hours * 3600) - (minutes * 60)
-
-    seconds = Math.round(seconds * 100) / 100
-
-    let time_to_show = ''
-    if (hours != 0) {
-        time_to_show += hours + ':'
-    }
-    time_to_show += (minutes < 10 ? '0' + minutes : minutes)
-    time_to_show += ':' + (seconds  < 10 ? '0' + seconds : seconds)
-    return time_to_show
-}
-
-
 function set_asterisks_into_cells() {
     let grid_cells = document.getElementsByClassName('cell')
     for (let i = grid_cells.length - 1; i >=0 ; --i) {
@@ -186,7 +169,7 @@ function set_asterisks_into_cells() {
 
 
 function stop_schulte() {
-    clearInterval(timer_id);
+    clearInterval(exercise_timer_id);
 
     root_doc.style.setProperty('--cell-blur', 'blur(8px)');
     root_doc.style.setProperty('--cell-cursor', 'default');
@@ -255,7 +238,7 @@ function start_schulte(){
         let current_char_pos = 0
 
         init_state(TABLE_HINT_SELECTED)
-        timer_id = setInterval(timer, 1000)
+        exercise_timer_id = setInterval(timer, 1000)
 
         switch (+TABLE_TYPE_SELECTED) {
             case TABLE_TYPE_DIGITS:
@@ -307,7 +290,7 @@ function start_schulte(){
         function check_click(event) {
             let cell = event.target || event.srcElement;
             if (cell.innerHTML == '' + straight_data[current_char_pos] && current_char_pos == NUMBER_ELEMENTS - 1) {
-                clearInterval(timer_id);
+                clearInterval(exercise_timer_id);
                 blink(cell)
 
                 btn_stop.style.setProperty('display', 'none')
