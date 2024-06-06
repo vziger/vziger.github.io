@@ -6,7 +6,6 @@ const DIRECTION_INFINITY   = 5
 const DIRECTION_CHAOS      = 6
 
 const VELOCITY = [2, 4, 8]
-const LEM_RIGHT_DIRECTION = 1
 
 let running_dot
 let box_for_dot
@@ -17,7 +16,6 @@ let dot_size
 let lemniskate_x
 let lemniskate_y
 let lemniskate_index = 0
-let lem_direction = LEM_RIGHT_DIRECTION
 
 let input_velocity
 
@@ -54,14 +52,14 @@ function ready() {
     box_background = document.getElementById('box_background')
     canvas         = document.getElementById('draw_line')
 
-    prev_direction = +document.querySelector('input[type="radio"][name="btnradio-direction"]:checked').getAttribute('data-direction')
-    set_initial_position(prev_direction)
-
     box_size = getComputedStyle(root_doc, null).getPropertyValue('--box-for-dot-size')
     box_size = +box_size.substring(0, box_size.length - 2)
     
     dot_size = getComputedStyle(root_doc, null).getPropertyValue('--dot-size')
     dot_size = +dot_size.substring(0, dot_size.length - 2)
+
+    prev_direction = +document.querySelector('input[type="radio"][name="btnradio-direction"]:checked').getAttribute('data-direction')
+    set_initial_position(prev_direction)
 
     generate_lemniskate(2)
 
