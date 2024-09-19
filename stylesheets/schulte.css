@@ -3,6 +3,7 @@
     --cell-blur: blur(8px);
     --cell-size: 120px;
     --cell-background-color: #e9e9e9;
+    --cell-font-color-gorbov: #ebebeb;
     --cell-blink-color: #63BE63;
     --asterisk-shift-pdt: 16px;
     --all-controls-block-height: 330px;

@@ -48,7 +48,9 @@ html *
 .block{
     margin-bottom: 48px;
 }
-
+.title-wrapper {
+    margin-bottom: 120px;
+}
 .main-title{
     font-family: Kurale, Arial, sans-serif;
     font-size: 120px;
@@ -61,13 +63,19 @@ html *
 }
 
 .text{
-    font-size: 32px;
+    font-size: 28px;
+    line-height: 40px;
 }
 
 .simple-link{
-    font-size: 32px;
+    font-size: 28px;
+    line-height: 40px;
     text-decoration-thickness: 1px;
-    text-underline-offset: 2px;
+    text-underline-offset: 3px;
+}
+
+.d-main-form {
+    height: 37%;
 }
 
 .main-btn{
@@ -108,15 +116,15 @@ html *
 
 h2{
     font-weight: 600;
-    font-size: 80px;
+    font-size: 64px;
     margin-top: 60px;
-    margin-bottom: 48px;
+    margin-bottom: 32px;
 }
 
 h3{
     font-weight: 600;
-    font-size: 36px;
-    line-height: 48px;
+    font-size: 32px;
+    line-height: 40px;
 }
 
 .navbar-toggler:focus {
@@ -132,6 +140,17 @@ li{
     font-size: 44px;
 }
 
+#btn-back-to-top {
+    position: fixed;
+    border-radius: 30px;
+    bottom: 20px;
+    right: 20px;
+    display: none;
+}
+.footer {
+    margin-bottom: 120px;
+}
+
 
 /* .row{
     background-color: rgba(255,0,0,0.1);
@@ -141,3 +160,89 @@ li{
     border: 1px solid rgba(0,0,255,0.1);
 } */
 
+
+@media (max-width: 480px) {
+    .block{
+        margin-bottom: 24px;
+    }
+    .title-wrapper {
+        margin-bottom: 64px;
+    }
+    .title-wrapper div:first-child {
+        order: 2;
+    }
+    .main-title {
+        font-size: 90px;
+        line-height: 82px;
+        margin-top: 0;
+    }
+    .subtitle {
+        font-size: 40px;
+    }
+    .text {
+        font-size: 22px;
+        line-height: 30px;
+    }
+    .simple-link{
+        font-size: 22px;
+        line-height: 30px;
+    }
+    h2{
+        font-size: 48px;
+        margin-top: 32px;
+        margin-bottom: 16px;
+    }
+    h3{
+        font-size: 22px;
+        line-height: 30px;
+        hyphens: auto;
+        -moz-hyphens: auto;
+        -webkit-hyphens: auto;
+        -ms-hyphens: auto;
+    }
+    .container {
+        margin-top: 12px!important;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .d-main-form {
+        height: 37%;
+        min-width: 100%;
+    }
+    .main-form {
+        min-width: 100%;
+    }
+    .main-btn {
+        padding-left: 0;
+        padding-right: 0;
+        min-width: 100%;
+    }
+    .d-main-photo {
+        margin-bottom: 12px;
+    }
+    .img-main-photo {
+        width: 100%;
+    }
+    .footer {
+        margin-bottom: 60px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .title-wrapper div:first-child {
+        order: 2;
+    }
+}
+
+@media (max-width: 992px) {
+    .title-wrapper div:first-child {
+        order: 2;
+    }
+}
+
+@media (max-width: 1200px) {
+    .title-wrapper div:first-child {
+        order: 2;
+    }
+}
