@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="favicon.ico">
+        <link rel="apple-touch-icon" sizes="57x57" href="img/favicons/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="img/favicons/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="img/favicons/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="img/favicons/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="img/favicons/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="img/favicons/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="img/favicons/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="img/favicons/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="img/favicons/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="img/favicons/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="img/favicons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="img/favicons/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="img/favicons/favicon-16x16.png">
+        <link rel="manifest" href="img/favicons/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="img/favicons/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+        <link rel="stylesheet" href="stylesheets/schulte.css">
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/gorbov_scripts.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", ready_gorbov);
+        </script>
+        <title>Таблица Горбова</title>
+    </head>
+    <body>
+        <nav class="navbar bg-white fixed-top">
+            <div class="container-fluid">
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="width: 300px;">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Меню</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                            <li class="nav-item"><a class="nav-link" aria-current="page" href="index.html">Главная</a></li>
+                            <p class="p-2 m-0">Тренажёры</p>
+                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
+                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="gorbov.html">Таблица Горбова</a></li>
+                            <li class="nav-item pb-1 ps-3"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
+                            <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row block">
+                <div class="col">
+                    <div class="row align-items-top">
+                        <div class = "col-8">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <h2 id="schulte_title">Таблица Горбова</h2>
+                                <button type="button" class="btn btn-secondary p-0 custom-popover"
+                                        data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
+                                        data-bs-title="Таблица Горбова"
+                                        data-bs-content="Модифицированный вариант одноцветных таблиц Шульте.<br><br>Представляет собой квадрат, разделённый на&nbsp;клетки.<br>В&nbsp;клетках в&nbsp;случайном порядке расположены числа или буквы, одна половина&nbsp;— чёрные,<br>другая половина&nbsp;— красные.<br><br>
+                                        Таблица Шульте&nbsp;— одноцветная таблица с&nbsp;расположенными случайно&nbsp;числами или буквами.<br><br>
+                                        Используется для тренировки скорости нахождения объектов, улучшения периферического зрения&nbsp;и&nbsp;скорочтения.<br><br>
+                                        Разработана немецким психотерапевтом и&nbsp;психиатром Вальтером Шульте для изучения свойств внимания<br>&nbsp;">?
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <div class="row align-items-top">
+                            <div class = "col">
+                                <div class="grid justify-content-center">
+                                    <div class="cell" style="padding-top: 16px;" data-number="1">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="2">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="3">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="4">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="5">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="6">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="7">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="8">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="9">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="10">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="11">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="12">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="13">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="14">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="15">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="16">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="17">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="18">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="19">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="20">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="21">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="22">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="23">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="24">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="25">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="26">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="27">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="28">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="29">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="30">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="31">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="32">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="33">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="34">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="35">*</div>
+                                    <div class="cell" style="padding-top: 16px;" data-number="36">*</div>
+                                </div> <!-- div grid -->
+                            </div> <!-- div col -->
+                            <div class="col-4 align-items-center find-char-text">
+                                <div class="all-switchers-container">
+                                    <div class = "switch-container">
+                                        <div class="row align-items-center">
+                                            <div class="col-3 p-0">Порядок символов</div>
+                                            <div class="col">
+                                                <div class="btn-group" role="group" aria-label="Button group — character order">
+                                                    <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-1" data-order="1" autocomplete="off" checked>
+                                                    <label class="btn btn-outline-primary" for="btnradio-char-order-1">Прямой</label>
+                                                
+                                                    <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-2" data-order="2" autocomplete="off">
+                                                    <label class="btn btn-outline-primary" for="btnradio-char-order-2">Обратный</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class = "switch-container">
+                                        <div class="row align-items-center">
+                                            <div class="col-3 p-0">Цветные</div>
+                                            <div class="col">
+                                                <div class="btn-group" role="group" aria-label="Button group — colored numbers or cells">
+                                                    <input type="radio" class="btn-check" name="btnradio-color-setting" id="btnradio-color-setting-1" data-color-setting="1" autocomplete="off" checked>
+                                                    <label class="btn btn-outline-primary" for="btnradio-color-setting-1">Ячейки</label>
+                                                    <input type="radio" class="btn-check" name="btnradio-color-setting" id="btnradio-color-setting-2" data-color-setting="2" autocomplete="off">
+                                                    <label class="btn btn-outline-primary" for="btnradio-color-setting-2">Числа</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class = "switch-container">
+                                        <div class="row align-items-center">
+                                            <div class="col-3 p-0">Подсказка</div>
+                                            <div class="col">
+                                                <div class="btn-group" role="group" aria-label="Button group — hint">
+                                                    <input type="radio" class="btn-check" name="btnradio-hint" id="btnradio-hint-1" autocomplete="off" data-hint="1" checked>
+                                                    <label class="btn btn-outline-primary" for="btnradio-hint-1">Показать</label>
+                                                
+                                                    <input type="radio" class="btn-check" name="btnradio-hint" id="btnradio-hint-2" data-hint="2" autocomplete="off">
+                                                    <label class="btn btn-outline-primary" for="btnradio-hint-2">Скрыть</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> <!-- div all-switchers-container -->
+                                <div class="results-container">
+                                    <div class="row justify-content-start" id="exercise_timer">00:00</div>
+                                    <div class="row justify-content-start text-in-tests">
+                                        <div class="col-10 p-0 align-items-center" id="find_number_title">Найдите число</div>
+                                        <div class="col-1 align-items-center d-flex justify-content-center" style="width: 60px;" id="find_number">1</div>
+                                    </div>
+                                    <div class="row justify-content-center text-in-tests">&nbsp;</div>
+                                </div> <!-- div results-container -->
+                                <div class="start-stop-container">
+                                    <div class="row justify-content-start">
+                                        <button class="schulte-btn" id="start_button" onclick="start_gorbov()">Начать&nbsp;тест</button>
+                                        <button class="schulte-btn" id="again_button" onclick="start_gorbov()">Начать&nbsp;снова</button>
+                                        <button class="schulte-btn" id="stop_button" onclick="stop_gorbov()">Остановить</button>
+                                        <button class="text-btn" id="show_settings" onclick="show_settings_g()">Показать настройки</button>
+                                    </div>
+                                    <div class="row justify-content-center" id="switchers_error">&nbsp;</div>
+                                </div> <!-- div start-stop-container -->
+                            </div> <!-- div col align-items-center find-char-text -->
+                        </div> <!-- row align-items-top-->
+                    </div> <!-- div table-container -->
+                </div> <!-- div col -->
+            </div> <!-- row block -->
+        </div> <!-- div container -->
+    </body>
+</html>
