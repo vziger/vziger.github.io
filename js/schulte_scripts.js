@@ -23,6 +23,7 @@ let all_switchers_container
 let results_container
 let start_symbol_node
 let start_symbol_help_inline_node
+
 let error_text_node
 
 let find_number_title_node
@@ -48,25 +49,18 @@ function ready() {
     start_symbol_node = document.getElementById('start_symbol')
     start_symbol_help_inline_node = document.getElementById('help_inline')
 
+    error_text_node = document.getElementById('switchers_error')
+
     find_number_title_node = document.getElementById('find_number_title')
     find_number_node = document.getElementById('find_number')
-
-    error_text_node = document.getElementById('switchers_error')
 
     root_doc = document.documentElement;
 }
 
 
-function delete_elements(list_of_elements) {
-    for (let i = list_of_elements.length - 1; i >=0 ; --i) {
-        list_of_elements[i].remove()
-    }
-}
-
-
-function create_new_cells_for_table(number, grid_table) {
+function create_new_cells_for_table(size, grid_table) {
     let new_cell
-    for (let i = 0; i < number*number; i++) {
+    for (let i = 0; i < size*size; i++) {
         new_cell = document.createElement('div')
         new_cell.setAttribute('class', 'cell')
         new_cell.setAttribute('data-number', i+1)
@@ -81,7 +75,7 @@ function draw_table(size){
     let grid_cells = document.getElementsByClassName('cell')
     let grid_table = document.querySelector('.grid')
 
-    delete_elements(grid_cells)
+    empty_grid_cells_array(grid_cells)
     create_new_cells_for_table(size, grid_table)
 
     grid_table.style.setProperty('grid-template-columns', 'repeat(' + size + ', var(--cell-size))')
@@ -108,28 +102,22 @@ function make_disabled_start_symbol(flag) {
 }
 
 
-function generate_numbers_array(size) {
-    let arr = new Array(size)
-    for (let i = 0; i < size; i++) {
-        arr[i] = i + 1
-    }
-    return arr
-}
+function stop_schulte() {
+    clearInterval(exercise_timer_id);
 
+    root_doc.style.setProperty('--cell-blur', 'blur(8px)');
+    root_doc.style.setProperty('--cell-cursor', 'default');
 
-function kanzas_city_shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr
-}
+    set_asterisks_into_cells();
+    
+    display_hide_containers(all_switchers_container, 'block');
+    display_hide_containers(results_container, 'none');
+    
+    find_number_title_node.style.setProperty('visibility', 'hidden');
+    find_number_node.style.setProperty('visibility', 'hidden');
 
-
-function display_hide_containers(list_elements, show_hide_flag) {
-    for (let j = 0; j < list_elements.length ; j++) {
-        list_elements[j].style.setProperty('display', show_hide_flag)
-    }
+    btn_stop.style.setProperty('display', 'none');
+    btn_start.style.setProperty('display', 'block');
 }
 
 
@@ -148,42 +136,6 @@ function show_settings() {
     btn_show_settings.style.setProperty('display', 'none');
     btn_start.style.setProperty('display', 'block');
     btn_again.style.setProperty('display', 'none');
-}
-
-
-function blink(cell) {
-    cell.style.setProperty('background-color','var(--cell-blink-color)')
-        setTimeout(function() {
-            cell.style.setProperty('background-color','var(--cell-background-color)');
-        }, 50)
-}
-
-
-function set_asterisks_into_cells() {
-    let grid_cells = document.getElementsByClassName('cell')
-    for (let i = grid_cells.length - 1; i >=0 ; --i) {
-        grid_cells[i].innerHTML = '*'
-        grid_cells[i].style.setProperty('padding-top', 'var(--asterisk-shift-pdt)')
-    }
-}
-
-
-function stop_schulte() {
-    clearInterval(exercise_timer_id);
-
-    root_doc.style.setProperty('--cell-blur', 'blur(8px)');
-    root_doc.style.setProperty('--cell-cursor', 'default');
-
-    set_asterisks_into_cells();
-    
-    display_hide_containers(all_switchers_container, 'block');
-    display_hide_containers(results_container, 'none');
-    
-    find_number_title_node.style.setProperty('visibility', 'hidden');
-    find_number_node.style.setProperty('visibility', 'hidden');
-
-    btn_stop.style.setProperty('display', 'none');
-    btn_start.style.setProperty('display', 'block');
 }
 
 
@@ -238,7 +190,6 @@ function start_schulte(){
         let current_char_pos = 0
 
         init_state(TABLE_HINT_SELECTED)
-        exercise_timer_id = setInterval(timer, 1000)
 
         switch (+TABLE_TYPE_SELECTED) {
             case TABLE_TYPE_DIGITS:
@@ -267,8 +218,11 @@ function start_schulte(){
 
         find_number_node.innerHTML = straight_data[0]
 
-        kanzas_city_shuffle(cells_data);
-        set_data_to_cells(cells_data, NUMBER_ELEMENTS)
+        kanzas_city_shuffle(cells_data)
+        // set_data_to_cells(cells_data, NUMBER_ELEMENTS)
+        set_data_to_cells(cells_data)
+
+        exercise_timer_id = setInterval(timer, 1000)
 
         function timer() {
             timer_seconds++;
@@ -276,7 +230,7 @@ function start_schulte(){
         }
 
         function set_data_to_cells(data, table_size) {
-            for (let i = 0; i < table_size; i++) {
+            for (let i = 0; i < data.length; i++) {
                 let cell = document.querySelector('.cell[data-number="' + (i+1) + '"]')
                 cell.innerHTML = data[i]
                 cell.style.removeProperty('padding-top');
@@ -286,40 +240,40 @@ function start_schulte(){
             root_doc.style.setProperty('--cell-blur', 'blur(0px)');
             root_doc.style.setProperty('--cell-cursor', 'pointer');
         }
-
+        
+        
         function check_click(event) {
             let cell = event.target || event.srcElement;
             if (cell.innerHTML == '' + straight_data[current_char_pos] && current_char_pos == NUMBER_ELEMENTS - 1) {
                 clearInterval(exercise_timer_id);
                 blink(cell)
-
+        
                 btn_stop.style.setProperty('display', 'none')
                 btn_again.style.setProperty('display', 'block')
                 btn_show_settings.style.setProperty('display', 'block')
-
+        
                 find_number_title_node.style.setProperty('visibility', 'visible')
                 find_number_node.style.setProperty('visibility', 'visible')
-
+        
                 find_number_title_node.innerHTML = 'Всего ошибок: '
                 find_number_node.innerHTML = number_errors
-
+        
                 current_char_pos++
-
+        
                 console.log('Верно → ' + cell.innerHTML)
             }
-            if (cell.innerHTML == '' + straight_data[current_char_pos]) {
+            else if (cell.innerHTML == '' + straight_data[current_char_pos]) {
                 find_number_node.innerHTML = straight_data[++current_char_pos]
                 blink(cell);
-
+        
                 console.log('Верно → ' + cell.innerHTML);
-            }
-            else {
+            } else {
                 number_errors++
-
+        
                 console.log('Не верно → ' + cell.innerHTML);
                 console.log('Количество ошибок = ' + number_errors);
             }
-        }
+        }        
     }
     else {
         if (start_symbol_node.value == '') {
