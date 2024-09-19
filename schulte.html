@@ -3,6 +3,24 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="favicon.ico">
+        <link rel="apple-touch-icon" sizes="57x57" href="img/favicons/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="img/favicons/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="img/favicons/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="img/favicons/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="img/favicons/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="img/favicons/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="img/favicons/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="img/favicons/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="img/favicons/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192"  href="img/favicons/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="img/favicons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="img/favicons/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="img/favicons/favicon-16x16.png">
+        <link rel="manifest" href="img/favicons/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="img/favicons/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
         <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
         <link rel="stylesheet" href="stylesheets/schulte.css">
         <script src="js/popper.min.js"></script>
@@ -27,25 +45,11 @@
                     </div>
                     <div class="offcanvas-body">
                         <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                            <li class="nav-item">
-                                <a class="nav-link" aria-current="page" href="index.html">Главная</a>
-                            </li>
+                            <li class="nav-item"><a class="nav-link" aria-current="page" href="index.html">Главная</a></li>
                             <p class="p-2 m-0">Тренажёры</p>
                             <li class="nav-item py-1 ps-3"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
                             <li class="nav-item pb-1 ps-3"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
-
-                            <li class="nav-item p-0">
-                                <a class="nav-link" href="blog">Блог</a>
-                            </li>
-                            <!-- <li class="nav-item dropdown p-0">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Тренажёры
-                                </a>
-                                <ul class="dropdown-menu pb-2">
-                                    <li class="py-1"><a class="dropdown-item" href="schulte.html">Таблица Шульте</a></li>
-                                    <li class="pb-1"><a class="dropdown-item" href="running_dot.html">Бегающая точка</a></li>
-                                </ul>
-                            </li>  -->
+                            <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
                         </ul>
                     </div>
                 </div>
@@ -61,7 +65,7 @@
                                 <button type="button" class="btn btn-secondary p-0 custom-popover"
                                         data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
                                         data-bs-title="Таблица Шульте"
-                                        data-bs-content="Таблица с&nbsp;расположенными случайно&nbsp;цифрами или буквами.<br><br>
+                                        data-bs-content="Таблица с&nbsp;расположенными случайно&nbsp;числами или буквами.<br><br>
                                         Используется для тренировки скорости нахождения объектов, улучшения периферического зрения&nbsp;и&nbsp;скорочтения.<br><br>
                                         Разработана немецким психотерапевтом и&nbsp;психиатром Вальтером Шульте для изучения свойств внимания<br>&nbsp;">?
                                 </button>
@@ -186,7 +190,7 @@
                                         <div class="col-1 p-0 align-items-center" id="find_number">1</div>
                                     </div>
                                     <div class="row justify-content-center text-in-tests">&nbsp;</div>
-                                </div>
+                                </div> <!-- div results-container -->
                                 <div class="start-stop-container">
                                     <div class="row justify-content-start">
                                         <button class="schulte-btn" id="start_button" onclick="start_schulte()">Начать&nbsp;тест</button>
@@ -194,10 +198,8 @@
                                         <button class="schulte-btn" id="stop_button" onclick="stop_schulte()">Остановить</button>
                                         <button class="text-btn" id="show_settings" onclick="show_settings()">Показать настройки</button>
                                     </div>
-                                    <div class="row justify-content-center" id="switchers_error">
-                                        &nbsp;
-                                    </div>
-                                </div>
+                                    <div class="row justify-content-center" id="switchers_error">&nbsp;</div>
+                                </div> <!-- div start-stop-container -->
                             </div> <!-- div col align-items-center find-char-text -->
                         </div> <!-- row align-items-top-->
                     </div> <!-- div table-container -->

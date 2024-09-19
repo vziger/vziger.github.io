@@ -1,16 +1,39 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="favicon.ico">
+        <link rel="apple-touch-icon" sizes="57x57" href="img/favicons/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="img/favicons/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="img/favicons/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="img/favicons/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="img/favicons/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="img/favicons/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="img/favicons/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="img/favicons/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="img/favicons/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192"  href="img/favicons/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="img/favicons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="img/favicons/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="img/favicons/favicon-16x16.png">
+        <link rel="manifest" href="img/favicons/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="img/favicons/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
         <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
         <link rel="stylesheet" href="stylesheets/main.css">
         <link rel="preload" href="fonts/Kurale-Regular.woff2" as="font" type="font/woff2" crossorigin ></link>
         <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/index.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", ready);
+        </script>
         <title>Ирина Текшева — нейропсихолог</title>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg sticky-top navbar-white bg-white sticky-top">
+        <nav class="navbar navbar-expand-md sticky-top navbar-white bg-white sticky-top">
             <div class="container">
                 <div class="row">
                     <div class="container-fluid">
@@ -43,14 +66,23 @@
                 </div>
             </div>
         </nav>
+        <button
+            type="button"
+            class="btn btn-secondary btn-floating btn-lg"
+            id="btn-back-to-top"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="40" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z"/>
+            </svg>
+        </button>
         <div class="container" style="margin-top: 30px;margin-bottom: 240px;">
             <div class="row block">
-                <div class="col-10">
+                <div class="col col-sm-10">
                     <h2>Образование</h2>
                     <ol class="text">
                         <li class="mb-3">Московский Институт Психоанализа, 2023<br>Кафедра клинической психологии<br>
                             Диссертация: «Стратегии решения арифметических задач у&nbsp;школьников с&nbsp;несформированностью пространственных представлений»<br>
-                            <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О1_МАГИСТР_МИП_Психология.pdf">Магистр по направлению «Психология», диплом с отличием.</a>
+                            <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О1_МАГИСТР_МИП_Психология.pdf">Магистр по направлению «Психология», диплом с&nbsp;отличием.</a>
                         </li>
                         <h3 class="mt-2">Дипломы о&nbsp;переквалификации с&nbsp;правом ведения&nbsp;профессиональной деятельности</h3>
                         <li>Московский институт психоанализа, 2021<br>
@@ -72,12 +104,12 @@
                         <h3 class="mt-2">Дипломы о повышении квалификации</h3>
                         <li>МГУ им.&nbsp;М.&nbsp;В.&nbsp;Ломоносова, 2022 <br>
                             <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/Д1_ПК_МГУ_Детская нейропсихология_72ак.ч.pdf">«Детская нейропсихология: методы диагностики и&nbsp;коррекции»</a>, Т.&nbsp;В.&nbsp;Ахутина, 72&nbsp;ак.ч</li>
-                        <li>Московский Государственный Психолого&#8209;Педагогический&nbsp;Университет, 2019<br>
+                        <li>Московский Государственный Психолого&#8209;Педагогический Университет, 2019<br>
                             <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/Д2_ПК_МГППУ_Организ.образ.процесса_72ак.ч.pdf">Организация образовательного процесса в&nbsp;ДОО</a>, 72&nbsp;ак.ч</li>
                         <li>Московский институт психоанализа, 2021<br>
                             <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/Д3_ПК_МИП_Нейрологопедия_144ак.ч.pdf">«Нейрологопедия»</a> Т.&nbsp;Г.&nbsp;Визель, 144&nbsp;ак.ч</li>
                         <li>Институт психотерапии и&nbsp;медицинской психологии им.&nbsp;Б.&nbsp;Д.&nbsp;Карвасарского, 2020<br>
-                            <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/Д4_ПК_ИПМП_Классическая нейропсихология_144ак.ч.pdf">Классическая нейропсихология. Методы нейропсихологической&nbsp;диагностики и&nbsp;коррекции»</a>, 144&nbsp;ак.ч</li>
+                            <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/Д4_ПК_ИПМП_Классическая нейропсихология_144ак.ч.pdf">Классическая нейропсихология. Методы нейропсихологической диагностики и&nbsp;коррекции»</a>, 144&nbsp;ак.ч</li>
                         <li>Институт нейропсихологии и&nbsp;нейрофизиологии развития&nbsp;ребенка,&nbsp;2022<br>
                             <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/Д5_ПК_ИНиНРР_Сенсомоторная коррекция_30ак.ч.pdf">«Сенсомоторная коррекция детей дошкольного и&nbsp;младшего&nbsp;школьного возраста»</a>, О.&nbsp;А.&nbsp;Семенова, 30&nbsp;ак.ч</li>
                         <li>Институт нейропсихологии и&nbsp;нейрофизиологии развития&nbsp;ребенка,&nbsp;2022<br>

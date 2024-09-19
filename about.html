@@ -1,16 +1,39 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="favicon.ico">
+    <link rel="apple-touch-icon" sizes="57x57" href="img/favicons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="img/favicons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="img/favicons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="img/favicons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="img/favicons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="img/favicons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="img/favicons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="img/favicons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/favicons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="img/favicons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="img/favicons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicons/favicon-16x16.png">
+    <link rel="manifest" href="img/favicons/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="img/favicons/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
     <link rel="stylesheet" href="stylesheets/main.css">
     <link rel="preload" href="fonts/Kurale-Regular.woff2" as="font" type="font/woff2" crossorigin ></link>
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/index.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", ready);
+    </script>
     <title>Ирина Текшева — нейропсихолог</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg sticky-top navbar-white bg-white sticky-top">
+    <nav class="navbar navbar-expand-md sticky-top navbar-white bg-white sticky-top">
         <div class="container">
             <div class="row">
                 <div class="container-fluid">
@@ -43,24 +66,34 @@
             </div>
         </div>
     </nav>
+    <button
+        type="button"
+        class="btn btn-secondary btn-floating btn-lg"
+        id="btn-back-to-top"
+        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="40" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z"/>
+        </svg>
+    </button>
     <div class="container" style="margin-top: 60px;">
-        <div class="row" style="margin-bottom: 120px;">
+        <div class="row title-wrapper">
             <div class="col">
-                <div class="main-title">Ирина Текшева</div>
+                <div class="main-title">Ирина<br>Текшева</div>
                 <div class="subtitle">нейропсихолог</div>
             </div>
-            <div class="col">
-                <div><img class="float-end" src="img/photo.png" alt="Ирина Тешева, нейропсихолог">
+            <div class="col d-main-photo">
+                <div>
+                    <img class="float-start float-xl-end img-main-photo" src="img/photo.png" alt="Ирина Тешева, нейропсихолог">
                 </div>
               </div>
         </div>
         <div class="row block">
-            <div class="col-10">
+            <div class="col col-sm-10">
                 <h2>Обо мне</h2>
                 <div class="text">
                     <p>В&nbsp;профессию психолога я&nbsp;пришла более 10&nbsp;лет назад, оставив за&nbsp;плечами опыт многолетней работы в&nbsp;области автоматизации и&nbsp;управления в&nbsp;крупнейших проектных институтах нефтегазовой и&nbsp;космической области, опыт работы научным сотрудником и&nbsp;преподавателем ВУЗа. Этот опыт стал прочным фундаментом и&nbsp;определил многие принципы, которыми я&nbsp;руководствуюсь в&nbsp;моей текущей практике&nbsp;&mdash; системность, четкая структура, научность и&nbsp;доказательность, контроль результатов, автоматизация рутинной работы.</p>
 
-                    <p>С&nbsp;2014&nbsp;года, после рождения детей, начался мой путь переобучения в&nbsp;психолого-педагогическом направлении. В&nbsp;первую очередь меня интересовали разные подходы к&nbsp;развитию мышления. Я&nbsp;изучала и&nbsp;практиковала ТРИЗ-педагогику, внедрение игровых методик в&nbsp;обучение дошкольников в&nbsp;детских развивающих центрах, занималась организацией интеллектуальных игротек для подростков и&nbsp;взрослых. В&nbsp;2018 году я&nbsp;получила должность помощника руководителя ДОУ, где мы&nbsp;с&nbsp;коллегами внедряли систему ровеснического образования Е.&nbsp;Е.&nbsp;Шулешко под руководством Н.&nbsp;И.&nbsp;Титовой (2018-2019&nbsp;г.). С&nbsp;теплом и&nbsp;благодарностью вспоминаю обучение у&nbsp;Е.&nbsp;Е.&nbsp;Кравцовой, А.&nbsp;П. Ершовой и&nbsp;С.&nbsp;В.&nbsp;Плахотникова.</p>
+                    <p>С&nbsp;2014&nbsp;года, после рождения детей, начался мой путь переобучения в&nbsp;психолого-педагогическом направлении. В&nbsp;первую очередь меня интересовали разные подходы к&nbsp;развитию мышления. Я&nbsp;изучала и&nbsp;практиковала ТРИЗ-педагогику, внедрение игровых методик в&nbsp;обучение дошкольников в&nbsp;детских развивающих центрах, занималась организацией интеллектуальных игротек для подростков и&nbsp;взрослых. В&nbsp;2018 году я&nbsp;получила должность помощника руководителя ДОУ, где мы&nbsp;с&nbsp;коллегами внедряли систему ровеснического образования Е.&nbsp;Е.&nbsp;Шулешко под руководством Н.&nbsp;И.&nbsp;Титовой (2018-2019&nbsp;г.). С&nbsp;теплом и&nbsp;благодарностью вспоминаю обучение у&nbsp;Е.&nbsp;Е.&nbsp;Кравцовой, А.&nbsp;П.&nbsp;Ершовой и&nbsp;С.&nbsp;В.&nbsp;Плахотникова.</p>
 
                     <p>2019 год запомнился новым поворотом в&nbsp;работе и&nbsp;началом работы с&nbsp;особенными детьми. Моей опорой стали курсы профессиональной переподготовки по&nbsp;направлению &laquo;Нейропсихология&raquo;, а&nbsp;затем в&nbsp;2021&nbsp;г. &laquo;Клиническая психология&raquo; в&nbsp;Московском институте психоанализа. В&nbsp;2023 году я&nbsp;закончила магистратуру по&nbsp;направлению &laquo;Психология&raquo; на&nbsp;кафедре клинической психологии под руководством Н.&nbsp;Л.&nbsp;Белопольской.</p>
 
