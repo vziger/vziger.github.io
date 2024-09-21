@@ -33,8 +33,6 @@ let grid_table
 
 let root_doc
 
-// TODO: show_settings — возвращать цвет звёздочек
-// TODO: в каком порядке выбирать числа — сначала все красные, сначала все чёрные, по очереди красный/чёрный
 
 function ready_gorbov() {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
@@ -86,6 +84,7 @@ function init_state(table_hint_selected) {
     display_hide_containers(all_switchers_container, 'none')
     display_hide_containers(results_container, 'block')
 
+    find_number_title_node.innerHTML = 'Найдите число '
     timer_node.innerHTML = '00:00'
 }
 
@@ -116,7 +115,7 @@ function stop_gorbov() {
 }
 
 function show_settings_g() {
-    stop_gorbov()
+    stop_gorbov();
     btn_again.style.setProperty('display', 'none');
     btn_show_settings.style.setProperty('display', 'none');
 }
@@ -134,9 +133,9 @@ function start_gorbov() {
 
     init_state(TABLE_HINT_SELECTED)
 
-    const cells_data_red   = generate_gorbov_array(NUMBER_ELEMENTS_RED, GORBOV_COLOR_RED)
-    const cells_data_black = generate_gorbov_array(NUMBER_ELEMENTS_BLACK, GORBOV_COLOR_BLACK)
-    let cells_data_all     = concat_gorbov_red_and_black_arrays(cells_data_red, cells_data_black)
+    const CELLS_DATA_RED   = generate_gorbov_array(NUMBER_ELEMENTS_RED, GORBOV_COLOR_RED)
+    const CELLS_DATA_BLACK = generate_gorbov_array(NUMBER_ELEMENTS_BLACK, GORBOV_COLOR_BLACK)
+    let cells_data_all     = concat_gorbov_red_and_black_arrays(CELLS_DATA_RED, CELLS_DATA_BLACK)
 
     switch (+TABLE_ORDER_SELECTED) {
         case TABLE_ORDER_DIRECT:
@@ -148,7 +147,7 @@ function start_gorbov() {
     }
 
     const CELL_PROPERTY_TO_CHANGE_COLOR = (TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) ? 'background-color' : 'color'
-    console.log(CELL_PROPERTY_TO_CHANGE_COLOR)
+
     find_number_node.innerHTML = straight_data[0]['digit']
     find_number_node.style.setProperty(CELL_PROPERTY_TO_CHANGE_COLOR, straight_data[0]['color'])
     if(TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) {
@@ -158,8 +157,6 @@ function start_gorbov() {
     kanzas_city_shuffle(cells_data_all)
     set_data_to_cells(cells_data_all)
     
-    // console.log('kanzas_city_shuffle cells_data =', cells_data)
-
     exercise_timer_id = setInterval(timer, 1000)
 
 
@@ -242,7 +239,7 @@ function start_gorbov() {
                 cell.style.setProperty('background-color', color)
             }
             else {
-                cell.style.setProperty('background-color','var(--cell-background-color)')
+                cell.style.setProperty('background-color', 'var(--cell-background-color)')
             }
         }, 80)
     }
