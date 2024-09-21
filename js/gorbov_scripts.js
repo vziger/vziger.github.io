@@ -123,6 +123,7 @@ function show_settings_g() {
 
 function start_gorbov() {
     const TABLE_ORDER_SELECTED = document.querySelector('input[type="radio"][name="btnradio-char-order"]:checked').getAttribute('data-order')
+    const TABLE_BLACK_ORDER_SELECTED = document.querySelector('input[type="radio"][name="btnradio-black-char-order"]:checked').getAttribute('data-order')
     const TABLE_COLOR_SETTING_SELECTED = document.querySelector('input[type="radio"][name="btnradio-color-setting"]:checked').getAttribute('data-color-setting')
     const TABLE_HINT_SELECTED = document.querySelector('input[type="radio"][name="btnradio-hint"]:checked').getAttribute('data-hint')
 
@@ -133,18 +134,28 @@ function start_gorbov() {
 
     init_state(TABLE_HINT_SELECTED)
 
-    const CELLS_DATA_RED   = generate_gorbov_array(NUMBER_ELEMENTS_RED, GORBOV_COLOR_RED)
-    const CELLS_DATA_BLACK = generate_gorbov_array(NUMBER_ELEMENTS_BLACK, GORBOV_COLOR_BLACK)
-    let cells_data_all     = concat_gorbov_red_and_black_arrays(CELLS_DATA_RED, CELLS_DATA_BLACK)
-
-    switch (+TABLE_ORDER_SELECTED) {
-        case TABLE_ORDER_DIRECT:
-            straight_data = cells_data_all.slice();
-            break;
-        case TABLE_ORDER_REVERSE:
-            straight_data = cells_data_all.slice().reverse();
-            break;
+    let cells_data_red   = generate_gorbov_array(NUMBER_ELEMENTS_RED, GORBOV_COLOR_RED)
+    let cells_data_black = generate_gorbov_array(NUMBER_ELEMENTS_BLACK, GORBOV_COLOR_BLACK)
+    
+    if (+TABLE_ORDER_SELECTED == TABLE_ORDER_REVERSE) {
+        cells_data_red = cells_data_red.reverse();
     }
+    if (+TABLE_BLACK_ORDER_SELECTED == TABLE_ORDER_REVERSE) {
+        cells_data_black = cells_data_black.reverse();
+    }
+
+    let cells_data_all = concat_gorbov_red_and_black_arrays(cells_data_red, cells_data_black)
+    let straight_data  = cells_data_all.slice();
+    
+    // Если меняется порядок всех элементов, а не только красных или чёрных
+    // switch (+TABLE_ORDER_SELECTED) {
+    //     case TABLE_ORDER_DIRECT:
+    //         straight_data = cells_data_all.slice();
+    //         break;
+    //     case TABLE_ORDER_REVERSE:
+    //         straight_data = cells_data_all.slice().reverse();
+    //         break;
+    // }
 
     const CELL_PROPERTY_TO_CHANGE_COLOR = (TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) ? 'background-color' : 'color'
 
