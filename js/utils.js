@@ -40,6 +40,16 @@ function generate_gorbov_array(size, color) {
 }
 
 
+function multiply_array(arr, mult) {
+    a = arr.slice()
+    a.forEach((item) => {
+        item['digit'] = item['digit'] * mult;
+    } );
+    return a
+    // return arr.map((x) => {digit: x['digit'] * mult, color: x['color']})
+}
+
+
 function concat_gorbov_red_and_black_arrays(red_arr, black_arr) {
     let arr = new Array(red_arr.length + black_arr.length)
     for (let i = 0; i < black_arr.length; i++) {

@@ -4,14 +4,13 @@ const TABLE_ORDER_REVERSE = 2
 const TABLE_COLOR_SETTING_CELLS = 1
 const TABLE_HINT_SHOW = 1
 
-const TABLE_SIZE = 6
-
 const GORBOV_COLOR_RED = '#c10000'
 const GORBOV_COLOR_BLACK = '#1c1c1c'
 
-const NUMBER_ELEMENTS_ALL   = TABLE_SIZE * TABLE_SIZE
-const NUMBER_ELEMENTS_RED   = Math.ceil(NUMBER_ELEMENTS_ALL / 2)
-const NUMBER_ELEMENTS_BLACK = NUMBER_ELEMENTS_ALL - NUMBER_ELEMENTS_RED
+let table_size_global
+let number_elements_all
+let number_elements_red
+let number_elements_black
 
 let exercise_timer_id
 let timer_node
@@ -23,6 +22,8 @@ let btn_show_settings
 
 let all_switchers_container
 let results_container
+let mult_red_node
+let mult_black_node
 
 let error_text_node
 
@@ -34,10 +35,15 @@ let grid_table
 let root_doc
 
 
-function ready_gorbov() {
+function ready_gorbov(table_size) {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
     const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
     
+    table_size_global = table_size
+    number_elements_all   = table_size * table_size
+    number_elements_red   = Math.ceil(number_elements_all / 2)
+    number_elements_black = number_elements_all - number_elements_red
+
     timer_node = document.getElementById('exercise_timer')
 
     btn_start = document.getElementById('start_button')
@@ -47,6 +53,9 @@ function ready_gorbov() {
 
     all_switchers_container = document.getElementsByClassName('all-switchers-container')
     results_container = document.getElementsByClassName('results-container')
+    mult_red_node     = document.getElementById('mult_red')
+    mult_black_node   = document.getElementById('mult_black')
+    console.log("mult_red_node =", mult_red_node)
 
     error_text_node = document.getElementById('switchers_error')
 
@@ -55,7 +64,7 @@ function ready_gorbov() {
     find_number_node = document.getElementById('find_number')
 
     grid_table = document.querySelector('.grid')
-    grid_table.style.setProperty('grid-template-columns', 'repeat(' + TABLE_SIZE + ', var(--cell-size))')
+    grid_table.style.setProperty('grid-template-columns', 'repeat(' + table_size + ', var(--cell-size))')
 
     root_doc = document.documentElement;
 }
@@ -107,7 +116,7 @@ function stop_gorbov() {
     btn_start.style.setProperty('display', 'block');
 
     let cell
-    for (let i = 0; i < NUMBER_ELEMENTS_ALL; i++) {
+    for (let i = 0; i < table_size_global * table_size_global; i++) {
         cell = document.querySelector('.cell[data-number="' + (i+1) + '"]')
         cell.style.setProperty('background-color', 'var(--cell-background-color)')
         cell.style.removeProperty('color')
@@ -122,10 +131,26 @@ function show_settings_g() {
 
 
 function start_gorbov() {
-    const TABLE_ORDER_SELECTED = document.querySelector('input[type="radio"][name="btnradio-char-order"]:checked').getAttribute('data-order')
-    const TABLE_BLACK_ORDER_SELECTED = document.querySelector('input[type="radio"][name="btnradio-black-char-order"]:checked').getAttribute('data-order')
+    const TABLE_ORDER_SELECTED_RED = document.querySelector('input[type="radio"][name="btnradio-char-order"]:checked').getAttribute('data-order')
+    const TABLE_ORDER_SELECTED_BLACK = document.querySelector('input[type="radio"][name="btnradio-black-char-order"]:checked').getAttribute('data-order')
     const TABLE_COLOR_SETTING_SELECTED = document.querySelector('input[type="radio"][name="btnradio-color-setting"]:checked').getAttribute('data-color-setting')
     const TABLE_HINT_SELECTED = document.querySelector('input[type="radio"][name="btnradio-hint"]:checked').getAttribute('data-hint')
+
+
+    // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
+    let mult_red
+    let mult_black
+    
+    if (mult_red_node) {
+        mult_red = +mult_red_node.value
+        number_elements_red = 10
+    }
+    if (mult_black_node) {
+        mult_black = +mult_black_node.value
+        number_elements_black = 10
+    }
+    // ********************************************
+
 
     let timer_seconds = 0
     let number_errors = 0
@@ -134,28 +159,37 @@ function start_gorbov() {
 
     init_state(TABLE_HINT_SELECTED)
 
-    let cells_data_red   = generate_gorbov_array(NUMBER_ELEMENTS_RED, GORBOV_COLOR_RED)
-    let cells_data_black = generate_gorbov_array(NUMBER_ELEMENTS_BLACK, GORBOV_COLOR_BLACK)
+    let cells_data_red   = generate_gorbov_array(number_elements_red, GORBOV_COLOR_RED)
+    let cells_data_black = generate_gorbov_array(number_elements_black, GORBOV_COLOR_BLACK)
     
-    if (+TABLE_ORDER_SELECTED == TABLE_ORDER_REVERSE) {
-        cells_data_red = cells_data_red.reverse();
+    if (+TABLE_ORDER_SELECTED_RED == TABLE_ORDER_REVERSE) {
+        cells_data_red = cells_data_red.reverse()
     }
-    if (+TABLE_BLACK_ORDER_SELECTED == TABLE_ORDER_REVERSE) {
-        cells_data_black = cells_data_black.reverse();
+    if (+TABLE_ORDER_SELECTED_BLACK == TABLE_ORDER_REVERSE) {
+        cells_data_black = cells_data_black.reverse()
     }
 
+
+    // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
+    if (mult_red_node) {
+        number_elements_all = number_elements_red + number_elements_black
+        cells_data_red   = multiply_array(cells_data_red, mult_red)
+        cells_data_black = multiply_array(cells_data_black, mult_black)
+    }
+    // ********************************************
+
+
     let cells_data_all = concat_gorbov_red_and_black_arrays(cells_data_red, cells_data_black)
-    let straight_data  = cells_data_all.slice();
-    
-    // Если меняется порядок всех элементов, а не только красных или чёрных
-    // switch (+TABLE_ORDER_SELECTED) {
-    //     case TABLE_ORDER_DIRECT:
-    //         straight_data = cells_data_all.slice();
-    //         break;
-    //     case TABLE_ORDER_REVERSE:
-    //         straight_data = cells_data_all.slice().reverse();
-    //         break;
-    // }
+    let straight_data  = cells_data_all.slice()
+
+
+    // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
+    if (mult_red_node) {
+        let el = {digit: '*', color: 'var(--cell-background-color)'}
+        cells_data_all.push(el, el, el, el, el)
+    }
+    // ********************************************
+
 
     const CELL_PROPERTY_TO_CHANGE_COLOR = (TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) ? 'background-color' : 'color'
 
@@ -181,7 +215,7 @@ function start_gorbov() {
         for (let i = 0; i < data.length; i++) {
             cell = document.querySelector('.cell[data-number="' + (i+1) + '"]')
             cell.innerHTML = data[i]['digit']
-            cell.style.removeProperty('padding-top');
+            cell.style.removeProperty('padding-top')
             
             cell.style.setProperty(CELL_PROPERTY_TO_CHANGE_COLOR, data[i]['color'])
             if(TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) {
@@ -190,8 +224,8 @@ function start_gorbov() {
 
             cell.addEventListener('click', check_click);
         }
-        root_doc.style.setProperty('--cell-blur', 'blur(0px)');
-        root_doc.style.setProperty('--cell-cursor', 'pointer');
+        root_doc.style.setProperty('--cell-blur', 'blur(0px)')
+        root_doc.style.setProperty('--cell-cursor', 'pointer')
     }
 
     function check_click(event) {
@@ -203,10 +237,10 @@ function start_gorbov() {
 
         if (cell.innerHTML == '' + straight_data[current_char_pos]['digit'] &&
             cell_color == straight_data[current_char_pos]['color'] &&
-            current_char_pos == NUMBER_ELEMENTS_ALL - 1
+            current_char_pos == number_elements_all - 1
         ) {
-            clearInterval(exercise_timer_id);
-            blink_gorbov(cell)
+            clearInterval(exercise_timer_id)
+            blink_cell_gorbov(cell)
     
             btn_stop.style.setProperty('display', 'none')
             btn_again.style.setProperty('display', 'block')
@@ -231,7 +265,7 @@ function start_gorbov() {
             find_number_node.innerHTML = straight_data[++current_char_pos]['digit']
             find_number_node.style.setProperty(CELL_PROPERTY_TO_CHANGE_COLOR, straight_data[current_char_pos]['color'])
             
-            blink_gorbov(cell);
+            blink_cell_gorbov(cell)
     
             console.log('Верно → ' + cell.innerHTML);
         } else {
@@ -242,7 +276,7 @@ function start_gorbov() {
         }
     }
 
-    function blink_gorbov(cell) {
+    function blink_cell_gorbov(cell) {
         cell.style.setProperty('background-color','var(--cell-blink-color)')
         setTimeout(function() {
             if(TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) {
