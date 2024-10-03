@@ -193,7 +193,15 @@ function start_gorbov() {
 
     const CELL_PROPERTY_TO_CHANGE_COLOR = (TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) ? 'background-color' : 'color'
 
-    find_number_node.innerHTML = straight_data[0]['digit']
+
+    // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
+    if (mult_red_node) {
+        find_number_node.innerHTML = '' + mult_red + '×' + straight_data[0]['digit']/mult_red + ' = '
+    }
+    else {
+        find_number_node.innerHTML = straight_data[0]['digit']
+    }
+
     find_number_node.style.setProperty(CELL_PROPERTY_TO_CHANGE_COLOR, straight_data[0]['color'])
     if(TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) {
         find_number_node.style.setProperty('color', 'var(--cell-font-color-gorbov)')
@@ -262,7 +270,16 @@ function start_gorbov() {
         else if (cell.innerHTML == '' + straight_data[current_char_pos]['digit'] &&
             cell_color == straight_data[current_char_pos]['color']
         ) {
-            find_number_node.innerHTML = straight_data[++current_char_pos]['digit']
+            
+            // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
+            if (mult_red_node) {
+                let mult = straight_data[++current_char_pos]['color'] == GORBOV_COLOR_RED ? mult_red : mult_black
+                find_number_node.innerHTML = '' + mult + '×' + straight_data[current_char_pos]['digit']/mult + ' = '
+            }
+            else {
+                find_number_node.innerHTML = straight_data[++current_char_pos]['digit']
+            }
+
             find_number_node.style.setProperty(CELL_PROPERTY_TO_CHANGE_COLOR, straight_data[current_char_pos]['color'])
             
             blink_cell_gorbov(cell)
