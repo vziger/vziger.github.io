@@ -255,7 +255,7 @@ li{
 #switchers_error {
     visibility: hidden;
     color: rgb(255, 62, 95);
-    width: 400px;
+    width: 404px;
     margin-top: 8px;
 }
 
@@ -282,7 +282,7 @@ li{
 }
 
   
-#start_symbol:invalid {
+#start_symbol:invalid, #mult_red:invalid, #mult_black:invalid {
     background-color: lightpink;
 }
 
