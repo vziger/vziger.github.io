@@ -196,7 +196,7 @@ function start_gorbov() {
 
     // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
     if (mult_red_node) {
-        find_number_node.innerHTML = '' + mult_red + '×' + straight_data[0]['digit']/mult_red + ' = '
+        find_number_node.innerHTML = '' + mult_red + ' × ' + straight_data[0]['digit']/mult_red + ' = '
     }
     else {
         find_number_node.innerHTML = straight_data[0]['digit']
@@ -274,7 +274,7 @@ function start_gorbov() {
             // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
             if (mult_red_node) {
                 let mult = straight_data[++current_char_pos]['color'] == GORBOV_COLOR_RED ? mult_red : mult_black
-                find_number_node.innerHTML = '' + mult + '×' + straight_data[current_char_pos]['digit']/mult + ' = '
+                find_number_node.innerHTML = '' + mult + ' × ' + straight_data[current_char_pos]['digit']/mult + ' = '
             }
             else {
                 find_number_node.innerHTML = straight_data[++current_char_pos]['digit']
