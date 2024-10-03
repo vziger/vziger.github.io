@@ -259,12 +259,19 @@ function main_gorbov() {
         for (let i = 0; i < data.length; i++) {
             cell = document.querySelector('.cell[data-number="' + (i+1) + '"]')
             cell.innerHTML = data[i]['digit']
-            cell.style.removeProperty('padding-top')
             
             cell.style.setProperty(CELL_PROPERTY_TO_CHANGE_COLOR, data[i]['color'])
             if(TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) {
                 cell.style.setProperty('color', 'var(--cell-font-color-gorbov)')
             }
+
+            if(cell.innerHTML != '*'){
+                cell.style.removeProperty('padding-top')
+            }
+            else {
+                cell.style.setProperty('color', '#4e4e4e')
+            }
+
 
             cell.addEventListener('click', check_click);
         }
