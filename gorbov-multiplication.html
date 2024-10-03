@@ -49,6 +49,7 @@
                             <p class="p-2 m-0">Тренажёры</p>
                             <li class="nav-item py-1 ps-3"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
                             <li class="nav-item py-1 ps-3"><a class="nav-link" href="gorbov.html">Таблица Горбова</a></li>
+                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="gorbov-multiplication.html">Таблица Горбова, умножение</a></li>
                             <li class="nav-item pb-1 ps-3"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
                             <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
                         </ul>
@@ -133,13 +134,13 @@
                                         </div>
                                     </div>
                                     
-                                    <div class = "switch-container" style = "margin-top: -12px; margin-bottom: 0;">
+                                    <div class = "switch-container" style = "margin-top: -14px; margin-bottom: 0;">
                                         <div class="row align-items-center">
                                             <div class="col-3 p-0">
                                                 <label for="mult_red" class="col-form-label">Множитель красных</label>
                                             </div>
                                             <div class="col-2">
-                                                <input type="text" maxlength="2" min="1" max="10" id="mult_red" class="form-control" aria-describedby="help_inline_red" value="1" autocomplete="off" pattern="/^([1-9]|10)$/" required>
+                                                <input type="text" maxlength="2" min="1" max="10" id="mult_red" class="form-control" aria-describedby="help_inline_red" value="1" autocomplete="off" pattern="^([1-9]|10)$" required>
                                             </div>
                                             <div class="col-auto p-0">
                                                 <span id="help_inline_red" class="form-text">
@@ -164,13 +165,13 @@
                                         </div>
                                     </div>
 
-                                    <div class = "switch-container" style = "margin-top: -12px; margin-bottom: 0;">
+                                    <div class = "switch-container" style = "margin-top: -14px; margin-bottom: 0;">
                                         <div class="row align-items-center">
                                             <div class="col-3 p-0">
                                                 <label for="mult_black" class="col-form-label">Множитель чёрных</label>
                                             </div>
                                             <div class="col-2">
-                                                <input type="text" maxlength="2" min="1" max="10" id="mult_black" class="form-control" aria-describedby="help_inline_black" value="1" autocomplete="off" pattern="/^([1-9]|10)$/" required>
+                                                <input type="text" maxlength="2" id="mult_black" class="form-control" aria-describedby="help_inline_black" value="1" autocomplete="off" pattern="^([1-9]|10)$" required>
                                             </div>
                                             <div class="col-auto p-0">
                                                 <span id="help_inline_black" class="form-text">
@@ -213,7 +214,7 @@
                                     <div class="row justify-content-start" id="exercise_timer">00:00</div>
                                     <div class="row justify-content-start text-in-tests">
                                         <div class="col-10 p-0 align-items-center" id="find_number_title">Найдите число</div>
-                                        <div class="col-1 align-items-center d-flex justify-content-start" style="width: 190px;" id="find_number">1</div>
+                                        <div class="col-1 ps-3 align-items-center d-flex justify-content-start" style="width: 246px;" id="find_number">1</div>
                                     </div>
                                     <div class="row justify-content-center text-in-tests">&nbsp;</div>
                                 </div> <!-- div results-container -->
@@ -222,7 +223,7 @@
                                         <button class="schulte-btn" id="start_button" onclick="start_gorbov()">Начать&nbsp;тест</button>
                                         <button class="schulte-btn" id="again_button" onclick="start_gorbov()">Начать&nbsp;снова</button>
                                         <button class="schulte-btn" id="stop_button" onclick="stop_gorbov()">Остановить</button>
-                                        <button class="text-btn" id="show_settings" onclick="show_settings_g()">Показать настройки</button>
+                                        <button class="text-btn" id="show_settings" onclick="show_settings_gorbov()">Показать настройки</button>
                                     </div>
                                     <div class="row justify-content-center" id="switchers_error">&nbsp;</div>
                                 </div> <!-- div start-stop-container -->
