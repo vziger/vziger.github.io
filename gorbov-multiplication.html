@@ -28,9 +28,9 @@
         <script src="js/utils.js"></script>
         <script src="js/gorbov_scripts.js"></script>
         <script>
-            document.addEventListener("DOMContentLoaded", () => ready_gorbov(6));
+            document.addEventListener("DOMContentLoaded", () => ready_gorbov(5));
         </script>
-        <title>Таблица Горбова</title>
+        <title>Таблица Горбова, умножение</title>
     </head>
     <body>
         <nav class="navbar bg-white fixed-top">
@@ -69,9 +69,10 @@
             <div class="row block">
                 <div class="col">
                     <div class="row align-items-top">
-                        <div class = "col-8">
+                        <div class = "col-12 p-0">
                             <div class="d-flex justify-content-center align-items-center">
-                                <h2 id="schulte_title">Таблица Горбова</h2>
+                                <!-- <h2 id="schulte_title">Таблица Горбова,</h2> -->
+                                <h2 id="schulte_title" class="p-0">Таблица Горбова, умножение</h2>
                                 <button type="button" class="btn btn-secondary p-0 custom-popover-btn"
                                         data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
                                         data-bs-custom-class="popover-gorbov"
@@ -113,17 +114,6 @@
                                     <div class="cell" style="padding-top: 16px;" data-number="23">*</div>
                                     <div class="cell" style="padding-top: 16px;" data-number="24">*</div>
                                     <div class="cell" style="padding-top: 16px;" data-number="25">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="26">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="27">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="28">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="29">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="30">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="31">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="32">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="33">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="34">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="35">*</div>
-                                    <div class="cell" style="padding-top: 16px;" data-number="36">*</div>
                                 </div> <!-- div grid -->
                             </div> <!-- div col -->
                             <div class="col-4 align-items-center find-char-text">
@@ -142,6 +132,23 @@
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <div class = "switch-container" style = "margin-top: -12px; margin-bottom: 0;">
+                                        <div class="row align-items-center">
+                                            <div class="col-3 p-0">
+                                                <label for="mult_red" class="col-form-label">Множитель красных</label>
+                                            </div>
+                                            <div class="col-2">
+                                                <input type="number" maxlength="2" min="1" max="10" id="mult_red" class="form-control" aria-describedby="help_inline_red" value="1" autocomplete="off" required>
+                                            </div>
+                                            <div class="col-auto p-0">
+                                                <span id="help_inline_red" class="form-text">
+                                                  —&nbsp;&nbsp;&nbsp;от&nbsp;1 до&nbsp;10
+                                                </span>
+                                              </div>
+                                        </div>
+                                    </div>
+
                                     <div class = "switch-container">
                                         <div class="row align-items-center">
                                             <div class="col-3 p-0">Порядок чёрных</div>
@@ -169,6 +176,23 @@
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <div class = "switch-container" style = "margin-top: -12px; margin-bottom: 0;">
+                                        <div class="row align-items-center">
+                                            <div class="col-3 p-0">
+                                                <label for="mult_black" class="col-form-label">Множитель чёрных</label>
+                                            </div>
+                                            <div class="col-2">
+                                                <input type="number" maxlength="2" min="1" max="10" id="mult_black" class="form-control" aria-describedby="help_inline_black" value="1" autocomplete="off" required>
+                                            </div>
+                                            <div class="col-auto p-0">
+                                                <span id="help_inline_black" class="form-text">
+                                                  —&nbsp;&nbsp;&nbsp;от&nbsp;1 до&nbsp;10
+                                                </span>
+                                              </div>
+                                        </div>
+                                    </div>
+
                                     <div class = "switch-container">
                                         <div class="row align-items-center">
                                             <div class="col-3 p-0">Подсказка</div>
@@ -192,7 +216,7 @@
                                     </div>
                                     <div class="row justify-content-center text-in-tests">&nbsp;</div>
                                 </div> <!-- div results-container -->
-                                <div class="start-stop-container">
+                                <div class="start-stop-container" style="margin-top: 156px!important;">
                                     <div class="row justify-content-start">
                                         <button class="schulte-btn" id="start_button" onclick="start_gorbov()">Начать&nbsp;тест</button>
                                         <button class="schulte-btn" id="again_button" onclick="start_gorbov()">Начать&nbsp;снова</button>
