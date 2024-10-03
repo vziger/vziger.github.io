@@ -7,6 +7,8 @@ const TABLE_HINT_SHOW = 1
 const GORBOV_COLOR_RED = '#c10000'
 const GORBOV_COLOR_BLACK = '#1c1c1c'
 
+const REGEX_MULT = new RegExp("^([1-9]|10)$")
+
 let table_size_global
 let number_elements_all
 let number_elements_red
@@ -123,14 +125,48 @@ function stop_gorbov() {
     }
 }
 
-function show_settings_g() {
+function show_settings_gorbov() {
     stop_gorbov();
     btn_again.style.setProperty('display', 'none');
     btn_show_settings.style.setProperty('display', 'none');
 }
 
+function can_start_gorbov() {
+    let check_red = true
+    let check_black = true
+    if (mult_red_node) {
+        check_red = REGEX_MULT.test(mult_red_node.value)
+    }
+    if (mult_black_node) {
+        check_black = REGEX_MULT.test(mult_black_node.value)
+    }
+    return (check_red && check_black)
+}
 
 function start_gorbov() {
+    if (can_start_gorbov()) {
+        if (mult_red_node) {
+            find_number_node.style.setProperty('width', '246px')
+        }
+        main_gorbov()
+    }
+    else {
+        if(mult_red_node){
+            if(!REGEX_MULT.test(mult_red_node.value) && !REGEX_MULT.test(mult_black_node.value)){
+                error_text_node.innerHTML = 'Задайте оба множителя числом от 1 до 10'
+            }
+            else if(!REGEX_MULT.test(mult_red_node.value) && REGEX_MULT.test(mult_black_node.value)) {
+                error_text_node.innerHTML = 'Задайте множитель для красного ряда от 1 до 10'
+            }
+            else if(REGEX_MULT.test(mult_red_node.value) && !REGEX_MULT.test(mult_black_node.value)) {
+                error_text_node.innerHTML = 'Задайте множитель для чёрного ряда от 1 до 10'
+            }
+            error_text_node.style.setProperty('visibility', 'visible')
+        }
+    }
+}
+
+function main_gorbov() {
     const TABLE_ORDER_SELECTED_RED = document.querySelector('input[type="radio"][name="btnradio-char-order"]:checked').getAttribute('data-order')
     const TABLE_ORDER_SELECTED_BLACK = document.querySelector('input[type="radio"][name="btnradio-black-char-order"]:checked').getAttribute('data-order')
     const TABLE_COLOR_SETTING_SELECTED = document.querySelector('input[type="radio"][name="btnradio-color-setting"]:checked').getAttribute('data-color-setting')
@@ -256,6 +292,7 @@ function start_gorbov() {
     
             find_number_title_node.style.setProperty('visibility', 'visible')
             find_number_node.style.setProperty('visibility', 'visible')
+            find_number_node.style.setProperty('width', '60px')
     
             find_number_title_node.innerHTML = 'Всего ошибок: '
             find_number_node.innerHTML = number_errors

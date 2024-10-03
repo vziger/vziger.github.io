@@ -219,7 +219,6 @@ function start_schulte(){
         find_number_node.innerHTML = straight_data[0]
 
         kanzas_city_shuffle(cells_data)
-        // set_data_to_cells(cells_data, NUMBER_ELEMENTS)
         set_data_to_cells(cells_data)
 
         exercise_timer_id = setInterval(timer, 1000)
@@ -229,7 +228,7 @@ function start_schulte(){
             timer_node.innerHTML = seconds_to_time(timer_seconds)
         }
 
-        function set_data_to_cells(data, table_size) {
+        function set_data_to_cells(data) {
             for (let i = 0; i < data.length; i++) {
                 let cell = document.querySelector('.cell[data-number="' + (i+1) + '"]')
                 cell.innerHTML = data[i]
@@ -278,11 +277,10 @@ function start_schulte(){
     else {
         if (start_symbol_node.value == '') {
             error_text_node.innerHTML = 'Укажите первый символ'
-            error_text_node.style.setProperty('visibility', 'visible')
         }
         else {
             error_text_node.innerHTML = 'Первый символ должен быть из кириллицы'
-            error_text_node.style.setProperty('visibility', 'visible')
         }
+        error_text_node.style.setProperty('visibility', 'visible')
     }
 }
