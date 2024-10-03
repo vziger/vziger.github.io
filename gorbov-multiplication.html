@@ -139,7 +139,7 @@
                                                 <label for="mult_red" class="col-form-label">Множитель красных</label>
                                             </div>
                                             <div class="col-2">
-                                                <input type="number" maxlength="2" min="1" max="10" id="mult_red" class="form-control" aria-describedby="help_inline_red" value="1" autocomplete="off" required>
+                                                <input type="text" maxlength="2" min="1" max="10" id="mult_red" class="form-control" aria-describedby="help_inline_red" value="1" autocomplete="off" pattern="/^([1-9]|10)$/" required>
                                             </div>
                                             <div class="col-auto p-0">
                                                 <span id="help_inline_red" class="form-text">
@@ -170,7 +170,7 @@
                                                 <label for="mult_black" class="col-form-label">Множитель чёрных</label>
                                             </div>
                                             <div class="col-2">
-                                                <input type="number" maxlength="2" min="1" max="10" id="mult_black" class="form-control" aria-describedby="help_inline_black" value="1" autocomplete="off" required>
+                                                <input type="text" maxlength="2" min="1" max="10" id="mult_black" class="form-control" aria-describedby="help_inline_black" value="1" autocomplete="off" pattern="/^([1-9]|10)$/" required>
                                             </div>
                                             <div class="col-auto p-0">
                                                 <span id="help_inline_black" class="form-text">
@@ -179,7 +179,7 @@
                                               </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class = "switch-container">
                                         <div class="row align-items-center">
                                             <div class="col-3 p-0">Цветные</div>
@@ -213,7 +213,7 @@
                                     <div class="row justify-content-start" id="exercise_timer">00:00</div>
                                     <div class="row justify-content-start text-in-tests">
                                         <div class="col-10 p-0 align-items-center" id="find_number_title">Найдите число</div>
-                                        <div class="col-1 align-items-center d-flex justify-content-center" style="width: 60px;" id="find_number">1</div>
+                                        <div class="col-1 align-items-center d-flex justify-content-center" style="width: 154px;" id="find_number">1</div>
                                     </div>
                                     <div class="row justify-content-center text-in-tests">&nbsp;</div>
                                 </div> <!-- div results-container -->
