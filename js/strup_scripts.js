@@ -30,6 +30,9 @@ let error_text_node
 
 
 function ready_strup() {
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+    
     root_doc = document.documentElement
 
     delays = make_delays_array(300, 300, 10)
