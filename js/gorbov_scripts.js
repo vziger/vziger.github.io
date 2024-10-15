@@ -151,6 +151,7 @@ function start_gorbov() {
         main_gorbov()
     }
     else {
+        // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
         if(mult_red_node){
             if(!REGEX_MULT.test(mult_red_node.value) && !REGEX_MULT.test(mult_black_node.value)){
                 error_text_node.innerHTML = 'Задайте оба множителя числом от 1 до 10'
@@ -171,6 +172,7 @@ function main_gorbov() {
     const TABLE_ORDER_SELECTED_BLACK = document.querySelector('input[type="radio"][name="btnradio-black-char-order"]:checked').getAttribute('data-order')
     const TABLE_COLOR_SETTING_SELECTED = document.querySelector('input[type="radio"][name="btnradio-color-setting"]:checked').getAttribute('data-color-setting')
     const TABLE_HINT_SELECTED = document.querySelector('input[type="radio"][name="btnradio-hint"]:checked').getAttribute('data-hint')
+    const CELL_PROPERTY_TO_CHANGE_COLOR = (TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) ? 'background-color' : 'color'
 
 
     // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
@@ -209,8 +211,8 @@ function main_gorbov() {
     // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
     if (mult_red_node) {
         number_elements_all = number_elements_red + number_elements_black
-        cells_data_red   = multiply_array(cells_data_red, mult_red)
-        cells_data_black = multiply_array(cells_data_black, mult_black)
+        cells_data_red      = multiply_gorbov_array(cells_data_red, mult_red)
+        cells_data_black    = multiply_gorbov_array(cells_data_black, mult_black)
     }
     // ********************************************
 
@@ -223,20 +225,13 @@ function main_gorbov() {
     if (mult_red_node) {
         let el = {digit: '*', color: 'var(--cell-background-color)'}
         cells_data_all.push(el, el, el, el, el)
-    }
-    // ********************************************
-
-
-    const CELL_PROPERTY_TO_CHANGE_COLOR = (TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) ? 'background-color' : 'color'
-
-
-    // ****** ДЛЯ ГОРБОВА-УМНОЖЕНИЕ **************
-    if (mult_red_node) {
         find_number_node.innerHTML = '' + mult_red + ' × ' + straight_data[0]['digit']/mult_red + ' = '
     }
     else {
         find_number_node.innerHTML = straight_data[0]['digit']
     }
+    // ********************************************
+
 
     find_number_node.style.setProperty(CELL_PROPERTY_TO_CHANGE_COLOR, straight_data[0]['color'])
     if(TABLE_COLOR_SETTING_SELECTED == TABLE_COLOR_SETTING_CELLS) {
@@ -245,6 +240,7 @@ function main_gorbov() {
     
     kanzas_city_shuffle(cells_data_all)
     set_data_to_cells(cells_data_all)
+    add_click_listeners(cells_data_all)
     
     exercise_timer_id = setInterval(timer, 1000)
 
@@ -269,14 +265,28 @@ function main_gorbov() {
                 cell.style.removeProperty('padding-top')
             }
             else {
+                cell.style.setProperty('padding-top', 'var(--asterisk-shift-pdt)')
                 cell.style.setProperty('color', '#4e4e4e')
             }
-
-
-            cell.addEventListener('click', check_click);
         }
         root_doc.style.setProperty('--cell-blur', 'blur(0px)')
         root_doc.style.setProperty('--cell-cursor', 'pointer')
+    }
+
+    function add_click_listeners(data) {
+        let cell
+        for (let i = 0; i < data.length; i++) {
+            cell = document.querySelector('.cell[data-number="' + (i+1) + '"]')
+            cell.addEventListener('click', check_click)
+        }
+    }
+
+    function remove_click_listeners(data) {
+        let cell
+        for (let i = 0; i < data.length; i++) {
+            cell = document.querySelector('.cell[data-number="' + (i+1) + '"]')
+            cell.removeEventListener('click', check_click)
+        }
     }
 
     function check_click(event) {
@@ -292,6 +302,8 @@ function main_gorbov() {
         ) {
             clearInterval(exercise_timer_id)
             blink_cell_gorbov(cell)
+
+            remove_click_listeners(cells_data_all)
     
             btn_stop.style.setProperty('display', 'none')
             btn_again.style.setProperty('display', 'block')
@@ -309,7 +321,7 @@ function main_gorbov() {
     
             current_char_pos++
     
-            console.log('Верно → ' + cell.innerHTML)
+            console.log('Верно → ' + cell.innerHTML + ', ' + cell_color)
         }
         else if (cell.innerHTML == '' + straight_data[current_char_pos]['digit'] &&
             cell_color == straight_data[current_char_pos]['color']
@@ -328,11 +340,11 @@ function main_gorbov() {
             
             blink_cell_gorbov(cell)
     
-            console.log('Верно → ' + cell.innerHTML);
+            console.log('Верно → ' + cell.innerHTML + ', ' + cell_color)
         } else {
             number_errors++
     
-            console.log('Не верно, нажато → ' + cell.innerHTML);
+            console.log('Не верно, нажато → ' + cell.innerHTML + ', ' + cell_color);
             console.log('Количество ошибок = ' + number_errors);
         }
     }

@@ -40,7 +40,7 @@ function generate_gorbov_array(size, color) {
 }
 
 
-function multiply_array(arr, mult) {
+function multiply_gorbov_array(arr, mult) {
     a = arr.slice()
     a.forEach((item) => {
         item['digit'] = item['digit'] * mult;
@@ -63,7 +63,7 @@ function concat_gorbov_red_and_black_arrays(red_arr, black_arr) {
 }
 
 
-function componentToHex(comp) {
+function component_to_hex(comp) {
     return comp.length == 1 ? "0" + comp : comp;
 }
 
@@ -80,7 +80,7 @@ function get_hex_color(element, styleColor) {
     r = parseInt(rgb[0]).toString(16)
     g = parseInt(rgb[1]).toString(16)
     b = parseInt(rgb[2]).toString(16)
-    return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b)
+    return '#' + component_to_hex(r) + component_to_hex(g) + component_to_hex(b)
 }
 
 
@@ -135,21 +135,21 @@ function animate({timing, draw, duration}) {
     });
 }
 
-function draw(dom_element, progress){
+function draw(dom_element, progress) {
     dom_element.style.left = progress * coords[0] + "px";
     dom_element.style.top  = progress * coords[1] + "px";
 }
 // ********************************************************
 
 
-function insert_nav(){
+function insert_nav() {
     fetch('navigation.html', { mode: 'no-cors' })
     .then(response => response.text())
     .then(navigation => document.getElementById('navbar').innerHTML = navigation);
 }
 
 
-function scrollFunction(mybutton) {
+function show_scroll_button(mybutton) {
     if (
       document.body.scrollTop > 200 ||
       document.documentElement.scrollTop > 200
@@ -158,9 +158,51 @@ function scrollFunction(mybutton) {
     } else {
       mybutton.style.display = "none";
     }
-  }
+}
 
-  function backToTop() {
+
+function back_to_top() {
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
-  }
+}
+
+
+function set_pos_dom_element(el, position, left, top){
+    if(position) {
+        el.style.setProperty('position', position)
+    }
+    el.style.setProperty('left', left + 'px')
+    el.style.setProperty('top', top + 'px')
+}
+
+
+function get_property_int_value(el, property) {
+    let res = window.getComputedStyle(el, null).getPropertyValue(property)
+    return +res.substring(0, res.length - 2)
+}
+
+
+// **** Струп ***************
+function make_delays_array(start, step, size) {
+    let arr = new Array(size)
+    arr[0] = start
+    for (let i = 1; i < size; i++) {
+        arr[i] = arr[i - 1] + step
+    }
+    return arr.reverse()
+}
+
+function get_random_int(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function set_event_listener_escape_fullscreen_mode(dom_element){
+    document.addEventListener('keyup', function(event) {
+        if (event.code == 'Escape') {
+            event.preventDefault()
+            if (dom_element.style.getPropertyValue('position') == 'absolute'){
+                stop_running()
+            }
+        }
+    });
+}

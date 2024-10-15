@@ -220,6 +220,7 @@ function start_schulte(){
 
         kanzas_city_shuffle(cells_data)
         set_data_to_cells(cells_data)
+        add_click_listeners(cells_data)
 
         exercise_timer_id = setInterval(timer, 1000)
 
@@ -233,20 +234,35 @@ function start_schulte(){
                 let cell = document.querySelector('.cell[data-number="' + (i+1) + '"]')
                 cell.innerHTML = data[i]
                 cell.style.removeProperty('padding-top');
-                
-                cell.addEventListener('click', check_click);
             }
             root_doc.style.setProperty('--cell-blur', 'blur(0px)');
             root_doc.style.setProperty('--cell-cursor', 'pointer');
         }
-        
+
+        function add_click_listeners(data) {
+            let cell
+            for (let i = 0; i < data.length; i++) {
+                cell = document.querySelector('.cell[data-number="' + (i+1) + '"]')
+                cell.addEventListener('click', check_click)
+            }
+        }
+
+        function remove_click_listeners(data) {
+            let cell
+            for (let i = 0; i < data.length; i++) {
+                cell = document.querySelector('.cell[data-number="' + (i+1) + '"]')
+                cell.removeEventListener('click', check_click)
+            }
+        }
         
         function check_click(event) {
             let cell = event.target || event.srcElement;
             if (cell.innerHTML == '' + straight_data[current_char_pos] && current_char_pos == NUMBER_ELEMENTS - 1) {
                 clearInterval(exercise_timer_id);
                 blink(cell)
-        
+
+                remove_click_listeners(cells_data)
+
                 btn_stop.style.setProperty('display', 'none')
                 btn_again.style.setProperty('display', 'block')
                 btn_show_settings.style.setProperty('display', 'block')

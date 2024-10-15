@@ -80,7 +80,7 @@ function ready() {
 
     set_event_listeners_to_direction_radios()
     set_event_listeners_to_change_velocity_buttons()
-    set_event_listener_escape_fullscreen_mode()
+    set_event_listener_escape_fullscreen_mode(box_for_dot)
 
     fullscreen_text_container.addEventListener('click', function(){
         full_screen_checkbox.checked = !full_screen_checkbox.checked
@@ -167,19 +167,6 @@ function set_event_listeners_to_change_velocity_buttons(){
             }
         })
     }
-}
-
-function set_event_listener_escape_fullscreen_mode(){
-    document.addEventListener('keyup', function(event) {
-        if (event.code == 'Escape') {
-            event.preventDefault();
-            let box_position_property = box_for_dot.style.getPropertyValue('position')
-            if (box_position_property == 'absolute'){
-                stop_running()
-            }
-            console.log(box_for_dot.style.getPropertyValue('position'))
-        }
-    });
 }
 
 
@@ -318,14 +305,9 @@ function init_state() {
     timer_node.innerHTML = '00:00'
 }
 
-function set_pos_dom_element(el, position, left, top){
-    el.style.setProperty('position', position)
-    el.style.setProperty('left', left + 'px')
-    el.style.setProperty('top', top + 'px')
-}
 
 function resize_box(make_bigger){
-    if(make_bigger){
+    if(make_bigger) {
         box_background.style.setProperty('display', 'block')
         start_stop_container.style.setProperty('position', 'absolute')
 
@@ -343,7 +325,7 @@ function resize_box(make_bigger){
         box_size = mm
         root_doc.style.setProperty('--box-for-dot-size', mm + 'px')    
     }
-    else{
+    else {
         box_background.style.setProperty('display', 'none')
         start_stop_container.style.setProperty('position', 'relative')
 
@@ -368,8 +350,8 @@ function resize_box(make_bigger){
 
 
 function check_velocity_input(){
-    a = input_velocity.value
-    b = (a!= "" && !Number.isNaN(a))
+    let a = input_velocity.value
+    let b = (a != "" && !Number.isNaN(a))
     console.log(b)
     return b
 }
@@ -460,6 +442,7 @@ function stop_running(){
 
     const DIRECTION_SELECTED = +document.querySelector('input[type="radio"][name="btnradio-direction"]:checked').getAttribute('data-direction')
     set_initial_position(DIRECTION_SELECTED)
+
     velocity = Math.abs(velocity)
 }
 
