@@ -139,7 +139,14 @@ function get_word() {
 
     set_pos_dom_element(strup_playground, '', left, top)
     
-    strup_playground.style.setProperty(colored_property, COLOR_HEX[get_random_int(0, COLOR_HEX.length - 1 )])
+    let color = COLOR_HEX[get_random_int(0, COLOR_HEX.length - 1 )]
+    strup_playground.style.setProperty(colored_property, color)
+    if (color == '#ffcd4d') {
+        strup_playground.style.setProperty('text-shadow', '.5px .5px #C58D00')
+    }
+    else {
+        strup_playground.style.removeProperty('text-shadow')
+    }
     strup_playground.style.visibility = 'visible';
 }
 
