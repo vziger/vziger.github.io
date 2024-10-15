@@ -11,6 +11,9 @@
     /* running point */
     --box-for-dot-size: 608px;
     --dot-size: 48px;
+
+    /* strup */
+    --box-for-strup-size: 608px;
  }
 
 
@@ -292,10 +295,8 @@ li{
     text-align: start;
 }
 
-#box_for_dot {
+#box_for_dot{
     position: relative;
-    width: var(--box-for-dot-size);
-    height: var(--box-for-dot-size);
     border: 1px solid #e0e0e0;
     background-color: #fff;
     transition: width 2s ease-out;
@@ -304,6 +305,11 @@ li{
     transition: left 2s ease-out;
     transition: top 2s ease-out;
     z-index: 20;
+}
+
+#box_for_dot{
+    width: var(--box-for-dot-size);
+    height: var(--box-for-dot-size);
 }
 
 #running_dot {
@@ -392,4 +398,32 @@ input[type="number"]:hover,
 input[type="number"]:focus {
     appearance: none;
     -moz-appearance: textfield;
+}
+
+#strup_box {
+    position: relative;
+    width: var(--box-for-strup-size);
+    height: var(--box-for-strup-size);
+    border: 1px solid #e0e0e0;
+    background-color: #fff;
+    transition: width 2s ease-out;
+    transition: height 2s ease-out;
+    transition: position 2s ease-out;
+    transition: left 2s ease-out;
+    transition: top 2s ease-out;
+    z-index: 20;
+}
+
+#strup_playground{
+    position: absolute;
+    font-size: 60px;
+    line-height: 60px;
+    font-weight: 800;
+    z-index: 30;
+    display: none;
+    transition: position 1s ease-out;
+}
+
+.btn-close:focus {
+    box-shadow: unset;
 }

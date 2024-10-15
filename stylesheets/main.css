@@ -86,9 +86,17 @@ html *
     font-size: 40px;
     border-radius: 28px;
     border: 0px solid #FFCD4D;
+    color: var(--bs-body-color);
 }
 .main-btn:hover{
     background-color: #ffc022;
+}
+.main-btn:visited{
+    text-decoration-color: #ffcd4d;
+    color: var(--bs-body-color);
+}
+.main-btn:hover:visited {
+    text-decoration-color: #ffc022;
 }
 
 .schulte-btn{
