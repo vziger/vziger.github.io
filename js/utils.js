@@ -182,6 +182,17 @@ function get_property_int_value(el, property) {
 }
 
 
+// *** Бегающая точка && Струп ******
+function check_velocity_input(velocity_value){
+    let res = (velocity_value != "" && !Number.isNaN(velocity_value))
+    if (res) {
+        res = Number(velocity_value) > 0 && Number(velocity_value) < 11
+    }
+    console.log(res)
+    return res
+}
+
+
 // **** Струп ***************
 function make_delays_array(start, step, size) {
     let arr = new Array(size)
@@ -196,12 +207,13 @@ function get_random_int(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function set_event_listener_escape_fullscreen_mode(dom_element){
+function set_event_listener_escape_fullscreen_mode(dom_element, callback_func){
     document.addEventListener('keyup', function(event) {
         if (event.code == 'Escape') {
             event.preventDefault()
             if (dom_element.style.getPropertyValue('position') == 'absolute'){
-                stop_running()
+                // stop_running()
+                callback_func()
             }
         }
     });

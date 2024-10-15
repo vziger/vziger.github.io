@@ -80,7 +80,7 @@ function ready() {
 
     set_event_listeners_to_direction_radios()
     set_event_listeners_to_change_velocity_buttons()
-    set_event_listener_escape_fullscreen_mode(box_for_dot)
+    set_event_listener_escape_fullscreen_mode(box_for_dot, stop_running)
 
     fullscreen_text_container.addEventListener('click', function(){
         full_screen_checkbox.checked = !full_screen_checkbox.checked
@@ -349,16 +349,8 @@ function resize_box(make_bigger){
 }
 
 
-function check_velocity_input(){
-    let a = input_velocity.value
-    let b = (a != "" && !Number.isNaN(a))
-    console.log(b)
-    return b
-}
-
-
 function start_running() {
-    if(check_velocity_input()){
+    if(check_velocity_input(input_velocity.value)){
         const DIRECTION_SELECTED = +document.querySelector('input[type="radio"][name="btnradio-direction"]:checked').getAttribute('data-direction')
         // const VELOCITY_SELECTED  = +document.querySelector('input[type="radio"][name="btnradio-velocity"]:checked').getAttribute('data-velocity')
         const VELOCITY_SELECTED = Number(input_velocity.value)

@@ -26,9 +26,7 @@ let navbar_node
 let navbar_container
 
 let btn_navbar
-let btn_start
-let btn_stop
-let start_stop_container
+let error_text_node
 
 
 function ready_strup() {
@@ -51,12 +49,10 @@ function ready_strup() {
     navbar_container = document.getElementById('navbar_container')
 
     btn_navbar = document.getElementById('navbar_button')
-    btn_start  = document.getElementById('start_button')
-    btn_stop   = document.getElementById('stop_button')
-    start_stop_container = document.getElementById('start_stop_container')
+    error_text_node = document.getElementById('switchers_error')
 
     set_event_listeners_to_change_velocity_buttons()
-    set_event_listener_escape_fullscreen_mode(strup_box)
+    set_event_listener_escape_fullscreen_mode(strup_box, stop_strup)
 }
 
 
@@ -152,21 +148,29 @@ function get_word() {
 
 
 function start_strup() {
-    const WHAT_COLORED__SELECTED = document.querySelector('input[type="radio"][name="btnradio-what-colored"]:checked').getAttribute('data-what-colored')
-    const DELAY__SELECTED = Number(input_velocity.value)
-    const FREQUENCY__SELECTED = document.querySelector('input[type="radio"][name="btnradio-frequency"]:checked').getAttribute('data-frequency')
-
-    frequency_break_word = FREQUENCIES[+FREQUENCY__SELECTED]
-    words_delay          = delays[DELAY__SELECTED - 1]
-    colored_property     = WHAT_COLORED__SELECTED == WHAT_COLORED_SETTING__BCKGR ? 'color' : 'background-color'
-    bw_property          = WHAT_COLORED__SELECTED == WHAT_COLORED_SETTING__BCKGR ? 'background-color' : 'color'
-
-    show_hide_lorem_colors(false)
-    resize_playground(true)
-    strup_playground.style.setProperty(bw_property, 'white')
-
-    get_word()
-    exercise_interval_id = setInterval(get_word, words_delay)
-    
     console.log('start_strup')
+
+    if (check_velocity_input(input_velocity.value)) {
+        const WHAT_COLORED__SELECTED = document.querySelector('input[type="radio"][name="btnradio-what-colored"]:checked').getAttribute('data-what-colored')
+        const DELAY__SELECTED = Number(input_velocity.value)
+        const FREQUENCY__SELECTED = document.querySelector('input[type="radio"][name="btnradio-frequency"]:checked').getAttribute('data-frequency')
+
+        frequency_break_word = FREQUENCIES[+FREQUENCY__SELECTED]
+        words_delay          = delays[DELAY__SELECTED - 1]
+        colored_property     = WHAT_COLORED__SELECTED == WHAT_COLORED_SETTING__BCKGR ? 'color' : 'background-color'
+        bw_property          = WHAT_COLORED__SELECTED == WHAT_COLORED_SETTING__BCKGR ? 'background-color' : 'color'
+
+        error_text_node.style.setProperty('visibility', 'hidden')
+        show_hide_lorem_colors(false)
+        resize_playground(true)
+        strup_playground.style.setProperty(bw_property, 'white')
+
+        get_word()
+        exercise_interval_id = setInterval(get_word, words_delay)
+    }
+    else {
+        error_text_node.innerHTML = 'Задайте скорость появления слов от 1 до 10'
+        error_text_node.style.setProperty('visibility', 'visible')
+    }
+    
 }
