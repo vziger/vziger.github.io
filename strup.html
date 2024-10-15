@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="favicon.ico">
+        <link rel="apple-touch-icon" sizes="57x57" href="img/favicons/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="img/favicons/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="img/favicons/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="img/favicons/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="img/favicons/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="img/favicons/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="img/favicons/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="img/favicons/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="img/favicons/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="img/favicons/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="img/favicons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="img/favicons/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="img/favicons/favicon-16x16.png">
+        <link rel="manifest" href="img/favicons/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="img/favicons/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+        <link rel="stylesheet" href="stylesheets/schulte.css">
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/strup_scripts.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => ready_strup());
+        </script>
+        <title>Таблица Горбова</title>
+    </head>
+    <body>
+        <nav class="navbar fixed-top" id="navbar">
+            <div class="container-fluid w-25 pt-2 position-absolute top-0 start-0 focus-ring" id="navbar_container">
+                <button class="navbar-toggler" type="button" id="navbar_button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="width: 300px;">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Меню</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                            <li class="nav-item"><a class="nav-link" aria-current="page" href="index.html">Главная</a></li>
+                            <p class="p-2 m-0">Тренажёры</p>
+                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
+                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="gorbov.html">Таблица Горбова</a></li>
+                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="gorbov-multiplication.html">Таблица Горбова, умножение</a></li>
+                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="strup.html">Тест Струпа</a></li>
+                            <li class="nav-item pb-1 ps-3"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
+                            <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
+                        </ul>
+                    </div>
+                    <div class="container p-0">
+                        <div class="offcanvas-body align-items-end">
+                            <div>
+                                Разработка: <a class="link-secondary link-offset-1 link-underline-opacity-50 link-underline-opacity-75-hover" target="_blank"
+                                style="text-decoration-thickness: 1px;"
+                                rel="noopener" href="https://t.me/vebebev">@vebebev</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="row block">
+                <div class="col">
+                    <div class="row align-items-top">
+                        <div class = "col-8">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <h2 id="schulte_title">Тест Струпа</h2>
+                                <button type="button" class="btn btn-secondary p-0 custom-popover-btn"
+                                        data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
+                                        data-bs-custom-class="popover-gorbov"
+                                        data-bs-title="Тест Струпа"
+                                        data-bs-content="">?
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <div class="row align-items-top">
+                            <div class = "col" style="z-index:10">
+                                <div class="row justify-content-center">
+                                    <div class="p-0" id="strup_box">
+                                        <div name="text-color" class="p-3" style="margin: 20px 20px; font-weight: 600; font-size:32px; line-height:32px; width: fit-content; color: white; background-color: #EC6A3A;">СИНИЙ</div>
+                                        <div name="text-color" class="p-3" style="margin: 20px 80px; font-weight: 600; font-size:32px; line-height:32px; width: fit-content; color: white; background-color: #0D2E7B;">КРАСНЫЙ</div>
+                                        <div name="text-color" class="p-3" style="margin: 20px 140px; font-weight: 600; font-size:32px; line-height:32px; width: fit-content; color: white; background-color: #22C285;">ФИОЛЕТОВЫЙ</div>
+                                        <div name="text-color" class="p-3" style="margin: 20px 200px; font-weight: 600; font-size:32px; line-height:32px; width: fit-content; color: white; background-color: #C10000;">ЖЁЛТЫЙ</div>
+                                        <div name="text-color" class="p-3" style="margin: 20px 260px; font-weight: 600; font-size:32px; line-height:32px; width: fit-content; color: white; background-color: #51BAE2;">ОРАНЖЕВЫЙ</div>
+                                        <div name="text-color" class="p-3" style="margin: 20px 320px; font-weight: 600; font-size:32px; line-height:32px; width: fit-content; color: white; background-color: #ffcd4d;">ЗЕЛЁНЫЙ</div>
+                                        <div name="text-color" class="p-3" style="margin: 20px 380px; font-weight: 600; font-size:32px; line-height:32px; width: fit-content; color: white; background-color: #700661;">ГОЛУБОЙ</div>
+                                        <div class="px-4 py-3" id="strup_playground">
+                                            &nbsp;
+                                        </div>
+                                        <button id="close_exercise" type="button" role="button" class="btn-close p-3 position-absolute top-0 end-0" aria-label="Close" style="display: none;" onclick="stop_strup()"></button>
+                                    </div>
+                                </div>
+                            </div> <!-- div col -->
+                            <div class="col-4 align-items-center find-char-text">
+                                <div class="all-switchers-container">
+                                    <div class = "switch-container">
+                                        <div class="row align-items-center">
+                                            <div class="col-3 p-0">Выделять цветом</div>
+                                            <div class="col">
+                                                <div class="btn-group" role="group" aria-label="Button group — characters order">
+                                                    <input type="radio" class="btn-check" name="btnradio-what-colored" id="btnradio-what-colored-1" data-what-colored="1" autocomplete="off" checked>
+                                                    <label class="btn btn-outline-primary px-3" for="btnradio-what-colored-1">Фон</label>
+                                                
+                                                    <input type="radio" class="btn-check" name="btnradio-what-colored" id="btnradio-what-colored-2" data-what-colored="2" autocomplete="off">
+                                                    <label class="btn btn-outline-primary" for="btnradio-what-colored-2">Слово</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container what-colored -->
+                                    <div class = "switch-container">
+                                        <div class="row align-items-start">
+                                            <div class="col-3" style="padding: 10px 0 6px;">Скорость слов</div>
+                                            <div class="col">
+                                                <div class="input-group" style="width: 48%;">
+                                                    <input type="number" min="1" max="10" class="form-control" id="input_velocity" placeholder="1 ... 10" value="1" autocomplete="off" required aria-label="velocity switcher">
+                                                    <button class="btn btn-outline-secondary" type="button" id="btn_velocity_decrease" name="btn-change-velocity" data-change="-1" style="font-weight:800;">—</button>
+                                                    <button class="btn btn-outline-secondary" type="button" id="btn_velocity_increase" name="btn-change-velocity" data-change="1" style="font-size: 30px; line-height: 30px;">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container velocity -->
+                                    <div class = "switch-container">
+                                        <div class="row align-items-start">
+                                            <div class="col-3" style="padding: 6px 0 6px;">Частота «хлопков»</div>
+                                            <div class="col">
+                                                <div class="btn-group-vertical" role="group" aria-label="Button group — frequency">
+                                                    <input type="radio" class="btn-check" name="btnradio-frequency" id="btnradio-frequency-1" autocomplete="off" data-frequency="0" checked onclick="">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-frequency-1">Без «хлопков»</label>
+                                                
+                                                    <input type="radio" class="btn-check" name="btnradio-frequency" id="btnradio-frequency-2" autocomplete="off" data-frequency="1" onclick="">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-frequency-2">Редко&nbsp;</label>
+                                                
+                                                    <input type="radio" class="btn-check" name="btnradio-frequency" id="btnradio-frequency-3" autocomplete="off" data-frequency="2" onclick="">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-frequency-3">Средне</label>
+
+                                                    <input type="radio" class="btn-check" name="btnradio-frequency" id="btnradio-frequency-4" autocomplete="off" data-frequency="3" onclick="">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-frequency-4">Часто</label>
+
+                                                    <input type="radio" class="btn-check" name="btnradio-frequency" id="btnradio-frequency-5" autocomplete="off" data-frequency="4" onclick="">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-frequency-5">Очень часто</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container frequency -->
+                                </div> <!-- div all-switchers-container -->
+                                <div class="start-stop-container" style="margin-top: 166px!important;" id="start_stop_container">
+                                    <div class="row justify-content-start">
+                                        <button class="schulte-btn" id="start_button" onclick="start_strup()">Начать&nbsp;тест</button>
+                                    </div>
+                                    <div class="row justify-content-center" id="switchers_error">&nbsp;</div>
+                                </div> <!-- div start-stop-container -->
+                            </div> <!-- div col align-items-center find-char-text -->
+                        </div> <!-- row align-items-top-->
+                    </div> <!-- div table-container -->
+                </div> <!-- div col -->
+            </div> <!-- row block -->
+        </div> <!-- div container -->
+    </body>
+</html>
