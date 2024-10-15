@@ -108,6 +108,9 @@ html *
 .schulte-btn:hover{
     background-color: #ffc022;
 }
+.schulte-btn:focus-visible, .schulte-btn:focus{
+    outline-color: transparent;
+}
 
 .text-btn {
     width: 400px;
