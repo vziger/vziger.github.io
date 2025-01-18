@@ -1,3 +1,30 @@
+const compare_numbers = (a, b) => a - b
+const compare_arrays = (a, b) =>
+    a.length === b.length &&
+    a.every((element, index) => element === b[index]);
+    
+const rearange_by_pos = function(a, b){
+    let atop  = a.style.top;
+    let aleft = a.style.left;
+    let btop  = b.style.top;
+    let bleft = b.style.left;
+    atop = atop.substring(0, atop.length - 2)
+    aleft = aleft.substring(0, aleft.length - 2)
+    btop = btop.substring(0, btop.length - 2)
+    bleft = bleft.substring(0, bleft.length - 2)
+
+    if(aleft == bleft && atop == btop) return 0;
+    else {
+        if(atop < btop) return -1
+        else if( atop > btop) return 1;                   
+        else { // same
+            if(aleft < bleft) return -1;
+            else return 1;
+        }
+    }
+}
+
+
 function seconds_to_time(total_seconds) {
     let hours   = Math.floor(total_seconds / 3600)
     let minutes = Math.floor((total_seconds - (hours * 3600)) / 60)
@@ -177,7 +204,7 @@ function set_pos_dom_element(el, position, left, top){
 
 
 function get_property_int_value(el, property) {
-    let res = window.getComputedStyle(el, null).getPropertyValue(property)
+    let res = getComputedStyle(el, null).getPropertyValue(property)
     return +res.substring(0, res.length - 2)
 }
 
@@ -188,7 +215,7 @@ function check_velocity_input(velocity_value){
     if (res) {
         res = Number(velocity_value) > 0 && Number(velocity_value) < 11
     }
-    console.log(res)
+    console.log('check_velocity_input =', res)
     return res
 }
 
@@ -218,3 +245,4 @@ function set_event_listener_escape_fullscreen_mode(dom_element, callback_func){
         }
     });
 }
+
