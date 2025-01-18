@@ -59,7 +59,7 @@ html *
 }
 
 .subtitle{
-    font-size: 40px;
+    font-size: 25px;
 }
 
 .text{
@@ -75,7 +75,7 @@ html *
 }
 
 .d-main-form {
-    height: 37%;
+    height: 30%;
 }
 
 .main-btn{
@@ -178,7 +178,7 @@ li{
         margin-bottom: 24px;
     }
     .title-wrapper {
-        margin-bottom: 64px;
+        margin-bottom: 80px;
     }
     .title-wrapper div:first-child {
         order: 2;
@@ -189,7 +189,7 @@ li{
         margin-top: 0;
     }
     .subtitle {
-        font-size: 40px;
+        font-size: 30px;
     }
     .text {
         font-size: 22px;
@@ -218,7 +218,7 @@ li{
         padding-right: 20px;
     }
     .d-main-form {
-        height: 37%;
+        height: 30%;
         min-width: 100%;
     }
     .main-form {
