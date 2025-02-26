@@ -1,8 +1,9 @@
 // gen: {0: white, 1: red, 2: red-top-left, 3: red-top-right, 4: red-bottom-right, 5: red-bottom-left}
 const CELL_CLASSES = ['koos-cell-white', 'koos-cell-red', 'koos-cell-topleft', 'koos-cell-topright', 'koos-cell-bottomright', 'koos-cell-bottomleft']
 const IMAGE_RAND_SELECTIVE__RANDOM = 1
-const TABLE_SIZE    = [[2, 2], [3, 2], [3,3]]
-const MAX_NUM_CUBES = 9
+const TABLE_SIZE      = [[2, 2], [3, 2], [3,3]]
+const MAX_NUM_CUBES   = 9
+const INIT_TABLE_SIZE = 3
 
 // let exercise_title_container = null
 let btn_close_exercise = null
@@ -19,6 +20,7 @@ let result_container = null
 
 let btn_start = null
 let btn_again = null
+let btn_show_settings = null
 
 let cubes_array
 let solvation_array
@@ -27,8 +29,12 @@ let current_droppable = null
 let empty_under_current_drugging = null
 let rect_empty_under_current_drugging = null
 
+let root_doc
 
-function ready_koos(table_size_horizontal) {
+
+function ready_koos() {
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
     // exercise_title_container = document.getElementById('exercise_title_container')
     btn_close_exercise = document.getElementById('close_exercise')
     koos_task_grid     = document.getElementById('koos_task_grid')
@@ -40,10 +46,13 @@ function ready_koos(table_size_horizontal) {
     free_cubes_container     = document.getElementById('free_cubes_container')
     result_container         = document.getElementById('result_container')
 
-    koos_solvation_grid.style.setProperty('grid-template-columns', 'repeat(' + table_size_horizontal + ', var(--cell-size-koos))')
+    koos_solvation_grid.style.setProperty('grid-template-columns', 'repeat(' + INIT_TABLE_SIZE + ', var(--cell-size-koos))')
 
     btn_start = document.getElementById('start_button')
     btn_again = document.getElementById('again_button')
+    btn_show_settings = document.getElementById('show_settings')
+
+    root_doc = document.documentElement
 }
 
 
@@ -64,40 +73,45 @@ function update_task_image(size_vert, size_hor) {
 
 function create_new_cells_for_koos_table(size_vert, size_hor, grid_element, /*bool*/add_cell_fill, cssname_to_select_cells, cssname_to_select_containers) {
     let new_cell, cell_container
-    for (let i = 0; i < size_hor*size_vert; i++) {
+    let grid_size = size_hor*size_vert
+    grid_element.style.visibility = 'hidden'
+    for (let i = 0; i < grid_size; i++) {
         cell_container = document.createElement('div')
         cell_container.classList.add('koos-cell-container')
         cell_container.setAttribute('name', cssname_to_select_containers)
-        cell_container.style.setProperty('border-style', koos_cell_container_border_style)
+        // cell_container.style.setProperty('border-style', koos_cell_container_border_style)
 
         new_cell = document.createElement('div')
         new_cell.setAttribute('name', cssname_to_select_cells)
         if (add_cell_fill) {
-            new_cell.classList.add('koos-cell-topleft')
+            if (grid_size == 9 && i == 4) {
+                new_cell.classList.add('koos-cell-bottomright')
+            }
+            else {
+                new_cell.classList.add('koos-cell-topleft')
+            }
         }
 
-        cell_container.appendChild(new_cell)
-        grid_element.appendChild(cell_container)
+        cell_container.append(new_cell)
+        grid_element.append(cell_container)
     }
-    grid_element.style.setProperty('border-style', grid_container_border_style)
+    grid_element.style.visibility = 'visible'
+    // grid_element.style.setProperty('border-style', grid_container_border_style)
 }
 
 
-function set_image_cells_border_style() {
-    let grid_cells_containers = document.getElementsByClassName('koos-cell-container')    
-    for(let i = 0; i < grid_cells_containers.length; i++) {
+function set_image_cells_border_style(css_name) {
+    let grid_cells_containers = document.getElementsByName(css_name)
+    for(let i =0; i< grid_cells_containers.length; i++) {
         grid_cells_containers[i].style.setProperty('border-style', koos_cell_container_border_style)
+        grid_cells_containers[i].style.setProperty('border-color', 'rgba(222, 226, 230, 0.4)')
+        grid_cells_containers[i].style.setProperty('border-width', '1px')
     }
-    koos_task_grid.style.setProperty('border-style', grid_container_border_style)
 }
 
 
 function cut_uncut_image(gap_size) {
-    koos_task_grid.style.setProperty('gap', gap_size + 'px')
-
-    // koos_cell_container_border_style = (gap_size == 0) ? 'none' : 'solid'
-    // grid_container_border_style      = (gap_size == 0) ? 'solid' : 'none'
-    // set_image_cells_border_style()
+    root_doc.style.setProperty('--cell-overflow-delta', gap_size + 'px')
 }
 
 
@@ -165,10 +179,11 @@ function start_koos() {
     }
 
     draw_koos_table(TABLE_SIZE[TABLE_SIZE__SELECTED][1], TABLE_SIZE[TABLE_SIZE__SELECTED][0], koos_solvation_grid, false, 'cell__solvation', 'cell_container__solvation')
-    
+    set_image_cells_border_style('cell_container__solvation')
+
     let free_cubes_array = make_free_cubes_array(cubes_array)
     show_generated_cubes(free_cubes_array, 'cell__free_cube', true)
-    
+
     add_class_to_elems('cell_container__solvation', 'droppable')
     add_data_to_elems('cell_container__solvation', 'data-solvation-cellindex')
 
@@ -188,7 +203,7 @@ function init_free_cells() {
         cell_container = document.createElement('div')
         cell_container.classList.add('koos-cell-container')
         cell_container.setAttribute('name', cssname_to_select_containers)
-        cell_container.style.setProperty('border-style', koos_cell_container_border_style)
+        // cell_container.style.setProperty('border-style', koos_cell_container_border_style)
 
         new_cell = document.createElement('div')
         new_cell.setAttribute('name', cssname_to_select_cells)
@@ -200,10 +215,10 @@ function init_free_cells() {
         empty_cell.classList.add('koos-cell-empty')
         empty_cell.setAttribute('id', 'koos_cell_empty')
 
-        cell_container.appendChild(new_cell)
-        cell_container.appendChild(empty_cell)
+        cell_container.append(new_cell)
+        cell_container.append(empty_cell)
 
-        free_cubes_container.appendChild(cell_container)
+        free_cubes_container.append(cell_container)
     }
     free_cubes_container.style.setProperty('border-style', grid_container_border_style);
 
@@ -216,6 +231,7 @@ function stop_koos() {
     btn_close_exercise.style.display = 'none'
     result_container.style.display = 'none'
     btn_again.style.display = 'none'
+    btn_show_settings.style.display = 'none'
 
     display_hide_containers(koos_solvation_container, 'none')
     display_hide_containers(all_switchers_container, 'block')
@@ -230,6 +246,9 @@ function stop_koos() {
 function reset_task_cubes() {
     let grid_cells = document.getElementsByName('cell__task')
     grid_cells.forEach(cell => cell.className = 'koos-cell-topleft')
+    if (grid_cells.length == 9) {
+        grid_cells[4].className = 'koos-cell-bottomright'
+    }
 }
 
 
@@ -276,7 +295,7 @@ function dnd_listener(event) {
         function leave_droppable(elem) {
             elem.style.background = ''
         }
-        
+
         function on_mouse_up(event) {
             finish_drag(event);
         }
@@ -293,17 +312,17 @@ function dnd_listener(event) {
 
             empty_under_current_drugging = drag_element.nextElementSibling
             show_hide__empty_element(drag_element, 'block')
-            rect_empty_under_current_drugging = empty_under_current_drugging.getBoundingClientRect() 
-            console.log(rect_empty_under_current_drugging)
-            
+
             document.addEventListener('mousemove', on_mouse_move)
             drag_element.addEventListener('mouseup', on_mouse_up)
-            
+
             // запоминаем место клика по элементу (shiftX, shiftY)
             shiftX = clientX - drag_element.getBoundingClientRect().left
             shiftY = clientY - drag_element.getBoundingClientRect().top
 
             drag_element.style.position = 'fixed'
+            rect_empty_under_current_drugging = empty_under_current_drugging.getBoundingClientRect()
+            console.log(rect_empty_under_current_drugging)
 
             move_at(clientX, clientY)
         };
@@ -313,7 +332,7 @@ function dnd_listener(event) {
         function finish_drag(event) {
             if(!is_cube_dragging) return;
             is_cube_dragging = false;
-            
+
             // TODO: is_in_solvation_grid → ничего не делать, сейчас на первоначальное место возвращается
 
             let coords = get_final_coords()
@@ -332,7 +351,8 @@ function dnd_listener(event) {
                         move_child_cells_to_another_parent(event)
                         free_cubes_container.style.display = 'none'
                         result_container.style.display = 'flex'
-                        btn_again.style.setProperty('display', 'block')
+                        btn_again.style.display = 'block'
+                        btn_show_settings.style.display = 'block'
                     }
                 }
             }
@@ -346,32 +366,45 @@ function dnd_listener(event) {
         }
 
         function get_final_coords() {
-            let top, left
+            let top, left, position_delete
             if(droppable_below){
                 top  = droppable_below.getBoundingClientRect().top  + 'px'
                 left = droppable_below.getBoundingClientRect().left + 'px'
+                position_delete = false
             }
             else {
                 top  = rect_empty_under_current_drugging.top + 'px'
                 left = rect_empty_under_current_drugging.left + 'px'
+                position_delete = true
             }
-            return [top, left]
+            return [top, left, position_delete]
         }
 
         function set_final_position(coords) {
+            console.log('drag_element top & left BEFORE = ', coords)
+            console.log('drag_element.style.position BEFORE = ', drag_element.style.position)
+
             drag_element.style.top  = coords[0]
             drag_element.style.left = coords[1]
             drag_element.style.position = 'absolute'
+
+            console.log('drag_element top & left AFTER = ', coords)
+            console.log('drag_element.style.position AFTER = ', drag_element.style.position)
+            console.log('-------')
+            if (coords[2] == true) {
+                drag_element.style.removeProperty('position')
+            }
+
         }
 
         function move_child_cells_to_another_parent(event) {
             let free_cubes        = document.getElementsByName('cell__free_cube')
             let parent_containers = document.getElementsByName('cell_container__solvation')
-            
+
             let j = 0
             for(let i = 0; i < free_cubes.length; i++) {
                 if (free_cubes[i].getAttribute('data-moved') == '1'){
-                    parent_containers[j].appendChild(free_cubes[i])
+                    parent_containers[j].append(free_cubes[i])
                     j++
                 }
                 free_cubes[i].removeAttribute('role')
@@ -383,10 +416,10 @@ function dnd_listener(event) {
             // вычисляем новые координаты (относительно окна)
             let newX = clientX - shiftX
             let newY = clientY - shiftY
-        
+
             // проверяем, не переходят ли новые координаты за нижний край окна
             let new_bottom = newY + drag_element.offsetHeight
-        
+
             // затем, если новый край окна выходит за пределы документа, прокручиваем страницу
             if (new_bottom > document.documentElement.clientHeight) {
                 // координата нижнего края документа относительно окна
@@ -395,7 +428,7 @@ function dnd_listener(event) {
 
                 if (my_scrollY < 0) my_scrollY = 0
                 window.scrollBy(0, my_scrollY)
-            
+
                 // быстрое перемещение мыши может поместить курсор за пределы документа вниз
                 // если это произошло -
                 // ограничиваем новое значение Y исходя из размера документа:
@@ -410,13 +443,13 @@ function dnd_listener(event) {
                 window.scrollBy(0, -my_scrollY)
                 newY = Math.max(newY, 0)
             }
-        
+
             // ограничим newX размерами окна
             if (newX < 0) newX = 0
             if (newX > document.documentElement.clientWidth - drag_element.offsetWidth) {
                 newX = document.documentElement.clientWidth - drag_element.offsetWidth
             }
-        
+
             drag_element.style.left = newX + 'px'
             drag_element.style.top  = newY + 'px'
         }

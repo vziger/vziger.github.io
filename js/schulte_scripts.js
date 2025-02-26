@@ -35,7 +35,7 @@ let root_doc
 function ready() {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
     const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
-    
+
     timer_node = document.getElementById('exercise_timer')
 
     btn_start = document.getElementById('start_button')
@@ -109,10 +109,10 @@ function stop_schulte() {
     root_doc.style.setProperty('--cell-cursor', 'default');
 
     set_asterisks_into_cells();
-    
+
     display_hide_containers(all_switchers_container, 'block');
     display_hide_containers(results_container, 'none');
-    
+
     find_number_title_node.style.setProperty('visibility', 'hidden');
     find_number_node.style.setProperty('visibility', 'hidden');
 
@@ -126,13 +126,13 @@ function show_settings() {
     root_doc.style.setProperty('--cell-cursor', 'default');
 
     set_asterisks_into_cells();
-    
+
     display_hide_containers(all_switchers_container, 'block');
     display_hide_containers(results_container, 'none');
 
     find_number_title_node.style.setProperty('visibility', 'hidden');
     find_number_node.style.setProperty('visibility', 'hidden');
-    
+
     btn_show_settings.style.setProperty('display', 'none');
     btn_start.style.setProperty('display', 'block');
     btn_again.style.setProperty('display', 'none');
@@ -173,9 +173,9 @@ function init_state(table_hint_selected) {
 
 function start_schulte(){
     const TABLE_TYPE_SELECTED  = document.querySelector('input[type="radio"][name="btnradio-type"]:checked').getAttribute('data-type')
-    
+
     if (check_first_symbol() || +TABLE_TYPE_SELECTED == TABLE_TYPE_DIGITS) {
-        const TABLE_SIZE_SELECTED  = document.querySelector('input[type="radio"][name="btnradio-size"]:checked').getAttribute('data-size')    
+        const TABLE_SIZE_SELECTED  = document.querySelector('input[type="radio"][name="btnradio-size"]:checked').getAttribute('data-size')
         const TABLE_HINT_SELECTED  = document.querySelector('input[type="radio"][name="btnradio-hint"]:checked').getAttribute('data-hint')
         const TABLE_ORDER_SELECTED = document.querySelector('input[type="radio"][name="btnradio-char-order"]:checked').getAttribute('data-order')
 
@@ -186,7 +186,7 @@ function start_schulte(){
 
         let timer_seconds = 0
         let number_errors = 0
-        
+
         let current_char_pos = 0
 
         init_state(TABLE_HINT_SELECTED)
@@ -206,7 +206,7 @@ function start_schulte(){
                 console.log(current_char_pos)
                 break
         }
-        
+
         switch (+TABLE_ORDER_SELECTED) {
             case TABLE_ORDER_DIRECT:
                 straight_data = cells_data.slice();
@@ -254,7 +254,7 @@ function start_schulte(){
                 cell.removeEventListener('click', check_click)
             }
         }
-        
+
         function check_click(event) {
             let cell = event.target || event.srcElement;
             if (cell.innerHTML == '' + straight_data[current_char_pos] && current_char_pos == NUMBER_ELEMENTS - 1) {
@@ -266,29 +266,29 @@ function start_schulte(){
                 btn_stop.style.setProperty('display', 'none')
                 btn_again.style.setProperty('display', 'block')
                 btn_show_settings.style.setProperty('display', 'block')
-        
+
                 find_number_title_node.style.setProperty('visibility', 'visible')
                 find_number_node.style.setProperty('visibility', 'visible')
-        
+
                 find_number_title_node.innerHTML = 'Всего ошибок: '
                 find_number_node.innerHTML = number_errors
-        
+
                 current_char_pos++
-        
+
                 console.log('Верно → ' + cell.innerHTML)
             }
             else if (cell.innerHTML == '' + straight_data[current_char_pos]) {
                 find_number_node.innerHTML = straight_data[++current_char_pos]
                 blink(cell);
-        
+
                 console.log('Верно → ' + cell.innerHTML);
             } else {
                 number_errors++
-        
+
                 console.log('Не верно → ' + cell.innerHTML);
                 console.log('Количество ошибок = ' + number_errors);
             }
-        }        
+        }
     }
     else {
         if (start_symbol_node.value == '') {
