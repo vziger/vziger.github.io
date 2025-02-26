@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="favicon.ico">
+        <link rel="apple-touch-icon" sizes="57x57" href="img/favicons/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="img/favicons/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="img/favicons/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="img/favicons/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="img/favicons/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="img/favicons/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="img/favicons/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="img/favicons/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="img/favicons/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192"  href="img/favicons/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="img/favicons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="img/favicons/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="img/favicons/favicon-16x16.png">
+        <link rel="manifest" href="img/favicons/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="img/favicons/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+        <link rel="stylesheet" href="stylesheets/schulte.css">
+        <link rel="stylesheet" href="stylesheets/cypher-fonts.css">
+        <!-- <script src="js/popper.min.js"></script> -->
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/html3pdf.bundle.min.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/cypher.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", ready);
+        </script>
+        <title>Алфавит</title>
+    </head>
+<body>
+    <nav class="navbar fixed-top">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="width: 300px;">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Меню</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item"><a class="nav-link" aria-current="page" href="index.html">Главная</a></li>
+                        <p class="p-2 m-0">Тренажёры</p>
+                        <li class="nav-item py-1 ps-3"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
+                        <li class="nav-item py-1 ps-3"><a class="nav-link" href="gorbov.html">Таблица Горбова</a></li>
+                        <li class="nav-item py-1 ps-3"><a class="nav-link" href="gorbov-multiplication.html">Таблица Горбова, умножение</a></li>
+                        <li class="nav-item py-1 ps-3"><a class="nav-link" href="strup.html">Тест Струпа</a></li>
+                        <li class="nav-item py-1 ps-3"><a class="nav-link" href="koos.html">Кубики Кооса</a></li>
+                        <li class="nav-item pb-1 ps-3"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
+                        <li class="nav-item pb-1 ps-3"><a class="nav-link" href="cypher.html">Алфавит</a></li>
+                        <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
+                    </ul>
+                </div>
+                <div class="container p-0">
+                    <div class="offcanvas-body align-items-end">
+                        <div>
+                            Разработка: <a class="link-secondary link-offset-1 link-underline-opacity-50 link-underline-opacity-75-hover" target="_blank"
+                            style="text-decoration-thickness: 1px;"
+                            rel="noopener" href="https://t.me/vebebev">@vebebev</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row block">
+            <div class="col">
+                <div class="row align-items-top">
+                    <div class = "col-8">
+                        <div class="d-flex justify-content-left align-items-center my-ps-3">
+                            <h2>Алфавит</h2>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="row align-items-top">
+                    <div class = "col">
+                        <div class="d-flex justify-content-left align-items-center p-0">
+                            <div
+                                class="d-flex justify-content-left align-items-center mb-4 my-ps-3"
+                                id="key"
+                                style="font-size: 30px;line-height: 30px;">
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+                <div class="alphabet-container">
+                    <div class="row align-items-top">
+                        <div class = "col">
+                            <div class="justify-content-center">
+                                <div style="width: 46vw;">
+                                    <div
+                                    class="d-flex justify-content-between align-items-center mb-4"
+                                    id="key" style="font-size: 28px;line-height: 28px;">
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-left align-items-center mb-3">
+                                    <div style="width: 46vw;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label for="text_to_cypher" class="form-label my-ps-3 m-0" style="font-weight: 600;">Введите текст для шифрования</label>
+                                            <button class="text-btn my-pe-3" id="clear_text" onclick="clear_textarea()" style="width: fit-content;color:#939393">Очистить форму</button>
+                                        </div>
+                                        <textarea class="form-control my-ps-3 pe-4" id="text_to_cypher"
+                                        rows="7" placeholder="Птица Говорун умна и сообразительна"></textarea>
+                                        <div class="d-flex justify-content-between mt-2">
+                                            <p class="my-ps-3 my-error" id="error">тут будут выводиться ошибки, тут будут выводиться ошибки,</p>
+                                            <p class="my-pe-3" style="color:#939393">
+                                                <span id="char_counter">0</span><span style="letter-spacing: 1px;">&nbsp;/&thinsp;</span><span id="max_chars_num"></span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-left align-items-center">
+                                    <div>
+                                        <span class="form-label my-ps-3" style="font-weight: 600;">Результат</span>
+                                        <div class="d-flex justify-content-left">
+                                            <p
+                                            class="my-ps-3"
+                                            id="cyphered_text"
+                                            style="width:45vw;font-family:swifty,sans-serif;font-size:32px;letter-spacing:2px;word-wrap:break-word;"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> <!-- div grid -->
+                        </div> <!-- col -->
+                        <div class="col-4 align-items-center find-char-text">
+                            <div class="all-switchers-container">
+                                <!-- <div class = "switch-container" style="margin-top: 34px;">
+                                    <div class="row align-items-center">
+                                        <div class="col-3 p-0">Сложность</div>
+                                        <div class="col">
+                                            <div class="btn-group" role="group" aria-label="Button group — complexity">
+                                                <input type="radio" class="btn-check" name="btnradio-complexity" id="btnradio-complexity-1" autocomplete="off" data-complexity="0" checked onclick="recypher()">
+                                                <label class="btn btn-outline-primary" for="btnradio-complexity-1">&nbsp;1&nbsp;</label>
+
+                                                <input type="radio" class="btn-check" name="btnradio-complexity" id="btnradio-complexity-2" autocomplete="off" data-complexity="1" onclick="recypher()">
+                                                <label class="btn btn-outline-primary" for="btnradio-complexity-2">&nbsp;2&nbsp;</label>
+
+                                                <input type="radio" class="btn-check" name="btnradio-complexity" id="btnradio-complexity-3" autocomplete="off" data-complexity="2" onclick="recypher()">
+                                                <label class="btn btn-outline-primary" for="btnradio-complexity-3">&nbsp;3&nbsp;</label>
+
+                                                <input type="radio" class="btn-check" name="btnradio-complexity" id="btnradio-complexity-4" autocomplete="off" data-complexity="3" onclick="recypher()">
+                                                <label class="btn btn-outline-primary" for="btnradio-complexity-4">&nbsp;4&nbsp;</label> -->
+
+                                                <!-- <input type="radio" class="btn-check" name="btnradio-complexity" id="btnradio-complexity-5" autocomplete="off" data-complexity="4" onclick="recypher()">
+                                                <label class="btn btn-outline-primary" for="btnradio-complexity-5">&nbsp;5&nbsp;</label> -->
+
+                                                <!-- <input type="radio" class="btn-check" name="btnradio-complexity" id="btnradio-complexity-6" autocomplete="off" data-complexity="5" onclick="recypher()">
+                                                <label class="btn btn-outline-primary" for="btnradio-complexity-6">&nbsp;6&nbsp;</label> -->
+                                            <!-- </div>
+                                        </div>
+                                    </div>
+                                </div> div switch-container -->
+                                <div class = "switch-container" style="margin-top: 18px;">
+                                    <div class="row align-items-start">
+                                        <div class="col-3" style="padding: 6px 0 6px;">Набор символов</div>
+                                        <div class="col">
+                                            <div class="btn-group-vertical" role="group" aria-label="Button group — symbols">
+                                                <input type="radio" class="btn-check" name="btnradio-symbols" id="btnradio-symbols-1" autocomplete="off" data-symbols="0" checked onclick="recypher()">
+                                                <label class="btn btn-outline-primary btn-text-left" for="btnradio-symbols-1">Спортсмены</label>
+
+                                                <input type="radio" class="btn-check" name="btnradio-symbols" id="btnradio-symbols-2" autocomplete="off" data-symbols="1" onclick="recypher()">
+                                                <label class="btn btn-outline-primary btn-text-left" for="btnradio-symbols-2">Точки-уголки</label>
+
+                                                <input type="radio" class="btn-check" name="btnradio-symbols" id="btnradio-symbols-3" autocomplete="off" data-symbols="2" onclick="recypher()">
+                                                <label class="btn btn-outline-primary btn-text-left" for="btnradio-symbols-3">Девочки-мальчики</label>
+
+                                                <input type="radio" class="btn-check" name="btnradio-symbols" id="btnradio-symbols-4" autocomplete="off" data-symbols="3" onclick="recypher()">
+                                                <label class="btn btn-outline-primary btn-text-left" for="btnradio-symbols-4">Брайль</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> <!-- div switch-container frequency -->
+                            </div> <!-- div all-switchers-container -->
+                            <div class="start-stop-container">
+                                <div class="row justify-content-start">
+                                    <button class="schulte-btn" id="start_button" style="visibility: hidden; font-size: 28px;" onclick="print_js2pdf()">Сохранить pdf</button>
+                                </div>
+                                <div class="row justify-content-center" id="switchers_error">&nbsp;</div>
+                            </div> <!-- div start-stop-container -->
+                        </div> <!-- div col align-items-center find-char-text -->
+                    </div> <!-- row align-items-top-->
+                </div> <!-- alphabet-container -->
+            </div> <!-- div col -->
+        </div> <!-- row block -->
+    </div> <!-- div container -->
+
+</body>
+</html>

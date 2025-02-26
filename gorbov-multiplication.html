@@ -53,6 +53,7 @@
                             <li class="nav-item py-1 ps-3"><a class="nav-link" href="strup.html">Тест Струпа</a></li>
                             <li class="nav-item py-1 ps-3"><a class="nav-link" href="koos.html">Кубики Кооса</a></li>
                             <li class="nav-item pb-1 ps-3"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
+                            <li class="nav-item pb-1 ps-3"><a class="nav-link" href="cypher.html">Алфавит</a></li>
                             <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
                         </ul>
                     </div>
@@ -77,7 +78,8 @@
                                 <h2 id="exercise_title" class="p-0">Таблица Горбова, умножение</h2>
                                 <button type="button" class="btn btn-secondary p-0 custom-popover-btn"
                                         data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
-                                        data-bs-custom-class="popover-gorbov"
+                                        data-bs-trigger="focus"
+                                        data-bs-custom-class="popover-wide"
                                         data-bs-title="Таблица Горбова"
                                         data-bs-content="Модифицированный вариант одноцветных таблиц Шульте.<br><br>Представляет собой квадрат, разделённый на&nbsp;клетки.<br>В&nbsp;клетках в&nbsp;случайном порядке расположены числа или буквы, одна половина&nbsp;— чёрные,<br>другая половина&nbsp;— красные.<br><br>
                                         Таблица Шульте&nbsp;— одноцветная таблица с&nbsp;расположенными случайно&nbsp;числами или буквами.<br><br>
@@ -118,72 +120,74 @@
                                     <div class="cell" style="padding-top: 16px;" data-number="25">*</div>
                                 </div> <!-- div grid -->
                             </div> <!-- div col -->
-                            <div class="col-4 align-items-center find-char-text">
+                            <div class="col-4 align-items-center find-char-text p-0">
                                 <div class="all-switchers-container">
-                                    <div class = "switch-container">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 p-0">Порядок красных</div>
-                                            <div class="col">
-                                                <div class="btn-group" role="group" aria-label="Button group — characters order">
-                                                    <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-1" data-order="1" autocomplete="off" checked>
-                                                    <label class="btn btn-outline-primary" for="btnradio-char-order-1">Прямой</label>
-                                                
-                                                    <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-2" data-order="2" autocomplete="off">
-                                                    <label class="btn btn-outline-primary" for="btnradio-char-order-2">Обратный</label>
+                                    <div class="my-ps-8px" style="border-left: 4px solid rgb(193, 0, 0);">
+                                        <div class = "switch-container" style="margin-bottom: 8px;">
+                                            <div class="row align-items-center m-0">
+                                                <div class="col-3 p-0">Порядок красных</div>
+                                                <div class="col">
+                                                    <div class="btn-group" role="group" aria-label="Button group — characters order">
+                                                        <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-1" data-order="1" autocomplete="off" checked>
+                                                        <label class="btn btn-outline-primary" for="btnradio-char-order-1">Прямой</label>
+
+                                                        <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-2" data-order="2" autocomplete="off">
+                                                        <label class="btn btn-outline-primary" for="btnradio-char-order-2">Обратный</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class = "switch-container" style = "margin-bottom: 0;">
+                                            <div class="row align-items-center m-0">
+                                                <div class="col-3 p-0">
+                                                    <label for="mult_red" class="col-form-label py-0">Множитель красных</label>
+                                                </div>
+                                                <div class="col-2">
+                                                    <input type="text" maxlength="2" min="1" max="10" id="mult_red" class="form-control" aria-describedby="help_inline_red" value="1" autocomplete="off" pattern="^([1-9]|10)$" required>
+                                                </div>
+                                                <div class="col-auto p-0">
+                                                    <span id="help_inline_red" class="form-text">
+                                                    —&nbsp;&nbsp;&nbsp;от&nbsp;1 до&nbsp;10
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <div class = "switch-container" style = "margin-top: -14px; margin-bottom: 0;">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 p-0">
-                                                <label for="mult_red" class="col-form-label">Множитель красных</label>
-                                            </div>
-                                            <div class="col-2">
-                                                <input type="text" maxlength="2" min="1" max="10" id="mult_red" class="form-control" aria-describedby="help_inline_red" value="1" autocomplete="off" pattern="^([1-9]|10)$" required>
-                                            </div>
-                                            <div class="col-auto p-0">
-                                                <span id="help_inline_red" class="form-text">
-                                                  —&nbsp;&nbsp;&nbsp;от&nbsp;1 до&nbsp;10
-                                                </span>
-                                              </div>
-                                        </div>
-                                    </div>
+                                    <div class="my-ps-8px" style="border-left: 4px solid rgb(28, 28, 28);">
+                                        <div class = "switch-container" style="margin-bottom: 8px;">
+                                            <div class="row align-items-center m-0">
+                                                <div class="col-3 p-0">Порядок чёрных</div>
+                                                <div class="col">
+                                                    <div class="btn-group" role="group" aria-label="Button group — black characters order">
+                                                        <input type="radio" class="btn-check" name="btnradio-black-char-order" id="btnradio-black-char-order-1" data-order="1" autocomplete="off" checked>
+                                                        <label class="btn btn-outline-primary" for="btnradio-black-char-order-1">Прямой</label>
 
-                                    <div class = "switch-container">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 p-0">Порядок чёрных</div>
-                                            <div class="col">
-                                                <div class="btn-group" role="group" aria-label="Button group — black characters order">
-                                                    <input type="radio" class="btn-check" name="btnradio-black-char-order" id="btnradio-black-char-order-1" data-order="1" autocomplete="off" checked>
-                                                    <label class="btn btn-outline-primary" for="btnradio-black-char-order-1">Прямой</label>
-                                                
-                                                    <input type="radio" class="btn-check" name="btnradio-black-char-order" id="btnradio-black-char-order-2" data-order="2" autocomplete="off">
-                                                    <label class="btn btn-outline-primary" for="btnradio-black-char-order-2">Обратный</label>
+                                                        <input type="radio" class="btn-check" name="btnradio-black-char-order" id="btnradio-black-char-order-2" data-order="2" autocomplete="off">
+                                                        <label class="btn btn-outline-primary" for="btnradio-black-char-order-2">Обратный</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class = "switch-container" style="margin-bottom: 0;">
+                                            <div class="row align-items-center m-0">
+                                                <div class="col-3 p-0">
+                                                    <label for="mult_black" class="col-form-label py-0">Множитель чёрных</label>
+                                                </div>
+                                                <div class="col-2">
+                                                    <input type="text" maxlength="2" id="mult_black" class="form-control" aria-describedby="help_inline_black" value="1" autocomplete="off" pattern="^([1-9]|10)$" required>
+                                                </div>
+                                                <div class="col-auto p-0">
+                                                    <span id="help_inline_black" class="form-text">
+                                                    —&nbsp;&nbsp;&nbsp;от&nbsp;1 до&nbsp;10
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div class = "switch-container" style = "margin-top: -14px; margin-bottom: 0;">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 p-0">
-                                                <label for="mult_black" class="col-form-label">Множитель чёрных</label>
-                                            </div>
-                                            <div class="col-2">
-                                                <input type="text" maxlength="2" id="mult_black" class="form-control" aria-describedby="help_inline_black" value="1" autocomplete="off" pattern="^([1-9]|10)$" required>
-                                            </div>
-                                            <div class="col-auto p-0">
-                                                <span id="help_inline_black" class="form-text">
-                                                  —&nbsp;&nbsp;&nbsp;от&nbsp;1 до&nbsp;10
-                                                </span>
-                                              </div>
-                                        </div>
-                                    </div>
-
                                     <div class = "switch-container">
-                                        <div class="row align-items-center">
+                                        <div class="row align-items-center m-0 my-ps-12px">
                                             <div class="col-3 p-0">Цветные</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — colored numbers or cells">
@@ -197,13 +201,13 @@
                                     </div>
 
                                     <div class = "switch-container">
-                                        <div class="row align-items-center">
+                                        <div class="row align-items-center m-0 my-ps-12px">
                                             <div class="col-3 p-0">Подсказка</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — hint">
                                                     <input type="radio" class="btn-check" name="btnradio-hint" id="btnradio-hint-1" autocomplete="off" data-hint="1" checked>
                                                     <label class="btn btn-outline-primary" for="btnradio-hint-1">Показать</label>
-                                                
+
                                                     <input type="radio" class="btn-check" name="btnradio-hint" id="btnradio-hint-2" data-hint="2" autocomplete="off">
                                                     <label class="btn btn-outline-primary" for="btnradio-hint-2">Скрыть</label>
                                                 </div>

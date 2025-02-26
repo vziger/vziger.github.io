@@ -53,6 +53,7 @@
                             <li class="nav-item py-1 ps-3"><a class="nav-link" href="strup.html">Тест Струпа</a></li>
                             <li class="nav-item py-1 ps-3"><a class="nav-link" href="koos.html">Кубики Кооса</a></li>
                             <li class="nav-item pb-1 ps-3"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
+                            <li class="nav-item pb-1 ps-3"><a class="nav-link" href="cypher.html">Алфавит</a></li>
                             <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
                         </ul>
                     </div>
@@ -77,7 +78,8 @@
                                 <h2 id="exercise_title">Таблица Горбова</h2>
                                 <button type="button" class="btn btn-secondary p-0 custom-popover-btn"
                                         data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
-                                        data-bs-custom-class="popover-gorbov"
+                                        data-bs-trigger="focus"
+                                        data-bs-custom-class="popover-wide"
                                         data-bs-title="Таблица Горбова"
                                         data-bs-content="Модифицированный вариант одноцветных таблиц Шульте.<br><br>Представляет собой квадрат, разделённый на&nbsp;клетки.<br>В&nbsp;клетках в&nbsp;случайном порядке расположены числа или буквы, одна половина&nbsp;— чёрные,<br>другая половина&nbsp;— красные.<br><br>
                                         Таблица Шульте&nbsp;— одноцветная таблица с&nbsp;расположенными случайно&nbsp;числами или буквами.<br><br>
@@ -132,13 +134,13 @@
                             <div class="col-4 align-items-center find-char-text">
                                 <div class="all-switchers-container">
                                     <div class = "switch-container">
-                                        <div class="row align-items-center">
+                                        <div class="row align-items-center" style="border-left: 4px solid rgb(193, 0, 0);padding-left: 8px;">
                                             <div class="col-3 p-0">Порядок красных</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — characters order">
                                                     <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-1" data-order="1" autocomplete="off" checked>
                                                     <label class="btn btn-outline-primary" for="btnradio-char-order-1">Прямой</label>
-                                                
+
                                                     <input type="radio" class="btn-check" name="btnradio-char-order" id="btnradio-char-order-2" data-order="2" autocomplete="off">
                                                     <label class="btn btn-outline-primary" for="btnradio-char-order-2">Обратный</label>
                                                 </div>
@@ -146,13 +148,13 @@
                                         </div>
                                     </div>
                                     <div class = "switch-container">
-                                        <div class="row align-items-center">
+                                        <div class="row align-items-center" style="border-left: 4px solid rgb(28, 28, 28);padding-left: 8px;">
                                             <div class="col-3 p-0">Порядок чёрных</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — black characters order">
                                                     <input type="radio" class="btn-check" name="btnradio-black-char-order" id="btnradio-black-char-order-1" data-order="1" autocomplete="off" checked>
                                                     <label class="btn btn-outline-primary" for="btnradio-black-char-order-1">Прямой</label>
-                                                
+
                                                     <input type="radio" class="btn-check" name="btnradio-black-char-order" id="btnradio-black-char-order-2" data-order="2" autocomplete="off">
                                                     <label class="btn btn-outline-primary" for="btnradio-black-char-order-2">Обратный</label>
                                                 </div>
@@ -160,7 +162,7 @@
                                         </div>
                                     </div>
                                     <div class = "switch-container">
-                                        <div class="row align-items-center">
+                                        <div class="row align-items-center" style="padding-left: 12px;">
                                             <div class="col-3 p-0">Цветные</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — colored numbers or cells">
@@ -173,13 +175,13 @@
                                         </div>
                                     </div>
                                     <div class = "switch-container">
-                                        <div class="row align-items-center">
+                                        <div class="row align-items-center" style="padding-left: 12px;">
                                             <div class="col-3 p-0">Подсказка</div>
                                             <div class="col">
                                                 <div class="btn-group" role="group" aria-label="Button group — hint">
                                                     <input type="radio" class="btn-check" name="btnradio-hint" id="btnradio-hint-1" autocomplete="off" data-hint="1" checked>
                                                     <label class="btn btn-outline-primary" for="btnradio-hint-1">Показать</label>
-                                                
+
                                                     <input type="radio" class="btn-check" name="btnradio-hint" id="btnradio-hint-2" data-hint="2" autocomplete="off">
                                                     <label class="btn btn-outline-primary" for="btnradio-hint-2">Скрыть</label>
                                                 </div>

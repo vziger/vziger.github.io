@@ -23,11 +23,12 @@
         <meta name="theme-color" content="#ffffff">
         <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
         <link rel="stylesheet" href="stylesheets/schulte.css">
+        <script src="js/popper.min.js"></script>
         <script src="js/bootstrap.bundle.min.js"></script>
         <script src="js/utils.js"></script>
         <script src="js/koos_scripts.js"></script>
         <script>
-            document.addEventListener("DOMContentLoaded", () => ready_koos(3));
+            document.addEventListener("DOMContentLoaded", () => ready_koos());
         </script>
         <title>Кубики Кооса</title>
     </head>
@@ -53,6 +54,7 @@
                             <li class="nav-item py-1 ps-3"><a class="nav-link" href="strup.html">Тест Струпа</a></li>
                             <li class="nav-item py-1 ps-3"><a class="nav-link" href="koos.html">Кубики Кооса</a></li>
                             <li class="nav-item pb-1 ps-3"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
+                            <li class="nav-item pb-1 ps-3"><a class="nav-link" href="cypher.html">Алфавит</a></li>
                             <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
                         </ul>
                     </div>
@@ -78,6 +80,13 @@
                         <div class = "col-6" id="exercise_title_container">
                             <div class="d-flex justify-content-center align-items-center">
                                 <h2 id="exercise_title" style="color: #dee2e6;">Кубики Кооса</h2>
+                                <button type="button" class="btn btn-secondary p-0 custom-popover-btn"
+                                        data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
+                                        data-bs-trigger="focus"
+                                        data-bs-custom-class="popover-wide"
+                                        data-bs-title="Кубики Кооса"
+                                        data-bs-content="Специальная методика для диагностирования наглядно-действенного интеллекта, невербальный тест интеллекта. Разработана американским психологом С.&nbsp;Коосом в&nbsp;1920 году (англ. Kohs Block Design Test).<br><br>Оригинальный вариант тестирования Кооса состоит из&nbsp;16&nbsp;равных по&nbsp;размеру кубиков красно-белого и&nbsp;желто-синего цвета. В&nbsp;каждом наборе имеется также 17&nbsp;карточек с&nbsp;узорами, упорядоченных по&nbsp;уровню сложности. Испытуемому предлагается сложить кубики так, чтобы рисунок на&nbsp;верхней поверхности кубиков в&nbsp;точности соответствовал узору на&nbsp;карточке">?
+                                </button>
                             </div>
                         </div> <!-- div col-6 -->
                         <!-- <div class = "col">
@@ -129,10 +138,10 @@
                                                 <div class="btn-group koos" role="group" aria-label="Button group — image size">
                                                     <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-1" autocomplete="off" data-size="0" onclick="update_task_image(2, 2)">
                                                     <label class="btn btn-outline-primary" for="btnradio-size-1">2 × 2</label>
-                                                
+
                                                     <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-2" autocomplete="off" data-size="1" onclick="update_task_image(2, 3)">
                                                     <label class="btn btn-outline-primary" for="btnradio-size-2">2 × 3</label>
-                                                
+
                                                     <input type="radio" class="btn-check" name="btnradio-size" id="btnradio-size-3" autocomplete="off" data-size="2" checked onclick="update_task_image(3, 3)">
                                                     <label class="btn btn-outline-primary" for="btnradio-size-3">3 × 3</label>
                                                 </div>
@@ -144,10 +153,10 @@
                                             <div class="col-4 p-0">Разрезать изображение</div>
                                             <div class="col">
                                                 <div class="btn-group koos" role="group" aria-label="Button group — cut image">
-                                                    <input type="radio" class="btn-check" name="btnradio-cut" id="btnradio-cut-1" autocomplete="off" data-cut="1" onclick="cut_uncut_image(0)" checked>
+                                                    <input type="radio" class="btn-check" name="btnradio-cut" id="btnradio-cut-1" autocomplete="off" data-cut="1" onclick="cut_uncut_image(3)">
                                                     <label class="btn btn-outline-primary" for="btnradio-cut-1">Да</label>
-                                                
-                                                    <input type="radio" class="btn-check" name="btnradio-cut" id="btnradio-cut-2" autocomplete="off" data-cut="0" onclick="cut_uncut_image(0)">
+
+                                                    <input type="radio" class="btn-check" name="btnradio-cut" id="btnradio-cut-2" autocomplete="off" data-cut="0" onclick="cut_uncut_image(0)" checked>
                                                     <label class="btn btn-outline-primary" for="btnradio-cut-2">Нет</label>
                                                 </div>
                                             </div>
@@ -160,7 +169,7 @@
                                                 <div class="btn-group koos" role="group" aria-label="Button group — random image or select from set">
                                                     <input type="radio" class="btn-check" name="btnradio-random-select" id="btnradio-random-select-1" autocomplete="off" data-random-select="1" onclick="" checked>
                                                     <label class="btn btn-outline-primary" for="btnradio-random-select-1">Случайное</label>
-                                                
+
                                                     <input type="radio" class="btn-check" name="btnradio-random-select" id="btnradio-random-select-2" autocomplete="off" data-random-select="0" onclick="">
                                                     <label class="btn btn-outline-primary" for="btnradio-random-select-2">Выбрать</label>
                                                 </div>
@@ -174,7 +183,7 @@
                                                 <div class="btn-group koos" role="group" aria-label="Button group — rotate cube">
                                                     <input type="radio" class="btn-check" name="btnradio-rotate" id="btnradio-rotate-1" autocomplete="off" data-rotate="1" onclick="" checked>
                                                     <label class="btn btn-outline-primary" for="btnradio-rotate-1">Включить</label>
-                                                
+
                                                     <input type="radio" class="btn-check" name="btnradio-rotate" id="btnradio-rotate-2" autocomplete="off" data-rotate="0" onclick="">
                                                     <label class="btn btn-outline-primary" for="btnradio-rotate-2">Выключить</label>
                                                 </div>
@@ -249,9 +258,10 @@
                                     </div>
                                 </div>
                                 <div class="col">
-                                    <div class="d-flex justify-content-center mt-0">
+                                    <div class="row justify-content-center mt-0">
                                         <button class="schulte-btn" id="again_button"
-                                        style="margin-top: 60px;margin-bottom: 48px;" onclick="start_koos()">Начать&nbsp;снова</button>
+                                        style="margin-top: 60px;" onclick="start_koos()">Начать&nbsp;снова</button>
+                                        <button class="text-btn" id="show_settings" style="color:#dee2e6;" onclick="stop_koos()">Показать настройки</button>
                                     </div>
                                 </div>
                             </div>
