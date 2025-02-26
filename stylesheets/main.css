@@ -63,13 +63,13 @@ html *
 }
 
 .text{
-    font-size: 28px;
-    line-height: 40px;
+    font-size: 24px;
+    line-height: 32px;
 }
 
 .simple-link{
-    font-size: 28px;
-    line-height: 40px;
+    font-size: 24px;
+    line-height: 32px;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
 }
@@ -79,8 +79,7 @@ html *
 }
 
 .main-btn{
-    padding-left: 90px;
-    padding-right: 90px;
+    padding: 0 90px;
     height: 100px;
     background-color: #FFCD4D;
     font-size: 40px;
@@ -100,9 +99,7 @@ html *
 }
 
 .schulte-btn{
-    padding-left: 0px;
-    padding-right: 0px;
-    padding-bottom: 6px;
+    padding: 0 0 6px;
     height: 100px;
     width: 400px;
     background-color: #FFCD4D;
@@ -144,7 +141,7 @@ h3{
 }
 
 li{
-    padding-bottom: 12px;
+    padding-bottom: 16px;
 }
 
 .text-in-tests {

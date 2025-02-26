@@ -1,0 +1,102 @@
+@font-face {
+    font-family: 'swifty';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('swifty'),
+         url(../fonts/swifty.otf) format('opentype'),
+         url(../fonts/swifty.woff2) format('woff2'),
+         url(../fonts/swifty.woff) format('woff'),
+         url(../fonts/swifty.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'tearz';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../fonts/tearz.eot),
+         url(../fonts/tearz.eot?#iefix) format('embedded-opentype'),
+         url(../fonts/tearz.otf) format('opentype')
+         url(../fonts/tearz.woff2) format('woff2'),
+         url(../fonts/tearz.woff) format('woff'),
+         url(../fonts/tearz.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'Sprykski';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../fonts/Sprykski.eot),
+         url(../fonts/Sprykski.eot?#iefix) format('embedded-opentype'),
+         url(../fonts/Sprykski.otf) format('opentype')
+         url(../fonts/Sprykski.woff2) format('woff2'),
+         url(../fonts/Sprykski.woff) format('woff'),
+         url(../fonts/Sprykski.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'folksa';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../fonts/folksa-g.eot),
+         url(../fonts/folksa-g.eot?#iefix) format('embedded-opentype'),
+         url(../fonts/folksa-g.otf) format('opentype')
+         url(../fonts/folksa-g.woff2) format('woff2'),
+         url(../fonts/folksa-g.woff) format('woff'),
+         url(../fonts/folksa-g.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'nox';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../fonts/nox.eot),
+         url(../fonts/nox.eot?#iefix) format('embedded-opentype'),
+         url(../fonts/nox.otf) format('opentype')
+         url(../fonts/nox.woff2) format('woff2'),
+         url(../fonts/nox.woff) format('woff'),
+         url(../fonts/nox.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'pictopeeps';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../fonts/pictopeeps.eot),
+         url(../fonts/pictopeeps.eot?#iefix) format('embedded-opentype'),
+         url(../fonts/pictopeeps.otf) format('opentype')
+         url(../fonts/pictopeeps.woff2) format('woff2'),
+         url(../fonts/pictopeeps.woff) format('woff'),
+         url(../fonts/pictopeeps.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'sheets-braille';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../fonts/sheets-braille.eot),
+         url(../fonts/sheets-braille.eot?#iefix) format('embedded-opentype'),
+         url(../fonts/sheets-braille.otf) format('opentype')
+         url(../fonts/sheets-braille.woff2) format('woff2'),
+         url(../fonts/sheets-braille.woff) format('woff'),
+         url(../fonts/sheets-braille.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'zarathustra';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../fonts/zarathustra.eot),
+         url(../fonts/zarathustra.eot?#iefix) format('embedded-opentype'),
+         url(../fonts/zarathustra.otf) format('opentype')
+         url(../fonts/zarathustra.woff2) format('woff2'),
+         url(../fonts/zarathustra.woff) format('woff'),
+         url(../fonts/zarathustra.ttf) format('truetype');
+}

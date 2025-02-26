@@ -17,21 +17,8 @@
 
     /* koos */
     --cell-size-koos: 140px;
-    --cell-overflow-delta: 2px;
+    --cell-overflow-delta: 0px;
  }
-
-
-/* @font-face {
-    font-family: 'Kurale';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: local('Kurale Regular'),
-         url(../fonts/Kurale-Regular.otf) format('opentype'),
-         url(../fonts/Kurale-Regular.woff2) format('woff2'),
-         url(../fonts/Kurale-Regular.woff) format('woff'),
-         url(../fonts/Kurale-Regular.ttf) format('truetype');
-} */
 
 @font-face {
     font-family: 'Montserrat';
@@ -63,57 +50,37 @@
          url(../fonts/Montserrat-SemiBold.ttf) format('truetype');
 }
 
-html *
-{
+html * {
     font-family: Montserrat, Arial, sans-serif;
 }
 .block{
     margin-bottom: 48px;
 }
 
-.main_title{
-    font-family: Kurale, Arial, sans-serif;
-    font-size: 120px;
-    line-height: 120px;
-}
-
-.subtitle{
-    font-size: 40px;
-}
-
 .text{
     font-size: 32px;
 }
 
-.main-btn{
-    padding-left: 90px;
-    padding-right: 90px;
-    height: 100px;
-    background-color: #FFCD4D;
-    font-size: 40px;
-    border-radius: 28px;
-    border: 0px solid #FFCD4D;
-}
-.main-btn:hover{
-    background-color: #ffc022;
-}
-
 .schulte-btn{
-    padding-left: 0px;
-    padding-right: 0px;
-    padding-bottom: 6px;
+    padding: 0 0 6px;
     height: 100px;
     width: 400px;
     background-color: #FFCD4D;
-    font-size: 36px;
+    font-size: 32px;
     border-radius: 28px;
     border: 0px solid #FFCD4D;
 }
 .schulte-btn:hover{
     background-color: #ffc022;
 }
-.schulte-btn:focus-visible, .schulte-btn:focus{
+.schulte-btn:focus{
     outline-color: transparent;
+}
+.schulte-btn:focus-visible{
+    background-color: #ffc022;
+    outline: #005fcb;
+    outline-style: solid;
+    outline-width: 4px;
 }
 
 .text-btn {
@@ -144,8 +111,8 @@ h3{
     width: 20px;
     height: 20px;
     margin-bottom: 10px;
-    --bs-btn-font-size:0.7rem; 
-    --bs-btn-border-radius:24px; 
+    --bs-btn-font-size:0.7rem;
+    --bs-btn-border-radius:24px;
     --bs-btn-bg:#e0e0e0;
     --bs-btn-border-color:#e0e0e0;
     --bs-btn-color:#000;
@@ -158,8 +125,7 @@ h3{
 .popover {
     --bs-popover-max-width: 285px;
 }
-
-.popover-gorbov {
+.popover-wide {
     --bs-popover-max-width: 340px;
 }
 
@@ -176,10 +142,6 @@ li{
     grid-template-columns: repeat(5, var(--cell-size));
     gap: 2px;
     transition: transform 0.3s ease, background-color 0.3s ease;
-}
-
-.table_container{
-    padding-bottom: 100px;
 }
 
 .switch-container{
@@ -247,7 +209,7 @@ li{
 
 #stop_button{
     background-color: transparent;
-    border: solid #FFCD4D 3px; 
+    border: solid #FFCD4D 3px;
     display: none;
 }
 
@@ -269,17 +231,15 @@ li{
     margin-top: 8px;
 }
 
-
-
-/* .row{
-    background-color: rgba(255,0,0,0.1);
+.my-error {
+    visibility: hidden;
+    color: rgb(255, 62, 95);
 }
 
-.col{
-    border: 1px solid rgba(0,0,255,0.1);
-} */
-
-
+/*
+.row{background-color: rgba(255,0,0,0.1);}
+.col{border: 1px solid rgba(0,0,255,0.1);}
+*/
 
 .btn-outline-primary{
     --bs-btn-color:#000;
@@ -291,7 +251,7 @@ li{
     font-size: 16px;
 }
 
-  
+
 #start_symbol:invalid, #mult_red:invalid, #mult_black:invalid {
     background-color: lightpink;
 }
@@ -391,9 +351,9 @@ button[name="btn-change-velocity"]:hover{
 }
 
 
-input[type="number"]::-webkit-inner-spin-button, 
-input[type="number"]::-webkit-outer-spin-button { 
-    -webkit-appearance: none; 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
     margin: 0;
 }
 
@@ -434,11 +394,10 @@ input[type="number"]:focus {
 
 /* koos */
 .grid-border {
-    border: 1px none #e0e0e0; 
+    border: 1px none #e0e0e0;
     width: fit-content;
 }
 .koos-cell-container {
-    border: 1px solid #e0e0e0;
     width: calc(var(--cell-size-koos));
     height: calc(var(--cell-size-koos));
     overflow: hidden;
@@ -449,18 +408,17 @@ input[type="number"]:focus {
     width: 100%;
     height: 100%;
     background-color: #414141;
-    /* opacity: 40%; */
 }
 
 .koos-cell-white {
-    width: calc(var(--cell-size-koos) - 1px);
-	height: calc(var(--cell-size-koos) - 1px);
+    width: calc(var(--cell-size-koos) - var(--cell-overflow-delta));
+	height: calc(var(--cell-size-koos) - var(--cell-overflow-delta));
 	background-color: white;
 }
 
 .koos-cell-red {
-    width: calc(var(--cell-size-koos) - 1px);
-	height: calc(var(--cell-size-koos) - 1px);
+    width: calc(var(--cell-size-koos) - var(--cell-overflow-delta));
+	height: calc(var(--cell-size-koos) - var(--cell-overflow-delta));
 	background-color: #C10000;
 }
 
@@ -474,22 +432,22 @@ input[type="number"]:focus {
 .koos-cell-topright {
 	width: 0;
 	height: 0;
-	border-top: calc(var(--cell-size-koos) - 1px) solid #C10000;
-	border-left: calc(var(--cell-size-koos) - 1px) solid white;
+	border-top: calc(var(--cell-size-koos) - var(--cell-overflow-delta)) solid #C10000;
+	border-left: calc(var(--cell-size-koos) - var(--cell-overflow-delta)) solid white;
 }
 
 .koos-cell-bottomright {
 	width: 0;
 	height: 0;
-	border-bottom: calc(var(--cell-size-koos) - 1px) solid #C10000;
-	border-left: calc(var(--cell-size-koos) - 1px) solid white;
+	border-bottom: calc(var(--cell-size-koos) - var(--cell-overflow-delta)) solid #C10000;
+	border-left: calc(var(--cell-size-koos) - var(--cell-overflow-delta)) solid white;
 }
 
 .koos-cell-bottomleft {
 	width: 0;
 	height: 0;
-	border-bottom: calc(var(--cell-size-koos) - 1px) solid #C10000;
-	border-right: calc(var(--cell-size-koos) - 1px) solid white;
+	border-bottom: calc(var(--cell-size-koos) - var(--cell-overflow-delta)) solid #C10000;
+	border-right: calc(var(--cell-size-koos) - var(--cell-overflow-delta)) solid white;
 }
 
 .koos-solvation-container {
@@ -522,4 +480,27 @@ input[type="number"]:focus {
 
 #result_container {
     display: none;
+}
+
+.my-ps-3{padding-left:.75rem!important;}
+.my-pe-3{padding-right:.75rem!important;}
+.my-px-sm{padding-left:.1rem!important;padding-right:.1rem!important;}
+.my-ps-8px{padding-left: 8px;}
+.my-ps-12px{padding-left: 12px;}
+
+/* cypher */
+#clear_text:hover {
+    color: black !important;
+}
+#clear_text:active {
+    color: rgba(0, 0, 0, 0.7) !important;
+}
+#clear_text:focus-visible {
+    color: black !important;
+}
+
+.table-border>tbody>tr>td {
+    border-top: 0.5px solid rgba(0, 0, 0, 0.3);
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.3);
+    border-right: 1px solid rgba(0, 0, 0, 0.3);
 }
