@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="favicon.ico">
+        <link rel="apple-touch-icon" sizes="57x57" href="img/favicons/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="img/favicons/apple-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="img/favicons/apple-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="img/favicons/apple-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="img/favicons/apple-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="img/favicons/apple-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="img/favicons/apple-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="img/favicons/apple-icon-152x152.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="img/favicons/apple-icon-180x180.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="img/favicons/android-icon-192x192.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="img/favicons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="img/favicons/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="img/favicons/favicon-16x16.png">
+        <link rel="manifest" href="img/favicons/manifest.json">
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="img/favicons/ms-icon-144x144.png">
+        <meta name="theme-color" content="#ffffff">
+        <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+        <link rel="stylesheet" href="stylesheets/schulte.css">
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/mental-arithmetic.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => ready_mental_arithmetic());
+        </script>
+        <title>Устный счёт</title>
+    </head>
+    <body>
+        <nav class="navbar fixed-top" id="navbar">
+            <div class="container-fluid w-25 pt-2 position-absolute top-0 start-0 focus-ring" id="navbar_container">
+                <button class="navbar-toggler" type="button" id="navbar_button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="offcanvas offcanvas-start offcanvas-navbar-width" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Меню</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                            <li class="nav-item"><a class="nav-link" aria-current="page" href="index.html">Главная</a></li>
+                            <p class="p-2 m-0">Тренажёры</p>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="gorbov.html">Таблица Горбова</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="gorbov-multiplication.html">Таблица Горбова, умножение</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="strup.html">Тест Струпа</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="koos.html">Кубики Кооса</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="cypher.html">Шифр простой замены</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="hands_and_letters.html">Алфавит</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="mental-arithmetic.html">Устный счёт</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="reading_automatisation.html">Автоматизация чтения</a></li>
+                            <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
+                        </ul>
+                    </div>
+                    <div class="container p-0">
+                        <div class="offcanvas-body align-items-end">
+                            <div>
+                                Разработка: <a class="link-secondary link-offset-1 link-underline-opacity-50 link-underline-opacity-75-hover text-decoration-thickness-1" target="_blank"
+                                rel="noopener" href="https://t.me/vebebev">@vebebev</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="container desktop">
+            <div class="row block">
+                <div class="col">
+                    <div class="row align-items-top">
+                        <div class = "col-8">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <h2 id="exercise_title">Устный счёт</h2>
+                                <!-- <button type="button" class="btn btn-secondary p-0 custom-popover-btn"
+                                        data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
+                                        data-bs-trigger="focus"
+                                        data-bs-custom-class="popover-wide"
+                                        data-bs-title="Устный счёт"
+                                        data-bs-content="Описание упражнения">?
+                                </button> -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <div class="row align-items-top">
+                            <div class = "col" style="z-index:10">
+                                <div class="row justify-content-center">
+                                    <div class="p-0 mental" id="exercise_box">
+                                        <div id="flying_block_with_symbols" style="visibility: hidden;">
+                                            <div class="d-flex justify-content-center px-5 pt-4 pb-2" id="equation">
+                                                &nbsp;
+                                            </div>
+                                            <div class="d-flex justify-content-center px-5 pt-2 pb-4" id="hand">
+                                                &nbsp;
+                                            </div>
+                                        </div>
+                                        <button id="close_exercise" type="button" role="button" class="btn-close p-3 position-absolute top-0 end-0" aria-label="Close" style="display: none;" onclick="stop_mental_arithmetic()"></button>
+                                    </div>
+                                </div>
+                            </div> <!-- div col -->
+                            <div class="col-4 align-items-center">
+                                <div class="all-switchers-container">
+                                    <div class = "switch-container my-0">
+                                        <div class="row align-items-start">
+                                            <div class="col-3 me-3" style="padding: 10px 0 6px;">Скорость символов</div>
+                                            <div class="col">
+                                                <div class="input-group" style="width: 48%;">
+                                                    <input type="number" min="1" max="10" class="form-control" id="input_velocity" placeholder="1...10" value="5" autocomplete="off" required aria-label="velocity switcher">
+                                                    <button class="btn btn-outline-secondary" type="button" id="btn_velocity_decrease" name="btn-change-velocity" data-change="-1" style="font-weight:800;">—</button>
+                                                    <button class="btn btn-outline-secondary" type="button" id="btn_velocity_increase" name="btn-change-velocity" data-change="1" style="font-size: 30px; line-height: 30px;">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container frequency -->
+                                    <div class = "switch-container">
+                                        <div class="row align-items-center">
+                                            <div class="col-3 me-3" style="padding: 6px 0 6px;">Знак</div>
+                                            <div class="col">
+                                                <div class="btn-group" role="group" aria-label="Button group — select sign">
+                                                    <input type="radio" class="btn-check" name="btnradio-sign" id="btnradio-sign-1" autocomplete="off" data-sign="+" checked>
+                                                    <label class="btn btn-outline-primary" style="width: 60px;font-size: 30px;line-height: 30px;font-weight: 400;" for="btnradio-sign-1">+</label>
+
+                                                    <input type="radio" class="btn-check" name="btnradio-sign" id="btnradio-sign-2" autocomplete="off" data-sign="−">
+                                                    <label class="btn btn-outline-primary" style="width: 60px;font-size: 30px;line-height: 30px;font-weight: 400;" for="btnradio-sign-2">−</label>
+
+                                                    <input type="radio" class="btn-check" name="btnradio-sign" id="btnradio-sign-3" autocomplete="off" data-sign="×">
+                                                    <label class="btn btn-outline-primary" style="width: 60px;font-size: 30px;line-height: 30px;font-weight: 400;" for="btnradio-sign-3">×</label>
+
+                                                    <input type="radio" class="btn-check" name="btnradio-sign" id="btnradio-sign-4" autocomplete="off" data-sign="0">
+                                                    <label class="btn btn-outline-primary"
+                                                    style="height: 44px;display: flex;align-items: center !important;justify-content: center;" for="btnradio-sign-4">Любой</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container sign -->
+                                    <div class = "switch-container mb-0">
+                                        <div class="row align-items-start">
+                                            <div class="col-3 me-3" style="padding: 6px 0 6px;">Числа</div>
+                                            <div class="col">
+                                                <div class="btn-group-vertical" role="group" aria-label="Button group — select number types" style="width: 48%;">
+                                                    <input type="radio" class="btn-check" name="btnradio-num-types" id="btnradio-num-types-1" autocomplete="off" data-num-types="0" checked>
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-num-types-1">Любые</label>
+
+                                                    <input type="radio" class="btn-check" name="btnradio-num-types" id="btnradio-num-types-2" autocomplete="off" data-num-types="1">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-num-types-2">Десятки</label>
+
+                                                    <input type="radio" class="btn-check" name="btnradio-num-types" id="btnradio-num-types-3" autocomplete="off" data-num-types="2">
+                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-num-types-3">Сотни</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container number types -->
+                                    <div class = "switch-container mt-4 mb-0">
+                                        <div class="row">
+                                            <div class="col-3 p-0 me-3">
+                                                <label for="minimal_value" class="col-form-label">Минимальное значение</label>
+                                            </div>
+                                            <div class="col-3">
+                                                <input type="text" maxlength="4" min="1" max="1000" id="minimal_value" class="form-control" aria-describedby="minimal_value_description" value="100" autocomplete="off" pattern="^(?:[1-9]|[1-9][0-9]|[1-9][0-9][0-9]|1000)$" required>
+                                            </div>
+                                            <div class="col-auto px-0" style="padding-top: 6px!important;">
+                                                <span id="minimal_value_description" class="form-text">
+                                                —&nbsp;&nbsp;&nbsp;от&nbsp;1 до&nbsp;1000
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container minimal value -->
+                                    <div class = "switch-container mt-1 mb-0">
+                                        <div class="row">
+                                            <div class="col-3 p-0 me-3">
+                                                <label for="maximum_value" class="col-form-label">Максимальное значение</label>
+                                            </div>
+                                            <div class="col-3">
+                                                <input type="text" maxlength="4" min="1" max="1000" id="maximum_value" class="form-control" aria-describedby="maximum_value_description" value="1000" autocomplete="off" pattern="^(?:[1-9]|[1-9][0-9]|[1-9][0-9][0-9]|1000)$" required>
+                                            </div>
+                                            <div class="col-auto p-0" style="padding-top: 6px!important;">
+                                                <span id="maximum_value_description" class="form-text">
+                                                —&nbsp;&nbsp;&nbsp;от&nbsp;1 до&nbsp;1000
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container maximum value -->
+                                    <div class = "switch-container mt-1 mb-0">
+                                        <div class="row align-items-start">
+                                            <div class="col-3 me-3" style="padding: 6px 0 6px;">Показывать руки</div>
+                                            <div class="col">
+                                                <div class="btn-group" role="group" aria-label="Button group — show hands letters" style="width: 48%;">
+                                                    <input type="radio" class="btn-check" name="btnradio-hands" id="btnradio-hands-1" autocomplete="off" data-hands="1" checked>
+                                                    <label class="btn btn-outline-primary btn-text" for="btnradio-hands-1">Да</label>
+
+                                                    <input type="radio" class="btn-check" name="btnradio-hands" id="btnradio-hands-2" autocomplete="off" data-hands="0">
+                                                    <label class="btn btn-outline-primary btn-text" for="btnradio-hands-2">Нет</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container hands -->
+                                    <div class = "switch-container mb-0" style="display: none;">
+                                        <div class="row">
+                                            <div class="col-3 p-0 me-3">
+                                                <label for="maximum_result" class="col-form-label">Максимальный результат</label>
+                                            </div>
+                                            <div class="col-3">
+                                                <input type="text" maxlength="4" min="1" max="1000" id="maximum_result" class="form-control" aria-describedby="maximum_result_description" value="1" autocomplete="off" pattern="^(?:[1-9]|[1-9][0-9]|[1-9][0-9][0-9]|1000)$" required>
+                                            </div>
+                                            <div class="col-auto p-0" style="padding-top: 6px!important;">
+                                                <span id="maximum_result_description" class="form-text">
+                                                —&nbsp;&nbsp;&nbsp;от&nbsp;1 до&nbsp;1000
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div> <!-- div switch-container maximum result -->
+                                </div> <!-- div all-switchers-container -->
+                                <div class="start-stop-container" style="margin-top: 178px!important;" id="start_stop_container">
+                                    <div class="row justify-content-start">
+                                        <button class="schulte-btn" id="start_button" onclick="start_mental_arithmetic()">Начать&nbsp;тест</button>
+                                    </div>
+                                    <div class="row justify-content-center" id="switchers_error">&nbsp;</div>
+                                </div> <!-- div start-stop-container -->
+                            </div> <!-- div col align-items-center -->
+                        </div> <!-- row align-items-top-->
+                    </div> <!-- div table-container -->
+                </div> <!-- div col -->
+            </div> <!-- row block -->
+        </div> <!-- div container -->
+        <div class="mobile_plug flex-column justify-content-center">
+            <p>Устный счёт</p>
+            <h2>Тренажёры доступны только на&nbsp;десктоп-версии</h2>
+            <img style="width:75%" src="img/schulte-pattern.svg">
+        </div>
+    </body>
+</html>

@@ -26,11 +26,11 @@
         <script src="js/popper.min.js"></script>
         <script src="js/bootstrap.bundle.min.js"></script>
         <script src="js/utils.js"></script>
-        <script src="js/strup_scripts.js"></script>
+        <script src="js/reading_automatisation.js"></script>
         <script>
-            document.addEventListener("DOMContentLoaded", () => ready_strup());
+            document.addEventListener("DOMContentLoaded", () => ready_reading_automation());
         </script>
-        <title>Тест Струпа</title>
+        <title>Автоматизация чтения</title>
     </head>
     <body>
         <nav class="navbar fixed-top" id="navbar">
@@ -75,18 +75,15 @@
             <div class="row block">
                 <div class="col">
                     <div class="row align-items-top">
-                        <div class = "col-8">
+                        <div class = "col-12 p-0">
                             <div class="d-flex justify-content-center align-items-center">
-                                <h2 id="exercise_title">Тест Струпа</h2>
+                                <h2 id="exercise_title" class="p-0">Автоматизация чтения</h2>
                                 <button type="button" class="btn btn-secondary p-0 custom-popover-btn"
                                         data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true"
                                         data-bs-trigger="focus"
                                         data-bs-custom-class="popover-wide"
-                                        data-bs-title="Тест Струпа"
-                                        data-bs-content="Эффектом Струпа в&nbsp;психологии называют задержку реакции при прочтении слов, когда цвет слов не&nbsp;совпадает с&nbsp;написанными словами (к&nbsp;примеру, слово «красный» написано синим).<br><br>
-                                        Эффект назван в&nbsp;честь Джона Ридли Струпа, впервые опубликовавшего этот тест на&nbsp;английском в&nbsp;1935 году.<br><br>
-                                        Тесты Струпа использовались в&nbsp;США для&nbsp;определения изменений в&nbsp;мозгу возрастных и&nbsp;не&nbsp;только. Например, пациенты в&nbsp;депрессии медленнее называли цвета упаднических слов («война», «рак», «убийство»).<br><br>
-                                        В&nbsp;наши дни тест Струпа широко известен как метод диагностики когнитивной ригидности и&nbsp;гибкости познавательного контроля (гибкости когнитивного мышления), а&nbsp;задачи на&nbsp;его основе часто включаются в&nbsp;программы по&nbsp;саморазвитию и&nbsp;тренировке мозга">?
+                                        data-bs-title="Автоматизация чтения"
+                                        data-bs-content="описание упражнения">?
                                 </button>
                             </div>
                         </div>
@@ -95,48 +92,46 @@
                         <div class="row align-items-top">
                             <div class = "col" style="z-index:10">
                                 <div class="row justify-content-center">
-                                    <div class="p-0" id="strup_box">
-                                        <div name="text-color" class="px-4 py-3 strup-title-word"
-                                        style="margin: 18px 0 0 18px; background-color: #EC6A3A;">СИНИЙ</div>
-                                        <div name="text-color" class="px-4 py-3 strup-title-word"
-                                        style="margin: 20px 0 0 76px; background-color: #0D2E7B;">КРАСНЫЙ</div>
-                                        <div name="text-color" class="px-4 py-3 strup-title-word"
-                                        style="margin: 20px 0 0 134px; background-color: #22C285;">ФИОЛЕТОВЫЙ</div>
-                                        <div name="text-color" class="px-4 py-3 strup-title-word"
-                                        style="margin: 20px 0 0 192px; background-color: #C10000;">ЖЁЛТЫЙ</div>
-                                        <div name="text-color" class="px-4 py-3 strup-title-word"
-                                        style="margin: 20px 0 0 250px; background-color: #0FA8E2;">ОРАНЖЕВЫЙ</div>
-                                        <div name="text-color" class="px-4 py-3 strup-title-word"
-                                        style="margin: 20px 0 0 308px; background-color: #FFC247; text-shadow: .5px .5px #C58D00;">ЗЕЛЁНЫЙ</div>
-                                        <div name="text-color" class="px-4 py-3 strup-title-word"
-                                        style="margin: 20px 0 0 366px; background-color: #700661;">ГОЛУБОЙ</div>
-                                        <div class="px-5 py-3" id="strup_word" style="border-radius: 16px;">
-                                            &nbsp;
+                                    <div class="p-0 reading" id="exercise_box">
+                                        <div id="flying_block_with_symbols" style="visibility: hidden;">
+                                            <div class="d-flex justify-content-center px-5 pt-4 pb-2" id="word">
+                                                &nbsp;
+                                            </div>
+                                            <div class="d-flex justify-content-center px-5 pt-2 pb-4" id="hand">
+                                                &nbsp;
+                                            </div>
                                         </div>
-                                        <div class="px-3 py-3" id="strup_attention">цвет</div>
-                                        <button id="close_exercise" type="button" role="button" class="btn-close p-3 position-absolute top-0 end-0" aria-label="Close" style="display: none;" onclick="stop_strup()"></button>
+                                        <button id="close_exercise" type="button" role="button" class="btn-close p-3 position-absolute top-0 end-0" aria-label="Close" style="display: none;" onclick="stop_reading_automatisation()"></button>
+                                        <div id="exercise_ended" class="row justify-content-center position-absolute top-50 start-50">
+                                            <div class="col d-flex flex-column justify-content-center align-items-center" onclick="restart(-1)">
+                                                <span id="text_prev" class="mb-3" style="font-size: 20px; font-weight: 600;">Группа 2</span>
+                                                <svg class="nav-btns-reading" xmlns="http://www.w3.org/2000/svg" alt="Предыдущая группа слов" width="112" height="125" viewBox="0 0 112 125">
+                                                <path d="M102.789 0.117113C101.028 -0.124152 99.0778 -0.00782791 97.4118 0.608258C65.965 18.4877 34.3718 36.2335 3.2693 54.6903C-1.03554 58.9339 -1.05706 65.8057 3.01532 70.2131C34.1006 88.8852 65.8961 106.562 97.4162 124.541C107.58 126.979 114.119 119.384 110.985 109.462C106.034 93.7967 99.1682 78.3213 94.0584 62.6606C99.0778 46.9052 106.009 31.4126 110.976 15.6873C111.911 12.7318 112.397 11.2239 111.596 8.0573C110.598 4.12383 106.844 0.668574 102.789 0.117113Z"/>
+                                                </svg>
+                                            </div>
+
+                                            <div class="col d-flex flex-column justify-content-center align-items-center">
+                                                <span id="text_current" class="mb-3" style="font-size: 20px; font-weight: 600;">Группа 3</span>
+                                                <button class="schulte-btn" id="start_again" style="height:125px;" onclick="restart(0)">Заново</button>
+                                            </div>
+
+                                            <div class="col d-flex flex-column justify-content-center align-items-center"  onclick="restart(1)">
+                                                <span id="text_next" class="mb-3" style="font-size: 20px; font-weight: 600;">Группа 4</span>
+                                                <svg class="nav-btns-reading" xmlns="http://www.w3.org/2000/svg" alt="Следующая группа слов" width="112" height="125" viewBox="0 0 112 125" style="transform: rotate(180deg)">
+                                                <path d="M102.789 0.117113C101.028 -0.124152 99.0778 -0.00782791 97.4118 0.608258C65.965 18.4877 34.3718 36.2335 3.2693 54.6903C-1.03554 58.9339 -1.05706 65.8057 3.01532 70.2131C34.1006 88.8852 65.8961 106.562 97.4162 124.541C107.58 126.979 114.119 119.384 110.985 109.462C106.034 93.7967 99.1682 78.3213 94.0584 62.6606C99.0778 46.9052 106.009 31.4126 110.976 15.6873C111.911 12.7318 112.397 11.2239 111.596 8.0573C110.598 4.12383 106.844 0.668574 102.789 0.117113Z"/>
+                                                </svg>
+                                            </div>
+
+                                            <button class="text-btn" id="show_settings" onclick="stop_reading_automatisation()">Показать настройки</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div> <!-- div col -->
-                            <div class="col-4 align-items-center find-char-text">
+                            <div class="col-4 align-items-center">
                                 <div class="all-switchers-container">
-                                    <div class = "switch-container">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 p-0">Выделять цветом</div>
-                                            <div class="col">
-                                                <div class="btn-group" role="group" aria-label="Button group — what to highlight in color">
-                                                    <input type="radio" class="btn-check" name="btnradio-what-colored" id="btnradio-what-colored-1" data-what-colored="1" autocomplete="off" checked>
-                                                    <label class="btn btn-outline-primary px-3" for="btnradio-what-colored-1">Фон</label>
-
-                                                    <input type="radio" class="btn-check" name="btnradio-what-colored" id="btnradio-what-colored-2" data-what-colored="2" autocomplete="off">
-                                                    <label class="btn btn-outline-primary" for="btnradio-what-colored-2">Слово</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div> <!-- div switch-container what-colored -->
-                                    <div class = "switch-container">
+                                    <div class = "switch-container mb-0">
                                         <div class="row align-items-start">
-                                            <div class="col-3" style="padding: 10px 0 6px;">Скорость слов</div>
+                                            <div class="col-3" style="padding: 10px 0 6px;">Скорость символов</div>
                                             <div class="col">
                                                 <div class="input-group" style="width: 48%;">
                                                     <input type="number" min="1" max="10" class="form-control" id="input_velocity" placeholder="1...10" value="5" autocomplete="off" required aria-label="velocity switcher">
@@ -148,56 +143,53 @@
                                     </div> <!-- div switch-container velocity -->
                                     <div class = "switch-container">
                                         <div class="row align-items-start">
-                                            <div class="col-3" style="padding: 6px 0 6px;">Частота «хлопков»</div>
+                                            <div class="col-3" style="padding: 10px 0 6px;">Группы слов</div>
                                             <div class="col">
-                                                <div class="btn-group-vertical" role="group" aria-label="Button group — frequency">
-                                                    <input type="radio" class="btn-check" name="btnradio-frequency" id="btnradio-frequency-1" autocomplete="off" data-frequency="0" checked onclick="">
-                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-frequency-1">Без «хлопков»</label>
-
-                                                    <input type="radio" class="btn-check" name="btnradio-frequency" id="btnradio-frequency-2" autocomplete="off" data-frequency="1" onclick="">
-                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-frequency-2">Редко&nbsp;</label>
-
-                                                    <input type="radio" class="btn-check" name="btnradio-frequency" id="btnradio-frequency-3" autocomplete="off" data-frequency="2" onclick="">
-                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-frequency-3">Средне</label>
-
-                                                    <input type="radio" class="btn-check" name="btnradio-frequency" id="btnradio-frequency-4" autocomplete="off" data-frequency="3" onclick="">
-                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-frequency-4">Часто</label>
-
-                                                    <input type="radio" class="btn-check" name="btnradio-frequency" id="btnradio-frequency-5" autocomplete="off" data-frequency="4" onclick="">
-                                                    <label class="btn btn-outline-primary btn-text-left" for="btnradio-frequency-5">Очень часто</label>
-                                                </div>
+                                                <select class="form-select" id="select_word_group" aria-label="Выберите группу слов" style="width: 85%;">
+                                                    <option id="word-group-0" value="" disabled selected>Выберите группу</option>
+                                                    <option id="word-group-1" value="1">Группа 1</option>
+                                                    <option id="word-group-2" value="2">Группа 2</option>
+                                                    <option id="word-group-3" value="3">Группа 3</option>
+                                                    <option id="word-group-4" value="4">Группа 4</option>
+                                                    <option id="word-group-5" value="5">Группа 5</option>
+                                                    <option id="word-group-6" value="6">Группа 6</option>
+                                                    <option id="word-group-7" value="7">Группа 7</option>
+                                                    <option id="word-group-8" value="8">Группа 8</option>
+                                                    <option id="word-group-9" value="9">Группа 9</option>
+                                                    <option id="word-group-10" value="10">Группа 10</option>
+                                                    <option id="word-group-11" value="11">Группа 11</option>
+                                                    <option id="word-group-12" value="12">Группа 12</option>
+                                                    <option id="word-group-13" value="13">Группа 13</option>
+                                                    <option id="word-group-14" value="14">Группа 14</option>
+                                                </select>
                                             </div>
                                         </div>
-                                    </div> <!-- div switch-container frequency -->
+                                    </div> <!-- div switch-container word groups -->
                                     <div class = "switch-container">
-                                        <div class="row align-items-center">
-                                            <div class="col-3 p-0">Слово/цвет</div>
+                                        <div class="row align-items-start">
+                                            <div class="col-3" style="padding: 10px 0 6px;">Стартовое слово</div>
                                             <div class="col">
-                                                <div class="btn-group" role="group" aria-label="Button group — word-color">
-                                                    <input type="radio" class="btn-check" name="btnradio-word-color" id="btnradio-word-color-1" data-word-color="1" autocomplete="off" checked>
-                                                    <label class="btn btn-outline-primary px-3" for="btnradio-word-color-1">Включить</label>
-
-                                                    <input type="radio" class="btn-check" name="btnradio-word-color" id="btnradio-word-color-2" data-word-color="2" autocomplete="off">
-                                                    <label class="btn btn-outline-primary" for="btnradio-word-color-2">Выключить</label>
-                                                </div>
+                                                <select class="form-select" id="starting_words" disabled aria-label="Выберите стартовое слово" style="width: 85%;">
+                                                    <option id="starting-words-0" value="" disabled selected>Выберите слово</option>
+                                                </select>
                                             </div>
                                         </div>
-                                    </div> <!-- div switch-container word-color -->
+                                    </div> <!-- div switch-container start word in group -->
                                 </div> <!-- div all-switchers-container -->
                                 <div class="start-stop-container" style="margin-top: 166px!important;" id="start_stop_container">
                                     <div class="row justify-content-start">
-                                        <button class="schulte-btn" id="start_button" onclick="start_strup()">Начать&nbsp;тест</button>
+                                        <button class="schulte-btn" id="start_button" onclick="start_reading_automatisation()">Начать&nbsp;тест</button>
                                     </div>
                                     <div class="row justify-content-center" id="switchers_error">&nbsp;</div>
                                 </div> <!-- div start-stop-container -->
-                            </div> <!-- div col align-items-center find-char-text -->
+                            </div> <!-- div col align-items-center -->
                         </div> <!-- row align-items-top-->
                     </div> <!-- div table-container -->
                 </div> <!-- div col -->
             </div> <!-- row block -->
         </div> <!-- div container -->
         <div class="mobile_plug flex-column justify-content-center">
-            <p>Тест Струпа</p>
+            <p>Автоматизация чтения</p>
             <h2>Тренажёры доступны только на&nbsp;десктоп-версии</h2>
             <img style="width:75%" src="img/schulte-pattern.svg">
         </div>

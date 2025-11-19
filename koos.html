@@ -39,7 +39,7 @@
                 <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="width: 300px;">
+                <div class="offcanvas offcanvas-start offcanvas-navbar-width" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
                     <div class="offcanvas-header">
                         <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Меню</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -48,21 +48,23 @@
                         <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
                             <li class="nav-item"><a class="nav-link" aria-current="page" href="index.html">Главная</a></li>
                             <p class="p-2 m-0">Тренажёры</p>
-                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
-                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="gorbov.html">Таблица Горбова</a></li>
-                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="gorbov-multiplication.html">Таблица Горбова, умножение</a></li>
-                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="strup.html">Тест Струпа</a></li>
-                            <li class="nav-item py-1 ps-3"><a class="nav-link" href="koos.html">Кубики Кооса</a></li>
-                            <li class="nav-item pb-1 ps-3"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
-                            <li class="nav-item pb-1 ps-3"><a class="nav-link" href="cypher.html">Алфавит</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="gorbov.html">Таблица Горбова</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="gorbov-multiplication.html">Таблица Горбова, умножение</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="strup.html">Тест Струпа</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="koos.html">Кубики Кооса</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="running_dot.html">Бегающая точка</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="cypher.html">Шифр простой замены</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="hands_and_letters.html">Алфавит</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="mental-arithmetic.html">Устный счёт</a></li>
+                            <li class="nav-item pb-1 ps-4"><a class="nav-link" href="reading_automatisation.html">Автоматизация чтения</a></li>
                             <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
                         </ul>
                     </div>
                     <div class="container p-0">
                         <div class="offcanvas-body align-items-end">
                             <div>
-                                Разработка: <a class="link-secondary link-offset-1 link-underline-opacity-50 link-underline-opacity-75-hover" target="_blank"
-                                style="text-decoration-thickness: 1px;"
+                                Разработка: <a class="link-secondary link-offset-1 link-underline-opacity-50 link-underline-opacity-75-hover text-decoration-thickness-1" target="_blank"
                                 rel="noopener" href="https://t.me/vebebev">@vebebev</a>
                             </div>
                         </div>
@@ -73,7 +75,7 @@
         <div data-bs-theme="dark" id="close_exercise" style="display:none; font-size:20px; position:absolute; right:0px; top:0px;">
             <button type="button" role="button" class="btn-close p-4" aria-label="Close"  onclick="stop_koos()" ></button>
         </div>
-        <div class="container">
+        <div class="container desktop">
             <div class="row block">
                 <div class="col">
                     <div class="row align-items-start">
@@ -100,7 +102,11 @@
                                 <div class="row justify-content-center">
                                     <div class="koos-grid grid-border justify-content-center p-0" id="koos_task_grid">
                                         <div class="koos-cell-container" name="cell_container__task">
-                                            <div class="koos-cell-topleft" name="cell__task" data-number="1"></div>
+                                            <div class="koos-cell-topleft" name="cell__task" data-number="1" style="position: relative;">
+                                                <!-- <div style="position: absolute; top: -140px; left: 0;">
+                                                    <img width="48px" src="img/rotate-right.svg">
+                                                </div> -->
+                                            </div>
                                         </div>
                                         <div class="koos-cell-container" name="cell_container__task">
                                             <div class="koos-cell-topleft" name="cell__task" data-number="2"></div>
@@ -271,5 +277,10 @@
                 </div>  <!-- div col -->
             </div>  <!-- div row block -->
         </div> <!-- div container -->
+        <div class="mobile_plug flex-column justify-content-center" style="color: #dee2e6;">
+            <p>Кубики Кооса</p>
+            <h2>Тренажёры доступны только на&nbsp;десктоп-версии</h2>
+            <img style="width:75%" src="img/schulte-pattern.svg">
+        </div>
     </body>
 </html>
