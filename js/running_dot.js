@@ -1,4 +1,4 @@
-const DIRECTION_HORIZONTAL = 1 
+const DIRECTION_HORIZONTAL = 1
 const DIRECTION_VERTICAL   = 2
 const DIRECTION_DIAGONAL_1 = 3
 const DIRECTION_DIAGONAL_2 = 4
@@ -52,11 +52,8 @@ function ready() {
     box_background = document.getElementById('box_background')
     canvas         = document.getElementById('draw_line')
 
-    box_size = getComputedStyle(root_doc, null).getPropertyValue('--box-for-dot-size')
-    box_size = +box_size.substring(0, box_size.length - 2)
-    
-    dot_size = getComputedStyle(root_doc, null).getPropertyValue('--dot-size')
-    dot_size = +dot_size.substring(0, dot_size.length - 2)
+    box_size = get_property_int_value(root_doc, '--box-for-dot-size')
+    dot_size = get_property_int_value(root_doc, '--dot-size')
 
     prev_direction = +document.querySelector('input[type="radio"][name="btnradio-direction"]:checked').getAttribute('data-direction')
     set_initial_position(prev_direction)
@@ -202,7 +199,7 @@ function set_initial_position(direction){
 function make_new_position(x_direction, y_direction){
     const x = dot_current_coords[0] + x_direction * velocity;
     const y = dot_current_coords[1] + y_direction * velocity;
-    return [x, y];    
+    return [x, y];
 }
 
 
@@ -213,21 +210,21 @@ function generate_lemniskate(velocity){
     let lemniskate_a2  = lemniskate_a ** 2
     let lemniskate_4a2 = 4 * lemniskate_a ** 2
     let lemniskate_a4  = lemniskate_a ** 4
-    
+
     let x_arr_left = [- Math.floor(qqq)]
     let x_arr_right = [Math.floor(qqq)]
-    
+
     let y_arr_left = [0]
     let y_arr_right = [0]
-    
+
     let k = box_size/2
-    
+
     lemniskate_x = []
     lemniskate_y = []
     for (let i = - Math.floor(qqq) + velocity; i < 0; i = i + velocity){
         x_arr_left.push(i)
         x_arr_right.unshift(-i)
-        
+
         y = Math.round(Math.sqrt(Math.sqrt(lemniskate_a4 + lemniskate_4a2 * (i ** 2)) - i ** 2 - lemniskate_a2))
         y_arr_left.push(y)
         y_arr_right.unshift(-y)
@@ -235,7 +232,7 @@ function generate_lemniskate(velocity){
 
     lemniskate_y = x_arr_left.concat(0, x_arr_right.slice(), x_arr_right.slice().reverse(), 0, x_arr_left.slice().reverse())
     lemniskate_x = y_arr_left.concat(0, y_arr_right.slice(), y_arr_left.slice(), 0, y_arr_right.slice())
-    
+
     for (let i = 0; i < lemniskate_x.length; i++){
         let a = lemniskate_x[i]
         // lemniskate_x[i] = k - lemniskate_y[i] - dot_size/2
@@ -323,7 +320,7 @@ function resize_box(make_bigger){
         btn_stop.style.setProperty('width', '280px')
 
         box_size = mm
-        root_doc.style.setProperty('--box-for-dot-size', mm + 'px')    
+        root_doc.style.setProperty('--box-for-dot-size', mm + 'px')
     }
     else {
         box_background.style.setProperty('display', 'none')
@@ -370,8 +367,8 @@ function start_running() {
         }
 
         set_initial_position(DIRECTION_SELECTED)
-        
-        
+
+
         switch (DIRECTION_SELECTED) {
             case DIRECTION_HORIZONTAL:
                 exercise_interval_id = setInterval(update_position, 5, 1, 0);
@@ -396,11 +393,15 @@ function start_running() {
                 exercise_interval_id = setInterval(update_position, 5, -1, 1);
                 break;
             case DIRECTION_INFINITY:
-                generate_lemniskate(VELOCITY_SELECTED)
+                // generate_lemniskate(VELOCITY_SELECTED)
+                // let moveDot = update_position_lemniskate
+                let moveDot = generate_lemniskate_2(VELOCITY_SELECTED)
                 console.log('Длина лемнискаты')
                 console.log(lemniskate_x.length)
                 lemniskate_index = 0
-                exercise_interval_id = setInterval(update_position_lemniskate, 5)
+                // exercise_interval_id = setInterval(update_position_lemniskate, 5)
+                // moveDot()
+                exercise_interval_id = setInterval(moveDot, 5)
                 break;
         }
 
@@ -451,17 +452,106 @@ function animate_figure(){
     console.log(speed)
     update_position()
     // $('.a').animate({ top: new_pos[0], left: new_pos[1] }, speed, function(){
-    //     animate_figure();        
+    //     animate_figure();
     // });
-    
+
 };
 
 function get_new_speed(prev, next) {
     let x = Math.abs(prev[0] - next[0])
     let y = Math.abs(prev[1] - next[1])
-    
+
     const greatest = x > y ? x : y
     const speed_mult = 0.1
 
     return Math.ceil(greatest/speed_mult)
+}
+
+
+// *********************
+function generate_lemniskate_2(velocity) {
+    // Параметр лемнискаты: половина расстояния между фокусами
+    const a = (box_size - dot_size) / 2 / Math.sqrt(2);
+    const a_sqrt2 = a * Math.sqrt(2);
+
+    // Таблица: t → s(t) (длина дуги)
+    const steps = 1000;
+    const dt = 2 * Math.PI / steps;
+    const arcLengthTable = [];
+    let totalLength = 0;
+
+    for (let i = 0; i <= steps; i++) {
+        const t = i * dt;
+        // Производные x'(t), y'(t)
+        const sin_t = Math.sin(t);
+        const cos_t = Math.cos(t);
+        const denom = 1 + sin_t * sin_t;
+        const denom2 = denom * denom;
+
+        const dx_dt = (
+            -a_sqrt2 * sin_t / denom -
+            a_sqrt2 * cos_t * 2 * sin_t * cos_t / denom2
+        );
+        const dy_dt = (
+            a_sqrt2 * (cos_t * cos_t - sin_t * sin_t) / denom -
+            a_sqrt2 * cos_t * sin_t * 2 * sin_t * cos_t / denom2
+        );
+
+        const speed = Math.sqrt(dx_dt * dx_dt + dy_dt * dy_dt);
+        if (i > 0) {
+            totalLength += speed * dt;
+        }
+        arcLengthTable.push({ t, s: totalLength });
+    }
+
+    // Функция: по длине дуги s вернуть параметр t
+    function getTFromS(s) {
+        // Нормализуем s к полному циклу
+        s = s % totalLength;
+        // Ищем в таблице
+        for (let i = 1; i < arcLengthTable.length; i++) {
+            if (arcLengthTable[i].s >= s) {
+                const prev = arcLengthTable[i - 1];
+                const curr = arcLengthTable[i];
+                // Линейная интерполяция
+                const t = prev.t + (s - prev.s) * (curr.t - prev.t) / (curr.s - prev.s);
+                return t;
+            }
+        }
+        return 2 * Math.PI;
+    }
+
+    // Текущее время движения (в условных единицах)
+    let time = 0;
+
+    // Функция обновления позиции точки
+    const startAngle = Math.PI
+    const initialT = startAngle % (2 * Math.PI)
+    function updatePosition() {
+        time += velocity;
+        const s = time;
+        let t = getTFromS(s);
+
+        // Сдвигаем t на начальный угол и нормализуем
+        t = (t + initialT) % (2 * Math.PI);
+        if (t < 0) t += 2 * Math.PI;
+
+        const sin_t = Math.sin(t);
+        const cos_t = Math.cos(t);
+        const denom = 1 + sin_t * sin_t;
+
+        const x = a_sqrt2 * cos_t / denom;
+        const y = a_sqrt2 * cos_t * sin_t / denom;
+
+        // Центрируем и учитываем размер точки
+        const k = box_size / 2;
+        const dotX = k + x - dot_size / 2;
+        const dotY = k - y - dot_size / 2;
+
+        set_position([dotX, dotY]);
+        return { dotX, dotY };
+    }
+
+    // Возвращаем функцию обновления
+    return updatePosition;
 }

@@ -3,6 +3,7 @@ const CELL_CLASSES = ['koos-cell-white', 'koos-cell-red', 'koos-cell-topleft', '
 const IMAGE_RAND_SELECTIVE__RANDOM = 1
 const TABLE_SIZE      = [[2, 2], [3, 2], [3,3]]
 const MAX_NUM_CUBES   = 9
+const MAX_SOLID_CUBES = 3
 const INIT_TABLE_SIZE = 3
 
 // let exercise_title_container = null
@@ -11,7 +12,6 @@ let koos_task_grid = null
 let koos_cell_container_border_style = 'solid'
 let grid_container_border_style = 'none'
 
-// let switchers_column = null
 let all_switchers_container = null
 let koos_solvation_container = null
 let koos_solvation_grid = null
@@ -35,11 +35,9 @@ let root_doc
 function ready_koos() {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
     const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
-    // exercise_title_container = document.getElementById('exercise_title_container')
     btn_close_exercise = document.getElementById('close_exercise')
     koos_task_grid     = document.getElementById('koos_task_grid')
 
-    // switchers_column         = document.getElementById('switchers_column')
     all_switchers_container  = document.getElementsByClassName('all-switchers-container')
     koos_solvation_container = document.getElementsByClassName('koos-solvation-container')
     koos_solvation_grid      = document.getElementById('koos_solvation_grid')
@@ -79,7 +77,6 @@ function create_new_cells_for_koos_table(size_vert, size_hor, grid_element, /*bo
         cell_container = document.createElement('div')
         cell_container.classList.add('koos-cell-container')
         cell_container.setAttribute('name', cssname_to_select_containers)
-        // cell_container.style.setProperty('border-style', koos_cell_container_border_style)
 
         new_cell = document.createElement('div')
         new_cell.setAttribute('name', cssname_to_select_cells)
@@ -96,7 +93,6 @@ function create_new_cells_for_koos_table(size_vert, size_hor, grid_element, /*bo
         grid_element.append(cell_container)
     }
     grid_element.style.visibility = 'visible'
-    // grid_element.style.setProperty('border-style', grid_container_border_style)
 }
 
 
@@ -135,7 +131,12 @@ function generate_arr_tiles(table_size__selected) {
     let num = TABLE_SIZE[table_size__selected][0] * TABLE_SIZE[table_size__selected][1]
     let arr = new Array(num)
     for (let i = 0; i < num; i++) {
-        arr[i] = get_random_int(0, 5)
+        if (arr.filter(x => x < 2).length < MAX_SOLID_CUBES) {
+            arr[i] = get_random_int(0, 5)
+        }
+        else{
+            arr[i] = get_random_int(2, 5)
+        }
     }
     return arr
 }
@@ -203,7 +204,6 @@ function init_free_cells() {
         cell_container = document.createElement('div')
         cell_container.classList.add('koos-cell-container')
         cell_container.setAttribute('name', cssname_to_select_containers)
-        // cell_container.style.setProperty('border-style', koos_cell_container_border_style)
 
         new_cell = document.createElement('div')
         new_cell.setAttribute('name', cssname_to_select_cells)

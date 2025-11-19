@@ -59,15 +59,21 @@ function ready() {
 
 
 function create_new_cells_for_table(size, grid_table) {
-    let new_cell
-    for (let i = 0; i < size*size; i++) {
-        new_cell = document.createElement('div')
-        new_cell.setAttribute('class', 'cell')
-        new_cell.setAttribute('data-number', i+1)
-        new_cell.innerHTML = '*'
-        new_cell.style.setProperty('padding-top', 'var(--asterisk-shift-pdt)')
-        grid_table.appendChild(new_cell)
+    const fragment = document.createDocumentFragment()
+    const total_size = size * size
+    for (let i = 0; i < total_size; i++) {
+        fragment.appendChild(create_cell(i + 1))
     }
+    grid_table.appendChild(fragment)
+}
+
+function create_cell(number) {
+    const cell = document.createElement('div')
+    cell.className = 'cell'
+    cell.dataset.number = number
+    cell.textContent = '*';
+    cell.style.paddingTop = 'var(--asterisk-shift-pdt)';
+    return cell;
 }
 
 
@@ -78,7 +84,7 @@ function draw_table(size){
     empty_grid_cells_array(grid_cells)
     create_new_cells_for_table(size, grid_table)
 
-    grid_table.style.setProperty('grid-template-columns', 'repeat(' + size + ', var(--cell-size))')
+    grid_table.style.setProperty('grid-template-columns', `repeat(${size}, var(--cell-size))`)
 }
 
 
@@ -87,82 +93,78 @@ function make_disabled_start_symbol(flag) {
     if (flag) {
         entered_first_symbol = start_symbol_node.value
         start_symbol_node.value = '1'
-        start_symbol_help_inline_node.style.setProperty('visibility', 'hidden')
-        error_text_node.style.setProperty('visibility', 'hidden')
-    }
-    else {
-        if (ELEMENTS_ALPHABET_RU.indexOf(entered_first_symbol) >=0) {
-            start_symbol_node.value = entered_first_symbol
-        }
-        else{
-            start_symbol_node.value = 'А'
-        }
-        start_symbol_help_inline_node.style.setProperty('visibility', 'visible')
+        start_symbol_help_inline_node.style.visibility = 'hidden'
+        error_text_node.style.visibility = 'hidden'
+    } else {
+        const is_valid_symbol = ELEMENTS_ALPHABET_RU.includes(entered_first_symbol)
+        start_symbol_node.value = is_valid_symbol ? entered_first_symbol : 'А'
+
+        start_symbol_help_inline_node.style.visibility = 'visible'
     }
 }
 
 
 function stop_schulte() {
-    clearInterval(exercise_timer_id);
+    clearInterval(exercise_timer_id)
 
-    root_doc.style.setProperty('--cell-blur', 'blur(8px)');
-    root_doc.style.setProperty('--cell-cursor', 'default');
+    root_doc.style.setProperty('--cell-blur', 'blur(8px)')
+    root_doc.style.setProperty('--cell-cursor', 'default')
 
-    set_asterisks_into_cells();
+    set_asterisks_into_cells()
 
-    display_hide_containers(all_switchers_container, 'block');
-    display_hide_containers(results_container, 'none');
+    display_hide_containers(all_switchers_container, 'block')
+    display_hide_containers(results_container, 'none')
 
-    find_number_title_node.style.setProperty('visibility', 'hidden');
-    find_number_node.style.setProperty('visibility', 'hidden');
+    find_number_title_node.style.visibility = 'hidden'
+    find_number_node.style.visibility = 'hidden'
 
-    btn_stop.style.setProperty('display', 'none');
-    btn_start.style.setProperty('display', 'block');
+    btn_stop.style.display = 'none'
+    btn_start.style.display = 'block'
 }
 
 
 function show_settings() {
-    root_doc.style.setProperty('--cell-blur', 'blur(8px)');
-    root_doc.style.setProperty('--cell-cursor', 'default');
+    root_doc.style.setProperty('--cell-blur', 'blur(8px)')
+    root_doc.style.setProperty('--cell-cursor', 'default')
 
-    set_asterisks_into_cells();
+    set_asterisks_into_cells()
 
-    display_hide_containers(all_switchers_container, 'block');
-    display_hide_containers(results_container, 'none');
+    display_hide_containers(all_switchers_container, 'block')
+    display_hide_containers(results_container, 'none')
 
-    find_number_title_node.style.setProperty('visibility', 'hidden');
-    find_number_node.style.setProperty('visibility', 'hidden');
+    find_number_title_node.style.visibility = 'hidden'
+    find_number_node.style.visibility = 'hidden'
 
-    btn_show_settings.style.setProperty('display', 'none');
-    btn_start.style.setProperty('display', 'block');
-    btn_again.style.setProperty('display', 'none');
+    btn_show_settings.style.display = 'none'
+    btn_start.style.display = 'block'
+    btn_again.style.display = 'none'
 }
 
 
 function check_first_symbol() {
-    entered_first_symbol = '' + start_symbol_node.value
+    const entered_first_symbol = '' + start_symbol_node.value
     return (entered_first_symbol.length == 1 && regex.test(entered_first_symbol))
 }
 
 
 function init_state(table_hint_selected) {
-    error_text_node.style.setProperty('visibility', 'hidden')
+    error_text_node.style.visibility = 'hidden'
 
-    timer_node.style.setProperty('visibility', 'visible')
+    timer_node.style.visibility = 'visible'
 
     if (table_hint_selected == TABLE_HINT_SHOW) {
-        find_number_title_node.style.setProperty('visibility', 'visible')
-        find_number_node.style.setProperty('visibility', 'visible')
+        find_number_title_node.style.visibility = 'visible'
+        find_number_node.style.visibility = 'visible'
     }
     else {
-        find_number_title_node.style.setProperty('visibility', 'hidden')
-	    find_number_node.style.setProperty('visibility', 'hidden')
+        find_number_title_node.style.visibility = 'hidden'
+	    find_number_node.style.visibility = 'hidden'
     }
 
-    btn_start.style.setProperty('display', 'none')
-    btn_again.style.setProperty('display', 'none')
-    btn_stop.style.setProperty('display', 'block')
-    btn_show_settings.style.setProperty('display', 'none')
+    btn_start.style.display = 'none'
+    btn_again.style.display = 'none'
+    btn_stop.style.display = 'block'
+    btn_show_settings.style.display = 'none'
 
     display_hide_containers(all_switchers_container, 'none')
     display_hide_containers(results_container, 'block')
