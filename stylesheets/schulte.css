@@ -595,16 +595,6 @@ input[type="number"]:focus{
     display: none;
     transform: translate(-50%, -65%) !important;
 }
-.exercise-div{
-    background-color: #D31ACA;
-    font-weight: 600;
-    font-size: 32px;
-    line-height: 40px;
-    width: fit-content;
-    border-radius: 16px;
-    color: antiquewhite;
-}
-
 
 .nav-btns-reading {
     cursor: pointer;
@@ -614,4 +604,16 @@ input[type="number"]:focus{
 }
 .nav-btns-reading:hover path{
     fill: #ffc022;
+}
+
+#exercise_timer_reading {
+    bottom: 0px;
+    right: 22px;
+    z-index: 30;
+    visibility: hidden;
+    font-size: 30px;
+    transition: position 1s ease-out;
+    transition: left 1s ease-out;
+    transition: top 1s ease-out;
+    color: lightgray;
 }
