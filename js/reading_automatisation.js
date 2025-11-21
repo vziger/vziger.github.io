@@ -50,13 +50,16 @@ let input_velocity_node = null
 let word_groups_node = null
 let starting_words_node = null
 let exercise_ended_node = null
+let timer_node = null
 
 let group_index = null
 let word_index = null
 let symbols_delay = null
 let exercise_interval_id = null
+let exercise_duration_id = null
 
 let error_text_node = null
+let timer_seconds = null
 
 function ready_reading_automation() {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
@@ -73,6 +76,7 @@ function ready_reading_automation() {
     word_groups_node    = document.getElementById('select_word_group')
     starting_words_node = document.getElementById('starting_words')
     exercise_ended_node = document.getElementById('exercise_ended')
+    timer_node          = document.getElementById('exercise_timer_reading')
 
     error_text_node     = document.getElementById('switchers_error')
 
@@ -112,6 +116,10 @@ function start_reading_automatisation() {
   show_hide_exercise_symbols(true)
   resize_playground(true, exercise_box)
 
+  reset_exercise_duration_timer()
+  timer_node.style.left = `${window.innerWidth - 180}px`
+  exercise_duration_id = setInterval(timer, 1000)
+
   show_next_word()
   exercise_interval_id = setInterval(show_next_word, symbols_delay)
 }
@@ -120,11 +128,16 @@ function stop_reading_automatisation() {
   console.log('stop_reading_automatisation')
 
   clearInterval(exercise_interval_id)
+  clearInterval(exercise_duration_id)
+
   show_hide_exercise_symbols(false)
+
+  timer_node.style.visibility = 'hidden'
   show_settings_btn.style.display = 'none'
   exercise_ended_node.style.visibility = 'hidden'
   exercise_ended_node.style.display = 'none'
   exercise_box.classList.add('reading')
+
   resize_playground(false, exercise_box)
 }
 
@@ -172,28 +185,7 @@ function show_hide_exercise_symbols(/*bool*/show){
 
 function show_next_word() {
   if (word_index >= WORDS[group_index].length){
-    flying_symbols_node.style.visibility = 'hidden'
-    show_settings_btn.style.display = 'block'
-    exercise_ended_node.style.display = 'flex'
-    exercise_ended_node.style.visibility = 'visible'
-
-    const text_prev_node = document.getElementById('text_prev')
-    const text_current_node = document.getElementById('text_current')
-    const text_next_node = document.getElementById('text_next')
-
-    const prev_group_label = group_index === 0
-        ? WORDS.length
-        : group_index;
-    text_prev_node.textContent = `Группа ${prev_group_label}`;
-
-    text_current_node.textContent = `Группа ${group_index+1}`
-
-    const next_group_label = (group_index + 1) === WORDS.length
-        ? 1
-        : group_index + 2;
-    text_next_node.textContent = `Группа ${next_group_label}`;
-
-    clearInterval(exercise_interval_id)
+    set_exercise_ended_state()
     return
   }
   flying_symbols_node.style.visibility = 'hidden'
@@ -215,11 +207,37 @@ function show_next_word() {
   flying_symbols_node.style.visibility = 'visible'
 }
 
+function set_exercise_ended_state () {
+  flying_symbols_node.style.visibility = 'hidden'
+  show_settings_btn.style.display = 'block'
+  exercise_ended_node.style.display = 'flex'
+  exercise_ended_node.style.visibility = 'visible'
+
+  const text_prev_node = document.getElementById('text_prev')
+  const text_current_node = document.getElementById('text_current')
+  const text_next_node = document.getElementById('text_next')
+
+  const prev_group_label = group_index === 0
+      ? WORDS.length
+      : group_index;
+  text_prev_node.textContent = `Группа ${prev_group_label}`;
+
+  text_current_node.textContent = `Группа ${group_index+1}`
+
+  const next_group_label = (group_index + 1) === WORDS.length
+      ? 1
+      : group_index + 2;
+  text_next_node.textContent = `Группа ${next_group_label}`;
+
+  clearInterval(exercise_interval_id)
+  clearInterval(exercise_duration_id)
+}
+
 function validate_inputs(velocity){
   let error_text = ''
 
   if (!check_velocity_input(velocity)){
-      error_text += 'Задайте скорость символов от 1 до 10<br>'
+    error_text += 'Задайте скорость символов от 1 до 10<br>'
   }
 
   if (word_groups_node.value === '') {
@@ -258,6 +276,8 @@ function restart(direction){
     word_index  = WORDS[group_index].indexOf(starting_word)
   }
 
+  reset_exercise_duration_timer()
+  exercise_duration_id = setInterval(timer, 1000)
   show_next_word()
   exercise_interval_id = setInterval(show_next_word, symbols_delay)
 }
@@ -270,4 +290,15 @@ function update_group_options_with_word_count() {
     const s = agree_word_with_number(word_count)
     option.textContent = `Группа ${option.value} — ${s}`
   }
+}
+
+function timer() {
+  timer_seconds++;
+  timer_node.innerHTML = seconds_to_time(timer_seconds)
+}
+
+function reset_exercise_duration_timer() {
+  timer_seconds = 0
+  timer_node.innerHTML = '00:00'
+  timer_node.style.visibility = 'visible'
 }
