@@ -145,7 +145,7 @@ function show_new_word() {
     const color = COLOR_HEX[get_random_int(0, COLOR_HEX.length - 1 )]
     strup_word.style.setProperty(colored_property, color)
     make_yellow_contrast(strup_word, color)
-    make_text_white(flying_symbols_node, color)
+    make_text_white(strup_word, color)
     strup_word.style.visibility = 'visible'
 
     if (word_color && (swap_counter === SWAP_INTERVAL + 1)){
