@@ -33,16 +33,29 @@
 
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
     <link rel="stylesheet" href="stylesheets/main.css">
+    <link rel="stylesheet" href="stylesheets/schulte.css">
     <link rel="preload" href="fonts/Kurale-Regular.woff2" as="font" type="font/woff2" crossorigin >
     <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/index.js"></script>
+    <script src="js/showcase.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", ready);
+        document.addEventListener("DOMContentLoaded", ready_showcase);
     </script>
-    <title>Ирина Текшева — нейропсихолог</title>
+    <title>Тренажёры — Ирина Текшева</title>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=107037961', 'ym');
+
+        ym(107037961, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/107037961" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
   </head>
-  <body>
+  <body style="background-color: rgb(251, 251, 251);">
     <nav class="navbar navbar-expand-md py-0 py-md-2 sticky-top navbar-white bg-white sticky-top">
         <div class="container" style="margin-top: 0!important">
             <div class="row">
@@ -76,7 +89,7 @@
                                 <a class="nav-link" href="blog">Блог</a>
                             </li>
                             <li class="nav-item p-0">
-                                <a class="nav-link" href="#contacts">Контакты</a>
+                                <a class="nav-link" href="about.html#contacts">Контакты</a>
                             </li>
                         </ul>
                     </div>
@@ -96,7 +109,7 @@
                 </div>
                 <div class="offcanvas-body">
                     <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                        <li class="nav-item"><a class="nav-link" aria-current="page" href="index.html">Главная</a></li>
+                        <p class="p-2 m-0">Главная</p>
                         <p class="p-2 m-0">Тренажёры</p>
                         <li class="nav-item py-0 ps-4"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
                         <li class="nav-item py-0 ps-4"><a class="nav-link" href="gorbov.html">Таблица Горбова</a></li>
@@ -110,7 +123,7 @@
                         <li class="nav-item pt-0 pb-2 ps-4"><a class="nav-link" href="reading_automatisation.html">Автоматизация чтения</a></li>
                         <li class="nav-item"><a class="nav-link" href="about.html">Обо мне</a></li>
                         <li class="nav-item"><a class="nav-link" href="blog">Блог</a></li>
-                        <li class="nav-item"><a class="nav-link" href="index.html#contacts">Контакты</a></li>
+                        <li class="nav-item"><a class="nav-link" href="about.html#contacts">Контакты</a></li>
                     </ul>
                 </div>
                 <div class="container p-0">
@@ -125,78 +138,167 @@
             </div>
         </div>
     </nav>
-    <button
-        type="button"
-        class="btn btn-secondary btn-floating btn-lg"
-        id="btn-back-to-top"
-        >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="40" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z"/>
-        </svg>
-    </button>
-    <div class="container" style="margin-top: 60px; margin-bottom: 120px;">
-        <div class="row title-wrapper">
-            <div class="col-lg-7 col-sm-6">
-                <div class="main-title">Ирина<br>Текшева</div>
-                <div class="subtitle mt-4">нейропсихолог</div>
-                <div class="subtitle">член Национальной Ассоциации Нейропсихологов</div>
-                <div class="d-flex align-items-end d-main-form">
-                    <form class="main-form" action="#contacts">
-                        <button class="main-btn">Записаться</button>
-                    </form>
+
+    <div class="container p-0">
+        <img class="mybanner" src="img/back-3.png" alt="Нейро тренажёры">
+    </div>
+    <!-- <div class="container mybanner-2"></div> -->
+    <div class="container" style="margin-top: 30px; margin-bottom: 120px;">
+        <div class="row block">
+            <div class="col p-0">
+                <div style="padding:0 24px">
+                    <!-- <h1 class="showcase-page-title">Тренажёры</h1> -->
+                    <p class="showcase-page-subtitle">Когнитивные упражнения для развития памяти, внимания и&nbsp;скорости мышления</p>
+                    <div class="showcase-filters" role="group" aria-label="Фильтр по категориям">
+                        <button type="button" class="showcase-filter-tag is-active" data-category="" aria-pressed="true">Все</button>
+                        <button type="button" class="showcase-filter-tag" data-category="perception" aria-pressed="false">Восприятие</button>
+                        <button type="button" class="showcase-filter-tag" data-category="attention" aria-pressed="false">Внимание</button>
+                        <button type="button" class="showcase-filter-tag" data-category="thinking" aria-pressed="false">Мышление</button>
+                        <button type="button" class="showcase-filter-tag" data-category="memory" aria-pressed="false">Память</button>
+                        <button type="button" class="showcase-filter-tag" data-category="reading" aria-pressed="false">Чтение</button>
+                        <button type="button" class="showcase-filter-tag" data-category="counting" aria-pressed="false">Счёт</button>
+                        <button type="button" class="showcase-filter-clear" hidden>Сбросить фильтр</button>
+                    </div>
+                    <p class="showcase-filter-status" aria-live="polite"></p>
+                </div>
+                <div class="showcase-grid">
+                    <article class="showcase-cell" data-category="perception">
+                        <a class="showcase-cell-link" href="schulte.html">
+                            <div class="showcase-cell-preview">
+                                <img src="img/schulte_exrcs_preview.png" alt="Таблица Шульте">
+                                <span class="launch-btn" aria-hidden="true">Запустить</span>
+                            </div>
+                            <div class="showcase-cell-body">
+                                <h3 class="showcase-cell-title">Таблица Шульте</h3>
+                                <p class="showcase-cell-description">Случайные числа или буквы&nbsp;— тренировка скорости поиска, периферического зрения и&nbsp;скорочтения.</p>
+                                <span class="showcase-cell-tag">Восприятие</span>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="showcase-cell" data-category="perception">
+                        <a class="showcase-cell-link" href="gorbov.html">
+                            <div class="showcase-cell-preview">
+                                <img src="img/gorbov_exrcs_preview.png" alt="Таблица Горбова">
+                                <span class="launch-btn" aria-hidden="true">Запустить</span>
+                            </div>
+                            <div class="showcase-cell-body">
+                                <h3 class="showcase-cell-title">Таблица Горбова</h3>
+                                <p class="showcase-cell-description">Чёрные и&nbsp;красные символы в&nbsp;таблице&nbsp;— периферическое зрение и&nbsp;быстрый поиск объектов.</p>
+                                <span class="showcase-cell-tag">Восприятие</span>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="showcase-cell" data-category="perception">
+                        <a class="showcase-cell-link" href="gorbov-multiplication.html">
+                            <div class="showcase-cell-preview">
+                                <img src="img/gorbov_m_exrcs_preview.png" alt="Таблица Горбова, умножение">
+                                <span class="launch-btn" aria-hidden="true">Запустить</span>
+                            </div>
+                            <div class="showcase-cell-body">
+                                <h3 class="showcase-cell-title">Таблица Горбова, умножение</h3>
+                                <p class="showcase-cell-description">Таблица Горбова с&nbsp;отработкой умножения&nbsp;— зрение, внимание и&nbsp;таблица умножения одновременно.</p>
+                                <span class="showcase-cell-tag">Восприятие</span>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="showcase-cell" data-category="attention">
+                        <a class="showcase-cell-link" href="strup.html">
+                            <div class="showcase-cell-preview">
+                                <img src="img/strup_preview.png" alt="Тест Струпа">
+                                <span class="launch-btn" aria-hidden="true">Запустить</span>
+                            </div>
+                            <div class="showcase-cell-body">
+                                <h3 class="showcase-cell-title">Тест Струпа</h3>
+                                <p class="showcase-cell-description">Слово и&nbsp;цвет не&nbsp;совпадают&nbsp;— тренировка избирательного внимания и&nbsp;торможения.</p>
+                                <span class="showcase-cell-tag">Внимание</span>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="showcase-cell" data-category="thinking">
+                        <a class="showcase-cell-link" href="koos.html">
+                            <div class="showcase-cell-preview">
+                                <img src="img/koos_exrcs_preview.png" alt="Кубики Кооса">
+                                <span class="launch-btn" aria-hidden="true">Запустить</span>
+                            </div>
+                            <div class="showcase-cell-body">
+                                <h3 class="showcase-cell-title">Кубики Кооса</h3>
+                                <p class="showcase-cell-description">Пространственные задачи с&nbsp;кубиками&nbsp;— логика, внимание и&nbsp;зрительно-пространственные функции.</p>
+                                <span class="showcase-cell-tag">Мышление</span>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="showcase-cell" data-category="attention">
+                        <a class="showcase-cell-link" href="running_dot.html">
+                            <div class="showcase-cell-preview">
+                                <img src="img/running_dot_preview.png" alt="Бегающая точка">
+                                <span class="launch-btn" aria-hidden="true">Запустить</span>
+                            </div>
+                            <div class="showcase-cell-body">
+                                <h3 class="showcase-cell-title">Бегающая точка</h3>
+                                <p class="showcase-cell-description">Следите за&nbsp;движущейся точкой&nbsp;— концентрация и&nbsp;устойчивость внимания.</p>
+                                <span class="showcase-cell-tag">Внимание</span>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="showcase-cell" data-category="memory">
+                        <a class="showcase-cell-link" href="cypher.html">
+                            <div class="showcase-cell-preview">
+                                <img src="img/cypher_preview_mixed.png" alt="Шифр простой замены">
+                                <span class="launch-btn" aria-hidden="true">Запустить</span>
+                            </div>
+                            <div class="showcase-cell-body">
+                                <h3 class="showcase-cell-title">Шифр простой замены</h3>
+                                <p class="showcase-cell-description">Замена букв по&nbsp;ключу&nbsp;— память, буквенное кодирование и&nbsp;скорость мышления.</p>
+                                <span class="showcase-cell-tag">Память</span>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="showcase-cell" data-category="reading">
+                        <a class="showcase-cell-link" href="hands_and_letters.html">
+                            <div class="showcase-cell-preview">
+                                <img src="img/alphabet_cover.png" alt="Алфавит">
+                                <span class="launch-btn" aria-hidden="true">Запустить</span>
+                            </div>
+                            <div class="showcase-cell-body">
+                                <h3 class="showcase-cell-title">Алфавит</h3>
+                                <p class="showcase-cell-description">Связь букв и&nbsp;жестов — автоматизация алфавита и&nbsp;межполушарное взаимодействие.</p>
+                                <span class="showcase-cell-tag">Чтение</span>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="showcase-cell" data-category="counting">
+                        <a class="showcase-cell-link" href="mental-arithmetic.html">
+                            <div class="showcase-cell-preview">
+                                <img src="img/mental_cover.png" alt="Устный счёт">
+                                <span class="launch-btn" aria-hidden="true">Запустить</span>
+                            </div>
+                            <div class="showcase-cell-body">
+                                <h3 class="showcase-cell-title">Устный счёт</h3>
+                                <p class="showcase-cell-description">Устные арифметические задачи — скорость счёта и&nbsp;рабочая память.</p>
+                                <span class="showcase-cell-tag">Счёт</span>
+                            </div>
+                        </a>
+                    </article>
+                    <article class="showcase-cell" data-category="reading">
+                        <a class="showcase-cell-link" href="reading_automatisation.html">
+                            <div class="showcase-cell-preview">
+                                <img src="img/reading_cover.png" alt="Автоматизация чтения">
+                                <span class="launch-btn" aria-hidden="true">Запустить</span>
+                            </div>
+                            <div class="showcase-cell-body">
+                                <h3 class="showcase-cell-title">Автоматизация чтения</h3>
+                                <p class="showcase-cell-description">Плавное чтение текста — автоматизация навыка чтения и&nbsp;понимание.</p>
+                                <span class="showcase-cell-tag">Чтение</span>
+                            </div>
+                        </a>
+                    </article>
                 </div>
             </div>
-            <div class="col d-main-photo">
-                <div>
-                    <img class="float-start float-xl-end img-main-photo" src="img/photo.png" alt="Ирина Тешева, нейропсихолог">
-                </div>
-              </div>
         </div>
 
         <div class="row block">
-            <div class="col col-sm-10">
-                <h2>Образование</h2>
-                <ol class="text">
-                    <li class="mb-3">Московский Институт Психоанализа, 2023<br>Кафедра клинической психологии<br>
-                        Диссертация: «Стратегии решения арифметических задач у&nbsp;школьников с&nbsp;несформированностью пространственных представлений»<br>
-                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О1_МАГИСТР_МИП_Психология.pdf">Магистр по направлению «Психология», диплом с&nbsp;отличием.</a>
-                    </li>
-                    <h3>Дипломы о&nbsp;переквалификации с&nbsp;правом ведения&nbsp;профессиональной деятельности</h3>
-                    <li>Московский институт психоанализа, 2021<br>
-                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О2_ПП_МИП_Клинический психолог 1500ак.ч.pdf">«Клиническая психология»,</a> 1500&nbsp;ак.ч
-                    </li>
-                    <li>Московский институт психоанализа, 2020<br>
-                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О3_ПП_МИП_Клиническая нейропсихология_1500 ак.ч.pdf">«Нейропсихология»</a>, 1500&nbsp;ак.ч
-                    </li>
-                    <li>Московский институт профессиональной переподготовки и&nbsp;повышения квалификации педагогов, 2020<br>
-                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О4_ПП_МИППиПКП_Психолог_600ак.ч.pdf">«Детская психологическая помощь и&nbsp;психокоррекция»</a>,&nbsp;600&nbsp;ак.ч</li>
-                    <li>Федеральный институт повышения квалификации и&nbsp;переподготовки,&nbsp;2019<br>
-                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О5_ПП_ФИПКиП_Педагог дефектолог 580 ак.ч.pdf">«Педагог-дефектолог»</a>, 580&nbsp;ак.ч</li>
-                </ol>
-                <a class="simple-link" href="diplomas.html">Все дипломы (47)</a>
-            </div>
         </div>
 
-        <div class="row block">
-            <div class="col col-sm-8">
-                <h2>Услуги</h2>
-                <ul class="text">
-                    <li>Нейродиагностика онлайн и&nbsp;очно (Коммунарка), дети&nbsp;и&nbsp;взрослые</li>
-                    <li>Нейрокоррекционные занятия с&nbsp;детьми</li>
-                    <li>Обучающие игротеки @igroteam</li>
-                    <li>Коррекционные онлайн занятия</li>
-                </ul>
-                <!-- <button class="main-btn">Записаться на консультацию</button> -->
-            </div>
-        </div>
-        <div class="row block">
-            <div class="col">
-                <h2 id="contacts">Контакты</h2>
-                <div class="text">
-                    <p><a class="simple-link" href="tel:+79645626890">+7&nbsp;964&nbsp;562&ndash;68&ndash;90</a> — WhatsApp, Telegram</p>
-                </div>
-            </div>
-        </div>
     </div>
     <div class="bg-secondary-subtle d-flex align-items-center" style="height: 40px">
         <div class="container text-start" style="margin-top: 0!important">

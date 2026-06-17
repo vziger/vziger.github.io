@@ -21,6 +21,16 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="img/favicons/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
+
+    <meta property="og:title" content="Ирина Текшева — нейропсихолог" />
+    <meta property="og:description" content="Научно обоснованные тренировки онлайн от&nbsp;сертифицированного специалиста.<br>Когнитивные тренажёры для развития памяти, внимания и&nbsp;скорости мышления">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://neuroexercise.ru/" />
+    <meta property="og:image" content="https://neuroexercise.ru/img/photo.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://neuroexercise.ru/img/photo.png" />
+
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
     <link rel="stylesheet" href="stylesheets/main.css">
     <link rel="preload" href="fonts/Kurale-Regular.woff2" as="font" type="font/woff2" crossorigin >
@@ -31,6 +41,19 @@
         document.addEventListener("DOMContentLoaded", ready);
     </script>
     <title>Ирина Текшева — нейропсихолог</title>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=107037961', 'ym');
+
+        ym(107037961, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/107037961" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
   </head>
   <body>
     <nav class="navbar navbar-expand-md py-0 py-md-2 sticky-top navbar-white bg-white sticky-top">
@@ -40,7 +63,7 @@
                     <div class="collapse navbar-collapse">
                         <ul class="navbar-nav">
                             <li class="nav-item p-0">
-                                <a class="nav-link ps-0" aria-current="page" href="index.html">Главная</a>
+                                <a class="nav-link ps-0" href="index.html">Главная</a>
                             </li>
                             <li class="nav-item dropdown p-0">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -66,7 +89,7 @@
                                 <a class="nav-link" href="blog">Блог</a>
                             </li>
                             <li class="nav-item p-0">
-                                <a class="nav-link" href="index.html#contacts">Контакты</a>
+                                <a class="nav-link" href="#contacts">Контакты</a>
                             </li>
                         </ul>
                     </div>
@@ -86,7 +109,7 @@
                 </div>
                 <div class="offcanvas-body">
                     <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                        <li class="nav-item"><a class="nav-link" aria-current="page" href="index.html">Главная</a></li>
+                        <li class="nav-item"><a class="nav-link" href="index.html">Главная</a></li>
                         <p class="p-2 m-0">Тренажёры</p>
                         <li class="nav-item py-0 ps-4"><a class="nav-link" href="schulte.html">Таблица Шульте</a></li>
                         <li class="nav-item py-0 ps-4"><a class="nav-link" href="gorbov.html">Таблица Горбова</a></li>
@@ -98,9 +121,9 @@
                         <li class="nav-item py-0 ps-4"><a class="nav-link" href="hands_and_letters.html">Алфавит</a></li>
                         <li class="nav-item py-0 ps-4"><a class="nav-link" href="mental-arithmetic.html">Устный счёт</a></li>
                         <li class="nav-item pt-0 pb-2 ps-4"><a class="nav-link" href="reading_automatisation.html">Автоматизация чтения</a></li>
-                        <li class="nav-item"><a class="nav-link" href="about.html">Обо мне</a></li>
+                        <p class="p-2 m-0">Обо мне</p>
                         <li class="nav-item"><a class="nav-link" href="blog">Блог</a></li>
-                        <li class="nav-item"><a class="nav-link" href="index.html#contacts">Контакты</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#contacts">Контакты</a></li>
                     </ul>
                 </div>
                 <div class="container p-0">
@@ -130,6 +153,11 @@
                 <div class="main-title">Ирина<br>Текшева</div>
                 <div class="subtitle mt-4">нейропсихолог</div>
                 <div class="subtitle">член Национальной Ассоциации Нейропсихологов</div>
+                <div class="d-flex align-items-end d-main-form">
+                    <form class="main-form" action="#contacts">
+                        <button class="main-btn">Записаться</button>
+                    </form>
+                </div>
             </div>
             <div class="col d-main-photo">
                 <div>
@@ -137,6 +165,7 @@
                 </div>
               </div>
         </div>
+
         <div class="row block">
             <div class="col col-sm-10">
                 <h2>Обо мне</h2>
@@ -150,6 +179,53 @@
                     <p>Начиная с&nbsp;2021&nbsp;года, я&nbsp;работаю школьным нейропсихологом в&nbsp;сети частных школ &laquo;Смартскул&raquo;, а&nbsp;также с&nbsp;2019 года веду частную психологическую практику.</p>
 
                     <p>В&nbsp;какой&nbsp;бы области я&nbsp;ни&nbsp;работала, на&nbsp;моем пути встречаю людей, чьи идеи и&nbsp;научные школы развивают науку. Я&nbsp;благодарна судьбе за&nbsp;возможность учиться очно и&nbsp;онлайн у&nbsp;классиков нейропсихологии Т.&nbsp;В.&nbsp;Ахутиной, Т.&nbsp;Г.&nbsp;Визель, Ю.&nbsp;В.&nbsp;Микадзе, А.&nbsp;В.&nbsp;Семенович, Н.&nbsp;Я.&nbsp;Семаго и&nbsp;т.&nbsp;д. Прочной основой своего образования и&nbsp;взглядов на&nbsp;коррекционный процесс я&nbsp;обязана М.&nbsp;И.&nbsp;Каменецкой и&nbsp;сотрудникам Центра практической нейропсихологии, где учусь и&nbsp;прохожу супервизии регулярно.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row block">
+            <div class="col col-sm-10">
+                <h2>Образование</h2>
+                <ol class="text">
+                    <li class="mb-3">Московский Институт Психоанализа, 2023<br>Кафедра клинической психологии<br>
+                        Диссертация: «Стратегии решения арифметических задач у&nbsp;школьников с&nbsp;несформированностью пространственных представлений»<br>
+                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О1_МАГИСТР_МИП_Психология.pdf">Магистр по направлению «Психология», диплом с&nbsp;отличием.</a>
+                    </li>
+                    <h3>Дипломы о&nbsp;переквалификации с&nbsp;правом ведения&nbsp;профессиональной деятельности</h3>
+                    <li>Институт нейропсихологии и нейрофизиологии развития ребёнка, 2025<br>
+                            <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/ПП_ИНиНРР_1100ч_2025.pdf">«Практическая нейропсихология»</a>, 1100&nbsp;ак.&nbsp;ч</li>
+                    <li>АНО&nbsp;ДПО&nbsp;«Высшая школа «Среда Обучения», 2025<br>
+                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/ПК_СО_Практическая_психология_родительствп_1384акч.pdf">«Практическая психология родительства и детства»</a>, 1384&nbsp;ак.&nbsp;ч</li>
+                    <li>Московский институт психоанализа, 2021<br>
+                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О2_ПП_МИП_Клинический психолог 1500ак.ч.pdf">«Клиническая психология»,</a> 1500&nbsp;ак.&nbsp;ч</li>
+                    <li>Московский институт психоанализа, 2020<br>
+                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О3_ПП_МИП_Клиническая нейропсихология_1500 ак.ч.pdf">«Нейропсихология»</a>, 1500&nbsp;ак.&nbsp;ч</li>
+                    <li>Московский институт профессиональной переподготовки и&nbsp;повышения квалификации педагогов, 2020<br>
+                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О4_ПП_МИППиПКП_Психолог_600ак.ч.pdf">«Детская психологическая помощь и&nbsp;психокоррекция»</a>,&nbsp;600&nbsp;ак.&nbsp;ч</li>
+                    <li>Федеральный институт повышения квалификации и&nbsp;переподготовки,&nbsp;2019<br>
+                        <a class="simple-link" target="_blank" rel="noopener noreferrer" href="files/О5_ПП_ФИПКиП_Педагог дефектолог 580 ак.ч.pdf">«Педагог-дефектолог»</a>, 580&nbsp;ак.&nbsp;ч</li>
+                </ol>
+                <a class="simple-link" href="diplomas.html">Все дипломы (49)</a>
+            </div>
+        </div>
+
+        <div class="row block">
+            <div class="col col-sm-8">
+                <h2>Услуги</h2>
+                <ul class="text">
+                    <li>Нейродиагностика онлайн и&nbsp;очно (Коммунарка), дети&nbsp;и&nbsp;взрослые</li>
+                    <li>Нейрокоррекционные занятия с&nbsp;детьми</li>
+                    <li>Обучающие игротеки @igroteam</li>
+                    <li>Коррекционные онлайн занятия</li>
+                </ul>
+                <!-- <button class="main-btn">Записаться на консультацию</button> -->
+            </div>
+        </div>
+        <div class="row block">
+            <div class="col">
+                <h2 id="contacts">Контакты</h2>
+                <div class="text">
+                    <p><a class="simple-link" href="tel:+79645626890">+7&nbsp;964&nbsp;562&ndash;68&ndash;90</a> — WhatsApp, Telegram</p>
                 </div>
             </div>
         </div>

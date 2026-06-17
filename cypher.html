@@ -17,6 +17,9 @@
         <link rel="preload" as="font" type="font/woff2"
         href="https://neuroexercise.ru/fonts/sheets-braille.woff"
         crossorigin>
+        <link rel="preload" as="font" type="font/woff2"
+        href="https://neuroexercise.ru/fonts/circles.woff"
+        crossorigin>
 
         <link rel="apple-touch-icon" sizes="57x57" href="img/favicons/apple-icon-57x57.png">
         <link rel="apple-touch-icon" sizes="60x60" href="img/favicons/apple-icon-60x60.png">
@@ -74,6 +77,8 @@
                         <li class="nav-item pb-1 ps-4"><a class="nav-link" href="mental-arithmetic.html">Устный счёт</a></li>
                         <li class="nav-item pb-1 ps-4"><a class="nav-link" href="reading_automatisation.html">Автоматизация чтения</a></li>
                         <li class="nav-item p-0"><a class="nav-link" href="blog">Блог</a></li>
+                        <li class="nav-item p-0"><a class="nav-link" href="about.html">Обо мне</a></li>
+                        <li class="nav-item p-0"><a class="nav-link" href="about.html#contacts">Контакты</a></li>
                     </ul>
                 </div>
                 <div class="container p-0">
@@ -119,7 +124,8 @@
                                         <div class="d-flex justify-content-between mt-2">
                                             <p class="my-ps-3 my-error" id="error">тут будут выводиться ошибки</p>
                                             <p class="my-pe-3" style="color:#939393">
-                                                <span id="char_counter">0</span><span style="letter-spacing: 1px;">&nbsp;/&thinsp;</span><span id="max_chars_num"></span>
+                                                <span>Слов:</span>&nbsp;<span id="word_counter" style="display: inline-block; width: 30px;">0</span>
+                                                <span>Символов: </span><span id="char_counter" style="display: inline-block; text-align: right;">0</span><span style="letter-spacing: 1px;">&nbsp;/&thinsp;</span><span id="max_chars_num"></span>
                                             </p>
                                         </div>
                                     </div>
@@ -131,7 +137,7 @@
                                             <p
                                             class="my-ps-3"
                                             id="cyphered_text"
-                                            style="width:45vw;font-family:swifty,sans-serif;font-size:32px;letter-spacing:2px;word-wrap:break-word;"></p>
+                                            style="width:45vw;font-family:swifty,sans-serif;font-size:32px;letter-spacing:3px;word-wrap:break-word;"></p>
                                         </div>
                                     </div>
                                 </div>
@@ -155,6 +161,9 @@
 
                                                 <input type="radio" class="btn-check" name="btnradio-symbols" id="btnradio-symbols-4" autocomplete="off" data-symbols="3" onclick="recypher()">
                                                 <label class="btn btn-outline-primary btn-text-left" for="btnradio-symbols-4">Брайль</label>
+
+                                                <input type="radio" class="btn-check" name="btnradio-symbols" id="btnradio-symbols-5" autocomplete="off" data-symbols="4" onclick="recypher()">
+                                                <label class="btn btn-outline-primary btn-text-left" for="btnradio-symbols-5">Кружки</label>
                                             </div>
                                         </div>
                                     </div>
