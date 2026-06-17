@@ -27,9 +27,9 @@ const rearange_by_pos = function(a, b){
 
 function seconds_to_time(total_seconds) {
     const hours   = Math.floor(total_seconds / 3600)
-    const remains = total_seconds % 3600;
-    const minutes = Math.floor(remains / 60);
-    const seconds = remains % 60;
+    const remains = total_seconds % 3600
+    const minutes = Math.floor(remains / 60)
+    const seconds = remains % 60
 
     let time_to_show = ''
 
@@ -42,10 +42,10 @@ function seconds_to_time(total_seconds) {
 
 
 function empty_grid_cells_array(grid_cells_array) {
-    for (let i = grid_cells_array.length - 1; i >= 0 ; --i) {
-        grid_cells_array[i].remove()
-    }
+    let i = grid_cells_array.length
+    while (i--) grid_cells_array[i].remove()
 }
+
 
 
 function generate_numbers_array(size) {

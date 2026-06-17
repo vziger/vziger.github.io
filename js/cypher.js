@@ -6,7 +6,8 @@ const cypher_alphabets = [
     [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 61, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122],
     [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90],
     [65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114],
-    [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90]
+    [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90],
+    [65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106]
 ]
 
 const cypher_fonts =
@@ -46,6 +47,15 @@ const cypher_fonts =
     pdf_main_text_size: '40px',
     pdf_main_text_line_height: '36px',
     letter_spacing: '2px'
+},
+{
+    name: 'circles',
+    exercise_font_size: '17px',
+    exercise_line_height: '20px',
+    pdf_title_size: '20px',
+    pdf_main_text_size: '32px',
+    pdf_main_text_line_height: '34px',
+    letter_spacing: '4px'
 }]
 
 let shuffle_arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
@@ -58,6 +68,7 @@ let cypher_symbols_number = null
 let key_el = null
 let text_to_cypher_el = null
 let char_counter_el = null
+let word_counter_el = null
 let max_chars_num_el = null
 let cyphered_text_el = null
 let error_el = null
@@ -79,6 +90,7 @@ function ready() {
     text_to_cypher_el.focus()
 
     char_counter_el  = document.getElementById('char_counter')
+    word_counter_el  = document.getElementById('word_counter')
     max_chars_num_el = document.getElementById('max_chars_num')
     cyphered_text_el = document.getElementById('cyphered_text')
     error_el = document.getElementById('error')
@@ -90,13 +102,15 @@ function ready() {
     generate_cypher_key_html()
 
     prepare_text_to_cypher()
-    count_chars()
+    update_chars_counter()
+    update_words_counter(text_to_cypher_el.value)
     cypher()
 
 
     text_to_cypher_el.addEventListener('keyup', function(event) {
         prepare_text_to_cypher()
-        count_chars()
+        update_chars_counter()
+        update_words_counter(text_to_cypher_el.value)
         cypher()
       })
 }
@@ -113,7 +127,7 @@ function recypher() {
 }
 
 
-function count_chars() {
+function update_chars_counter() {
     char_counter_el.innerText = MAX_CHARS_NUM - text_to_cypher_el.value.length
 }
 
@@ -221,8 +235,23 @@ function clear_textarea() {
     text_to_cypher_el.value = ''
     text_to_cypher_el.focus()
     string_to_cypher = ''
-    count_chars()
+    update_chars_counter()
+    update_words_counter(text_to_cypher_el.value)
     cypher()
+}
+
+
+function update_words_counter(text) {
+    if (!text || typeof text !== 'string') word_counter_el.innerText = 0
+
+    const cleanedText = text.replace(/\s+/g, ' ').trim()
+    if (cleanedText.length === 0) word_counter_el.innerText = 0
+
+    // [а-яёА-ЯЁ]+ — обязательная начальная часть слова из кириллических букв
+    // (?:-[а-яёА-ЯЁ]+)* — необязательные части через дефис (не создаёт отдельную группу захвата)
+    const matches = cleanedText.match(/[а-яёА-ЯЁ]+(?:-[а-яёА-ЯЁ]+)*/g);
+
+    word_counter_el.innerText = matches ? matches.length : 0
 }
 
 
@@ -249,17 +278,20 @@ function print_js2pdf() {
     let cypheredtext_content = document.getElementById('cyphered_text')
     let cypher_key_element   = document.createElement('div')
 
-    let pdf_document_element  = document.createElement('div')
-    let student_sheet_element = document.createElement('div')
-    let teacher_sheet_element = document.createElement('div')
+    let pdf_document_element    = document.createElement('div')
+    let student_sheet_element_1 = document.createElement('div')
+    let student_sheet_element_2 = document.createElement('div')
+    let teacher_sheet_element   = document.createElement('div')
 
-    let student_write_element = document.createElement('div')
-    let teacher_write_element = document.createElement('div')
+    let student_write_element   = document.createElement('div')
+    let student_write_element_2 = document.createElement('div')
+    let teacher_write_element   = document.createElement('div')
     let cyphered_col  = document.createElement('div')
     let write_col     = document.createElement('div')
     let original_text_col = document.createElement('div')
 
     student_write_element.classList.add('row')
+    student_write_element_2.classList.add('row')
     teacher_write_element.classList.add('row')
     cyphered_col.classList.add('col-6')
     write_col.classList.add('col-6')
@@ -268,10 +300,16 @@ function print_js2pdf() {
     cypher_key_element.classList.add('mb-3')
     cypher_key_element.innerHTML = gen_key_html_for_pdf()
 
+    cyphered_col.style.overflowWrap = 'break-word'
+    cyphered_col.style.wordBreak = 'normal'
+
     let cyphered_clone = cypheredtext_content.cloneNode(true)
     cyphered_clone.style.fontSize = cypher_fonts[cypher_symbols_number].pdf_main_text_size
     cyphered_clone.style.lineHeight = cypher_fonts[cypher_symbols_number].pdf_main_text_line_height
-    cyphered_clone.style.wordWrap = 'normal'
+
+    cyphered_clone.style.overflowWrap = 'break-word'
+    cyphered_clone.style.wordBreak = 'normal'
+
     cyphered_clone.style.letterSpacing = cypher_fonts[cypher_symbols_number].letter_spacing
     cyphered_clone.style.color = 'black'
     cyphered_clone.style.width = ''
@@ -302,11 +340,18 @@ function print_js2pdf() {
     header_key.style.marginBottom = '12px'
 
     let header_decypher = document.createElement('div')
-    header_decypher.innerText = 'Расшифруйте текст'
+    header_decypher.innerText = 'Расшифруй текст'
     header_decypher.style.fontFamily = 'Montserrat, sans-serif'
     header_decypher.style.fontSize   = '20px'
     header_decypher.style.fontWeight = 600
     header_decypher.style.paddingBottom = '12px'
+
+    let header_cypher = document.createElement('div')
+    header_cypher.innerText = 'Зашифруй текст'
+    header_cypher.style.fontFamily = 'Montserrat, sans-serif'
+    header_cypher.style.fontSize   = '20px'
+    header_cypher.style.fontWeight = 600
+    header_cypher.style.paddingBottom = '12px'
 
     write_col.style.lineHeight = '40px'
     write_col.style.color = '#e0e0e0'
@@ -323,15 +368,26 @@ function print_js2pdf() {
     }
 
 
-    student_sheet_element.append(site)
-    student_sheet_element.append(header_key)
-    student_sheet_element.append(cypher_key_element)
-    student_sheet_element.append(header_decypher)
+    student_sheet_element_1.append(site)
+    student_sheet_element_1.append(header_key)
+    student_sheet_element_1.append(cypher_key_element)
+    student_sheet_element_1.append(header_decypher)
 
     cyphered_col.append(cyphered_clone)
     student_write_element.append(cyphered_col, write_col)
-    student_sheet_element.append(student_write_element)
-    student_sheet_element.style.breakAfter = 'page'
+    student_sheet_element_1.append(student_write_element)
+    student_sheet_element_1.style.breakAfter = 'page'
+
+//  ****** Страничка — Зашифруйте текст ******************************
+    student_sheet_element_2.append(site.cloneNode(true))
+    student_sheet_element_2.append(header_key.cloneNode(true))
+    student_sheet_element_2.append(cypher_key_element.cloneNode(true))
+    student_sheet_element_2.append(header_cypher)
+
+    student_write_element_2.append(original_text_col.cloneNode(true), write_col.cloneNode(true))
+    student_sheet_element_2.append(student_write_element_2)
+    student_sheet_element_2.style.breakAfter = 'page'
+//  ******************************************************************
 
 
     teacher_sheet_element.append(site_teacher_sheet)
@@ -342,7 +398,7 @@ function print_js2pdf() {
     teacher_write_element.append(cyphered_col.cloneNode(true), original_text_col)
     teacher_sheet_element.append(teacher_write_element)
 
-    pdf_document_element.append(student_sheet_element, teacher_sheet_element)
+    pdf_document_element.append(student_sheet_element_1, student_sheet_element_2, teacher_sheet_element)
 
 
     const opt = {
