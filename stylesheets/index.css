@@ -1,0 +1,40 @@
+body {
+    margin: 0px;
+    display: flex;
+    justify-content: center;
+  }
+
+.home{
+    display: flex;
+    justify-content: center;
+    border: 2px solid blue;
+    max-width: 1200px;
+    background: #F3F3F3;
+}
+
+.menu{
+    left: 57.50px;
+    top: 31px; 
+    position: absolute; 
+    justify-content: flex-start; 
+    align-items: flex-start; 
+    gap: 36px; 
+    display: inline-flex;
+}
+
+.footer{
+    width: 1200px; 
+    height: 100px; 
+    left: 0px; 
+    top: 4961px; 
+    position: absolute;
+}
+
+.Rectangle7{
+    width: 1200px; 
+    height: 100px; 
+    left: 0px; 
+    top: 0px; 
+    position: absolute; 
+    background: #D9D9D9;
+}

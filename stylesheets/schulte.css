@@ -1,4 +1,6 @@
 :root {
+    --exercise-cell-size: 300px;
+
     --cell-cursor: default;
     --cell-blur: blur(8px);
     --cell-size: 120px;
@@ -144,6 +146,254 @@ h3{
 li{
     padding-bottom: 12px;
 }
+.showcase-page-title {
+    font-weight: 600;
+    font-size: 64px;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.showcase-page-subtitle {
+    font-size: 20px;
+    line-height: 28px;
+    margin-bottom: 10px;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.showcase-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.showcase-filter-tag {
+    align-self: flex-start;
+    margin-top: 0;
+    padding: 4px 12px;
+    border: 0;
+    border-radius: 999px;
+    background-color: rgba(0, 0, 0, 0.06);
+    color: rgba(0, 0, 0, 0.7);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.showcase-cell-tag {
+    align-self: flex-start;
+    margin-top: 8px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background-color: rgba(0, 0, 0, 0.06);
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.showcase-filter-tag:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #000;
+}
+
+.showcase-filter-tag.is-active {
+    background-color: #FFCD4D;
+    color: #000;
+}
+
+.showcase-filter-tag:focus {
+    outline: none;
+}
+
+.showcase-filter-tag:focus-visible {
+    outline: 3px solid #FFCD4D;
+    outline-offset: 2px;
+}
+
+.showcase-filter-clear {
+    margin-left: 4px;
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    color: rgba(0, 0, 0, 0.6);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+}
+
+.showcase-filter-clear:hover {
+    color: #000;
+}
+
+.showcase-filter-clear:focus {
+    outline: none;
+}
+
+.showcase-filter-clear:focus-visible {
+    outline: 3px solid #FFCD4D;
+    outline-offset: 2px;
+}
+
+.showcase-filter-status {
+    margin: -12px 0 24px;
+    font-size: 15px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.showcase-cell[hidden] {
+    display: none;
+}
+
+.showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--exercise-cell-size)), var(--exercise-cell-size)));
+    gap: 15px;
+    padding: 15px 0;
+    align-items: start;
+    justify-content: start;
+}
+
+.showcase-cell {
+    position: relative;
+    width: 100%;
+    max-width: var(--exercise-cell-size);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.05s ease, background-color 0.05s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #fff;
+}
+
+.showcase-cell-link {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    height: 100%;
+    text-decoration: none;
+    color: #000;
+    transition: background-color 0.05s ease;
+}
+
+.showcase-cell-link:focus {
+    outline: none;
+}
+
+.showcase-cell-link:focus-visible {
+    outline: 3px solid #FFCD4D;
+    outline-offset: 2px;
+}
+
+.showcase-cell-preview {
+    position: relative;
+    overflow: hidden;
+}
+
+.showcase-cell-preview img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+}
+
+.showcase-cell-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 8px;
+    padding: 16px 24px 24px;
+}
+
+.showcase-cell-title {
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+    line-height: 24px;
+    font-weight: 600;
+}
+
+.showcase-cell-description {
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+    font-size: 15px;
+    line-height: 22px;
+}
+
+.launch-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 24px;
+    background-color: #FFCD4D;
+    color: #000;
+    border: 0;
+    border-radius: 28px;
+    font-size: 14px;
+    font-weight: 600;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.05s ease, background-color 0.05s ease;
+    z-index: 10;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .launch-btn {
+        opacity: 0;
+    }
+
+    .showcase-cell-link:hover .launch-btn,
+    .showcase-cell:focus-within .launch-btn {
+        opacity: 1;
+    }
+
+    .showcase-cell-link:hover,
+    .showcase-cell:focus-within .showcase-cell-link {
+        background-color: #FFCD4D;
+    }
+
+    .showcase-cell:has(.showcase-cell-link:hover),
+    .showcase-cell:focus-within {
+        background-color: #FFCD4D;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .showcase-cell-link:hover .launch-btn,
+    .showcase-cell:focus-within .launch-btn {
+        background-color: #ffc022;
+    }
+
+    .showcase-cell-link:hover .showcase-cell-tag,
+    .showcase-cell:focus-within .showcase-cell-tag {
+        background-color: rgba(255, 255, 255, 0.45);
+    }
+}
+.mybanner{
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 15px;
+  border-radius: 20px;
+}
+.mybanner-2{
+  height: 65px;
+  margin-top: 15px;
+  border-radius: 200px;
+  background-color: #FFC757;
+  background-image: url('../img/back-2.png');
+  background-size: contain;
+  background-position: left top;
+  background-repeat: no-repeat;
+}
 
 .grid{
     display: grid;
@@ -210,9 +460,7 @@ li{
     z-index: 30;
     visibility: hidden;
     font-size: 36px;
-    transition: position 1s ease-out;
-    transition: left 1s ease-out;
-    transition: top 1s ease-out;
+    transition: left 1s ease-out, top 1s ease-out;
 }
 
 #stop_button{
@@ -272,11 +520,7 @@ li{
     height: var(--box-for-dot-size);
     border: 1px solid #e0e0e0;
     background-color: #fff;
-    transition: width 2s ease-out;
-    transition: height 2s ease-out;
-    transition: position 2s ease-out;
-    transition: left 2s ease-out;
-    transition: top 2s ease-out;
+    /* transition: width 2s ease-out, height 2s ease-out, left 2s ease-out, top 2s ease-out; */
     z-index: 20;
 }
 
@@ -299,28 +543,11 @@ li{
     background-color: #fff;
     z-index: 10;
     display: none;
-    transition: position 1s ease-out;
 }
 
 #draw_line{
     width: 608px;
     height: 608px;
-}
-
-.moving-dot-down{
-    -moz-transform: translate(50, 50); /* Для Firefox */
-    -ms-transform: translate(50, 50); /* Для IE */
-    -webkit-transform: translate(50, 50); /* Для Safari, Chrome, iOS */
-    -o-transform: translate(50, 50); /* Для Opera */
-    transform: translate(50, 50);
-}
-
-.moving-dot-up{
-    -moz-transform: translate(-50, -50); /* Для Firefox */
-    -ms-transform: translate(-50, -50); /* Для IE */
-    -webkit-transform: translate(-50, -50); /* Для Safari, Chrome, iOS */
-    -o-transform: translate(-50, -50); /* Для Opera */
-    transform: translate(-50, -50);
 }
 
 .temp-dots{
@@ -380,11 +607,7 @@ input[type="number"]:focus{
     height: var(--box-for-strup-size);
     border: 1px solid #e0e0e0;
     background-color: #fff;
-    transition: width 2s ease-out;
-    transition: height 2s ease-out;
-    transition: position 2s ease-out;
-    transition: left 2s ease-out;
-    transition: top 2s ease-out;
+    /* transition: width .1s , height .1s ease-out, left .1s ease-out, top .1s ease-out; */
     z-index: 20;
 }
 
@@ -395,7 +618,6 @@ input[type="number"]:focus{
     font-weight: 800;
     z-index: 30;
     display: none;
-    transition: position 1s ease-out;
 }
 
 #strup_attention{
@@ -612,8 +834,6 @@ input[type="number"]:focus{
     z-index: 30;
     visibility: hidden;
     font-size: 30px;
-    transition: position 1s ease-out;
-    transition: left 1s ease-out;
-    transition: top 1s ease-out;
+    transition: left 1s ease-out, top 1s ease-out;
     color: lightgray;
 }

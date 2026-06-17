@@ -170,9 +170,6 @@ li{
     .title-wrapper {
         margin-bottom: 80px;
     }
-    .title-wrapper div:first-child {
-        order: 2;
-    }
     .main-title {
         font-size: 90px;
         line-height: 82px;
@@ -230,18 +227,6 @@ li{
     }
 }
 
-
-@media (max-width: 768px) {
-    .title-wrapper div:first-child {
-        order: 2;
-    }
-}
-
-@media (max-width: 992px) {
-    .title-wrapper div:first-child {
-        order: 2;
-    }
-}
 
 @media (max-width: 1200px) {
     .title-wrapper div:first-child {

@@ -23,9 +23,9 @@
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url(../fonts/Sprykski.woff2) format('woff2'),
-         url(../fonts/Sprykski.woff) format('woff'),
-         url(../fonts/Sprykski.eot);
+    src: url(../fonts/sprykski.woff2) format('woff2'),
+         url(../fonts/sprykski.woff) format('woff'),
+         url(../fonts/sprykski.eot) format('embedded-opentype');
 }
 
 @font-face {
@@ -86,4 +86,12 @@
     src: url(../fonts/zarathustra.woff2) format('woff2'),
          url(../fonts/zarathustra.woff) format('woff'),
          url(../fonts/zarathustra.eot);
+}
+
+@font-face {
+    font-family: 'circles';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(../fonts/circles.woff) format('woff');
 }
