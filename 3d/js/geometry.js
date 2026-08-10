@@ -176,10 +176,9 @@ export function buildSolid(loops, height) {
 /* depth 0 top = baseH; depth 1 = baseH ± detailH (emboss/engrave);    */
 /* deeper depths alternate back toward base.                            */
 /* ------------------------------------------------------------------ */
-export function buildRelief(loops, baseH, detailH, emboss) {
+export function buildRelief(loops, baseH, detailH, emboss, throughHoles = []) {
   const { items } = buildForest(loops);
   const mesh = new Mesh();
-  const maxDepth = items.reduce((m, it) => Math.max(m, it.depth), 0);
 
   // top Z per depth. Even depth => "surface" level, odd => boundary (still gets a surface region)
   const dir = emboss ? 1 : -1;
@@ -192,6 +191,18 @@ export function buildRelief(loops, baseH, detailH, emboss) {
   const oriented = new Map();
   for (const it of items) oriented.set(it.index, ensureOrientation(it.pts, it.depth % 2 === 0));
 
+  // Assign each true through-hole to the depth-0 base region containing it (hole ring = CW).
+  const holeByRegion = new Map();
+  for (const ring of throughHoles) {
+    let cx = 0, cy = 0;
+    for (const p of ring) { cx += p[0]; cy += p[1]; }
+    cx /= ring.length; cy /= ring.length;
+    const host = items.find((it) => it.depth === 0 && pointInPoly([cx, cy], it.pts));
+    if (!host) continue;
+    if (!holeByRegion.has(host.index)) holeByRegion.set(host.index, []);
+    holeByRegion.get(host.index).push(ensureOrientation(ring, false));
+  }
+
   // Top surface: every node is a region with its own top plane.
   // outer = the node's loop (oriented so region interior is enclosed),
   // holes = its direct children (which have their own planes).
@@ -200,6 +211,7 @@ export function buildRelief(loops, baseH, detailH, emboss) {
     // region ring must be CCW to face up regardless of solid/hole role here
     const outer = ensureOrientation(it.pts, true);
     const holes = it.children.map((ch) => ensureOrientation(ch.pts, false));
+    if (it.depth === 0 && holeByRegion.has(it.index)) holes.push(...holeByRegion.get(it.index));
     mesh.addCap(outer, holes, z, true);
   }
 
@@ -209,7 +221,7 @@ export function buildRelief(loops, baseH, detailH, emboss) {
   for (const it of items) {
     if (it.depth !== 0) continue;
     const outer = ensureOrientation(it.pts, true);
-    mesh.addCap(outer, [], 0, false);
+    mesh.addCap(outer, holeByRegion.get(it.index) || [], 0, false);
   }
 
   // Outer side walls: depth-0 loops, 0 -> baseH.
@@ -217,6 +229,10 @@ export function buildRelief(loops, baseH, detailH, emboss) {
     if (it.depth !== 0) continue;
     mesh.addWall(ensureOrientation(it.pts, true), 0, baseH);
   }
+
+  // Through-hole walls, full height (0 -> baseH).
+  for (const rings of holeByRegion.values())
+    for (const ring of rings) mesh.addWall(ring, 0, baseH);
 
   // Step walls at every internal boundary loop (depth>=1): between parent plane and this plane.
   const byIndex = new Map(items.map((it) => [it.index, it]));
@@ -312,6 +328,12 @@ export function punchHole(loops, cx, cy, holeR, lugR) {
   let subject = loopsToMP(loops);
   if (lugR > holeR) subject = pc.union(subject, [[circlePolygon(cx, cy, lugR)]]);
   const res = pc.difference(subject, [[circlePolygon(cx, cy, holeR)]]);
+  return mpToLoops(res);
+}
+
+// Union a filled disc into the figure (used for a flat lug in relief mode).
+export function unionDisc(loops, cx, cy, r) {
+  const res = globalThis.polygonClipping.union(loopsToMP(loops), [[circlePolygon(cx, cy, r)]]);
   return mpToLoops(res);
 }
 

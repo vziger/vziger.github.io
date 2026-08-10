@@ -2,7 +2,7 @@
 // scale → build → preview → STL pipeline.
 import { extractContours } from './pdf-extract.js';
 import { photoToLoops, detectPaperCorners } from './image-process.js';
-import { buildSolid, buildRelief, meshToSTL, punchHole } from './geometry.js';
+import { buildSolid, buildRelief, meshToSTL, punchHole, unionDisc, circlePolygon } from './geometry.js';
 import { Viewer } from './viewer.js';
 
 const $ = (id) => document.getElementById(id);
@@ -52,8 +52,7 @@ function syncControls() {
   $('modeHint').textContent = relief
     ? 'База-силуэт + внутренние детали как выступы или канавки.'
     : 'Внешний контур залит, внутренние — сквозные отверстия.';
-  // ring hole — solid mode only (Step 1)
-  $('holeRow').style.display = relief ? 'none' : '';
+  // ring hole — available in both modes
   $('holeOpts').hidden = !hole.on;
   $('ringField').style.display = hole.mode === 'lug' ? '' : 'none';
 }
@@ -76,19 +75,28 @@ function rebuild(fit = false) {
   const baseH = num('base', 5);
   const mode = document.querySelector('input[name=mode]:checked').value;
 
+  // ring hole position (model is centred at origin; v measured from top)
+  const holeR = num('holeDia', 4) / 2;
+  const hx = (hole.u - 0.5) * widthMM;
+  const hy = (0.5 - hole.v) * modelH;
+  const lugR = hole.mode === 'lug' ? holeR + num('holeRing', 2.5) : 0;
+
   let mesh;
   if (mode === 'solid') {
     if (hole.on) {
-      const holeR = num('holeDia', 4) / 2;
-      const lugR = hole.mode === 'lug' ? holeR + num('holeRing', 2.5) : 0;
-      const hx = (hole.u - 0.5) * widthMM;      // model is centred at origin
-      const hy = (0.5 - hole.v) * modelH;       // v measured from top
       try { loops = punchHole(loops, hx, hy, holeR, lugR); }
       catch (e) { console.error('hole:', e); }
     }
     mesh = buildSolid(loops, baseH);
   } else {
-    mesh = buildRelief(loops, baseH, num('detail', 1.5), $('emboss').checked);
+    let holes = [];
+    if (hole.on) {
+      try {
+        if (lugR > holeR) loops = unionDisc(loops, hx, hy, lugR); // flat lug in relief
+        holes = [circlePolygon(hx, hy, holeR)];
+      } catch (e) { console.error('hole:', e); }
+    }
+    mesh = buildRelief(loops, baseH, num('detail', 1.5), $('emboss').checked, holes);
   }
 
   viewer.setMesh(mesh.tris, fit);
@@ -100,7 +108,7 @@ function rebuild(fit = false) {
     `Треугольников: <b>${(mesh.tris.length / 9) | 0}</b>`;
   $('download').disabled = false;
   setStatus('Готово', 'ok');
-  if (hole.on && mode === 'solid') drawHoleView();
+  if (hole.on) drawHoleView();
 }
 
 /* ---------------- ring-hole mini top-view + drag ---------------- */
