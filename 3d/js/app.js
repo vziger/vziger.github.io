@@ -8,6 +8,20 @@ import { Viewer } from './viewer.js';
 const $ = (id) => document.getElementById(id);
 const viewer = new Viewer($('view'));
 
+// theme (dark default; choice remembered)
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  $('themeToggle').textContent = t === 'light' ? '🌙' : '☀️';
+  viewer.setTheme(t);
+}
+let theme = localStorage.getItem('theme') || 'dark';
+applyTheme(theme);
+$('themeToggle').addEventListener('click', () => {
+  theme = theme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', theme);
+  applyTheme(theme);
+});
+
 let source = null;      // { loops (centred, Y-up, raw units), w, h } — pristine, un-rotated
 let rotation = 0;       // 0..3 quarter-turns; a property of the loaded file
 let fileName = 'model';

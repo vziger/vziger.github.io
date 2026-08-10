@@ -77,4 +77,17 @@ export class Viewer {
     const g = Math.max(size.x, size.z) * 2.2;
     this.grid.scale.setScalar(Math.max(1, g / 400));
   }
+
+  // recolour the grid for light/dark so it stays visible on either background
+  setTheme(t) {
+    const light = t === 'light';
+    const s = this.grid.scale.x;
+    this.scene.remove(this.grid);
+    this.grid.geometry.dispose(); this.grid.material.dispose();
+    this.grid = new THREE.GridHelper(400, 40, light ? 0x2f7ff0 : 0x3a6ea5, light ? 0xc3ccd8 : 0x2a2f3a);
+    this.grid.material.opacity = light ? 0.6 : 0.35;
+    this.grid.material.transparent = true;
+    this.grid.scale.setScalar(s);
+    this.scene.add(this.grid);
+  }
 }
