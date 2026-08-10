@@ -79,8 +79,8 @@ function rotateSource(cw) {
   rotation = (rotation + (cw ? 1 : 3)) & 3;
   rebuild(false);
 }
-$('rotCW').addEventListener('click', () => rotateSource(true));
-$('rotCCW').addEventListener('click', () => rotateSource(false));
+document.querySelectorAll('.rot-btn').forEach((b) =>
+  b.addEventListener('click', () => rotateSource(b.dataset.rot === 'cw')));
 
 /* ---------------- PDF front-end ---------------- */
 async function loadPDF(file, fit = true) {
