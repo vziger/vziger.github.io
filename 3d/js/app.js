@@ -2,7 +2,7 @@
 // scale → build → preview → STL pipeline.
 import { extractContours } from './pdf-extract.js';
 import { photoToLoops, detectPaperCorners } from './image-process.js';
-import { buildSolid, buildRelief, meshToSTL } from './geometry.js';
+import { buildSolid, buildRelief, meshToSTL, punchHole } from './geometry.js';
 import { Viewer } from './viewer.js';
 
 const $ = (id) => document.getElementById(id);
@@ -27,6 +27,11 @@ let rotation = 0;       // 0..3 quarter-turns; a property of the loaded file
 let fileName = 'model';
 let lastSTL = null;
 
+// keychain ring hole (Step 1). Position u,v = fraction of the model bbox (v from top).
+const hole = { on: false, mode: 'lug', dia: 4, ring: 2.5, u: 0.5, v: 0.08 };
+const holeView = { rect: null, drag: false };
+const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#4c9ffe';
+
 function setStatus(msg, kind = '') { const el = $('status'); el.textContent = msg; el.className = 'status ' + kind; }
 function num(id, def) { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : def; }
 const nextFrame = () => new Promise((r) => setTimeout(r, 12));
@@ -47,6 +52,10 @@ function syncControls() {
   $('modeHint').textContent = relief
     ? 'База-силуэт + внутренние детали как выступы или канавки.'
     : 'Внешний контур залит, внутренние — сквозные отверстия.';
+  // ring hole — solid mode only (Step 1)
+  $('holeRow').style.display = relief ? 'none' : '';
+  $('holeOpts').hidden = !hole.on;
+  $('ringField').style.display = hole.mode === 'lug' ? '' : 'none';
 }
 
 // apply the loaded file's rotation (0..3 quarter-turns) — each CW step (x,y)->(y,-x)
@@ -62,13 +71,25 @@ function rebuild(fit = false) {
   const srcW = rotation & 1 ? source.h : source.w;   // odd turns swap W/H
   const srcH = rotation & 1 ? source.w : source.h;
   const scale = widthMM / (srcW || 1);
-  const loops = rotated(source.loops).map((lp) => lp.map(([x, y]) => [x * scale, y * scale]));
+  const modelH = srcH * scale;
+  let loops = rotated(source.loops).map((lp) => lp.map(([x, y]) => [x * scale, y * scale]));
   const baseH = num('base', 5);
   const mode = document.querySelector('input[name=mode]:checked').value;
 
   let mesh;
-  if (mode === 'solid') mesh = buildSolid(loops, baseH);
-  else mesh = buildRelief(loops, baseH, num('detail', 1.5), $('emboss').checked);
+  if (mode === 'solid') {
+    if (hole.on) {
+      const holeR = num('holeDia', 4) / 2;
+      const lugR = hole.mode === 'lug' ? holeR + num('holeRing', 2.5) : 0;
+      const hx = (hole.u - 0.5) * widthMM;      // model is centred at origin
+      const hy = (0.5 - hole.v) * modelH;       // v measured from top
+      try { loops = punchHole(loops, hx, hy, holeR, lugR); }
+      catch (e) { console.error('hole:', e); }
+    }
+    mesh = buildSolid(loops, baseH);
+  } else {
+    mesh = buildRelief(loops, baseH, num('detail', 1.5), $('emboss').checked);
+  }
 
   viewer.setMesh(mesh.tris, fit);
   lastSTL = meshToSTL(mesh);
@@ -79,7 +100,64 @@ function rebuild(fit = false) {
     `Треугольников: <b>${(mesh.tris.length / 9) | 0}</b>`;
   $('download').disabled = false;
   setStatus('Готово', 'ok');
+  if (hole.on && mode === 'solid') drawHoleView();
 }
+
+/* ---------------- ring-hole mini top-view + drag ---------------- */
+function drawHoleView() {
+  const cv = $('holeView'); if (!cv || !source) return;
+  const ctx = cv.getContext('2d');
+  const cw = cv.clientWidth || 240, ch = 150;
+  cv.width = cw; cv.height = ch;
+  ctx.clearRect(0, 0, cw, ch);
+  const loops = rotated(source.loops);
+  let mnx = Infinity, mny = Infinity, mxx = -Infinity, mxy = -Infinity;
+  for (const lp of loops) for (const [x, y] of lp) {
+    if (x < mnx) mnx = x; if (x > mxx) mxx = x; if (y < mny) mny = y; if (y > mxy) mxy = y;
+  }
+  const bw = mxx - mnx || 1, bh = mxy - mny || 1, pad = 14;
+  const s = Math.min((cw - 2 * pad) / bw, (ch - 2 * pad) / bh);
+  const ox = (cw - bw * s) / 2, oy = (ch - bh * s) / 2;
+  const toC = (x, y) => [(x - mnx) * s + ox, (mxy - y) * s + oy]; // Y-up → down
+  holeView.rect = { ox, oy, s, bw, bh };
+
+  const accent = cssVar('--accent');
+  ctx.fillStyle = 'rgba(120,150,190,0.15)';
+  ctx.strokeStyle = accent; ctx.lineWidth = 1.5;
+  for (const lp of loops) {
+    ctx.beginPath();
+    lp.forEach((p, i) => { const c = toC(p[0], p[1]); i ? ctx.lineTo(c[0], c[1]) : ctx.moveTo(c[0], c[1]); });
+    ctx.closePath(); ctx.stroke();
+  }
+  // marker
+  const mc = toC(mnx + hole.u * bw, mxy - hole.v * bh);
+  ctx.strokeStyle = accent; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(mc[0] - 11, mc[1]); ctx.lineTo(mc[0] + 11, mc[1]);
+  ctx.moveTo(mc[0], mc[1] - 11); ctx.lineTo(mc[0], mc[1] + 11); ctx.stroke();
+  ctx.beginPath(); ctx.arc(mc[0], mc[1], 7, 0, 7);
+  ctx.fillStyle = accent; ctx.fill();
+  ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+}
+{
+  const cv = $('holeView');
+  const setFromEvent = (e) => {
+    const r = holeView.rect; if (!r) return;
+    const rect = cv.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (cv.width / rect.width);
+    const y = (e.clientY - rect.top) * (cv.height / rect.height);
+    hole.u = Math.max(0, Math.min(1, (x - r.ox) / (r.bw * r.s)));
+    hole.v = Math.max(0, Math.min(1, (y - r.oy) / (r.bh * r.s)));
+  };
+  cv.addEventListener('pointerdown', (e) => { holeView.drag = true; cv.setPointerCapture(e.pointerId); setFromEvent(e); drawHoleView(); rebuild(false); });
+  cv.addEventListener('pointermove', (e) => { if (holeView.drag) { setFromEvent(e); drawHoleView(); rebuild(false); } });
+  cv.addEventListener('pointerup', () => { holeView.drag = false; });
+}
+
+// hole controls
+$('holeOn').addEventListener('change', (e) => { hole.on = e.target.checked; syncControls(); rebuild(false); });
+document.querySelectorAll('input[name=holeMode]').forEach((r) =>
+  r.addEventListener('change', () => { hole.mode = document.querySelector('input[name=holeMode]:checked').value; syncControls(); rebuild(false); }));
+['holeDia', 'holeRing'].forEach((id) => $(id).addEventListener('change', () => rebuild(false)));
 
 document.querySelectorAll('input[name=mode]').forEach((r) => r.addEventListener('change', () => { syncControls(); rebuild(false); }));
 ['emboss', 'engrave', 'base', 'detail', 'width'].forEach((id) => $(id).addEventListener('change', () => rebuild(false)));
@@ -111,13 +189,13 @@ async function loadPDF(file, fit = true) {
     rebuild(fit);
   } catch (e) { console.error(e); setStatus('Ошибка PDF: ' + (e.message || e), 'err'); }
 }
-$('file').addEventListener('change', (e) => { rotation = 0; loadPDF(e.target.files[0], true); });
+$('file').addEventListener('change', (e) => { rotation = 0; hole.u = 0.5; hole.v = 0.08; loadPDF(e.target.files[0], true); });
 $('tol').addEventListener('change', () => { const f = $('file').files[0]; if (f) loadPDF(f, false); });
 {
   const d = $('drop');
   ['dragover', 'dragenter'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.add('over'); }));
   ['dragleave', 'drop'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.remove('over'); }));
-  d.addEventListener('drop', (e) => { rotation = 0; loadPDF(e.dataTransfer.files[0]); });
+  d.addEventListener('drop', (e) => { rotation = 0; hole.u = 0.5; hole.v = 0.08; loadPDF(e.dataTransfer.files[0]); });
 }
 
 /* ---------------- Photo front-end ---------------- */
@@ -163,7 +241,7 @@ function redrawPhoto() {
 
 async function loadPhoto(file) {
   if (!file) return;
-  rotation = 0; // new photo resets orientation
+  rotation = 0; hole.u = 0.5; hole.v = 0.08; // new photo resets orientation + hole
   fileName = (file.name || 'model').replace(/\.[^.]+$/, '');
   const url = URL.createObjectURL(file);
   const img = new Image();

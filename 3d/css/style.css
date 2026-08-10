@@ -117,6 +117,17 @@ input[type=number]:focus { outline: none; border-color: var(--accent); }
 .seg input:checked + span { border-color: var(--accent); background: var(--seg-bg); color: var(--seg-fg); }
 .hint { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
 
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); cursor: pointer; }
+.check input { width: 16px; height: 16px; accent-color: var(--accent); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.subfield { display: flex; flex-direction: column; gap: 6px; }
+.subfield > label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.hole-view {
+  width: 100%; height: 150px; margin-top: 10px; display: block;
+  background: var(--canvas-bg); border: 1px solid var(--line); border-radius: 8px;
+  touch-action: none; cursor: crosshair;
+}
+
 .adv summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 .adv[open] { display: flex; flex-direction: column; gap: 10px; }
 .adv .field { margin-top: 8px; }

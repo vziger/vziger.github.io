@@ -1,7 +1,7 @@
 // sw.js — offline shell.
 // App code (HTML/CSS/JS) = network-first so updates appear on reload;
 // heavy vendored libs & icons = cache-first. Offline falls back to cache.
-const CACHE = 'pdf2stl-v9';
+const CACHE = 'pdf2stl-v10';
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,7 @@ const ASSETS = [
   './vendor/three.module.js',
   './vendor/OrbitControls.js',
   './vendor/earcut.min.js',
+  './vendor/polygon-clipping.umd.js',
   './icons/icon.svg',
 ];
 

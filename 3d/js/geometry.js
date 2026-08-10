@@ -266,6 +266,56 @@ export function meshToSTL(mesh) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Ring hole / lug via 2D polygon booleans (globalThis.polygonClipping) */
+/* ------------------------------------------------------------------ */
+export function circlePolygon(cx, cy, r, seg = 48) {
+  const pts = [];
+  for (let i = 0; i < seg; i++) {
+    const a = (i / seg) * Math.PI * 2;
+    pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+  }
+  return pts;
+}
+
+// flat rings -> polygon-clipping MultiPolygon (group outer + direct holes)
+function loopsToMP(loops) {
+  const { items } = buildForest(loops);
+  const polys = [];
+  for (const it of items) {
+    if (it.depth % 2 !== 0) continue;
+    const rings = [it.pts.map((p) => [p[0], p[1]])];
+    for (const ch of it.children) rings.push(ch.pts.map((p) => [p[0], p[1]]));
+    polys.push(rings);
+  }
+  return polys;
+}
+function mpToLoops(mp) {
+  const loops = [];
+  for (const poly of mp) for (const ring of poly) {
+    const r = ring.map((p) => [p[0], p[1]]);
+    if (r.length > 1) {
+      const a = r[0], b = r[r.length - 1];
+      if (Math.abs(a[0] - b[0]) < 1e-9 && Math.abs(a[1] - b[1]) < 1e-9) r.pop();
+    }
+    if (r.length >= 3) loops.push(r);
+  }
+  return loops;
+}
+
+/**
+ * Add a ring hole to figure loops. lugR > holeR adds a reinforcing disc (lug)
+ * first, then punches the hole; lugR <= holeR just punches the hole in the body.
+ * Returns new flat rings ready for buildSolid.
+ */
+export function punchHole(loops, cx, cy, holeR, lugR) {
+  const pc = globalThis.polygonClipping;
+  let subject = loopsToMP(loops);
+  if (lugR > holeR) subject = pc.union(subject, [[circlePolygon(cx, cy, lugR)]]);
+  const res = pc.difference(subject, [[circlePolygon(cx, cy, holeR)]]);
+  return mpToLoops(res);
+}
+
+/* ------------------------------------------------------------------ */
 /* Bezier flattening (used by the PDF extractor).                      */
 /* ------------------------------------------------------------------ */
 export function flattenCubic(out, x0, y0, x1, y1, x2, y2, x3, y3, tol) {
