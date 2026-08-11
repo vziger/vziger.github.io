@@ -251,6 +251,72 @@ function chaikin(pts, iters) {
   return pts;
 }
 
+/* ---------------- trace every ink stroke into ribbon loops ---------------- */
+function labelComponents(pred, w, h) {
+  const labels = new Int32Array(w * h);
+  const sizes = [0];
+  let cur = 0; const stack = [];
+  for (let i = 0; i < w * h; i++) {
+    if (!pred(i) || labels[i]) continue;
+    cur++; let size = 0; stack.push(i); labels[i] = cur;
+    while (stack.length) {
+      const p = stack.pop(); size++;
+      const x = p % w, y = (p / w) | 0;
+      if (x > 0 && pred(p - 1) && !labels[p - 1]) { labels[p - 1] = cur; stack.push(p - 1); }
+      if (x < w - 1 && pred(p + 1) && !labels[p + 1]) { labels[p + 1] = cur; stack.push(p + 1); }
+      if (y > 0 && pred(p - w) && !labels[p - w]) { labels[p - w] = cur; stack.push(p - w); }
+      if (y < h - 1 && pred(p + w) && !labels[p + w]) { labels[p + w] = cur; stack.push(p + w); }
+    }
+    sizes[cur] = size;
+  }
+  return { labels, count: cur, sizes };
+}
+function traceLabel(labels, w, h, target) {
+  let start = -1;
+  for (let i = 0; i < w * h; i++) if (labels[i] === target) { start = i; break; }
+  if (start < 0) return [];
+  const sx = start % w, sy = (start / w) | 0;
+  const dx = [-1, -1, 0, 1, 1, 1, 0, -1], dy = [0, -1, -1, -1, 0, 1, 1, 1];
+  const get = (x, y) => x >= 0 && y >= 0 && x < w && y < h && labels[y * w + x] === target;
+  const contour = [];
+  let cx = sx, cy = sy, backtrack = 0, steps = 0; const maxSteps = w * h * 4;
+  do {
+    let found = false;
+    for (let k = 0; k < 8; k++) {
+      const dir = (backtrack + 1 + k) % 8, nx = cx + dx[dir], ny = cy + dy[dir];
+      if (get(nx, ny)) { contour.push([cx, cy]); backtrack = (dir + 4) % 8; cx = nx; cy = ny; found = true; break; }
+    }
+    if (!found) { contour.push([cx, cy]); break; }
+  } while ((cx !== sx || cy !== sy) && ++steps < maxSteps);
+  return contour;
+}
+
+// All ink strokes (foreground) + their enclosed holes, as simplified ribbon loops.
+function inkLineLoops(ink, w, h, tol, detail, minArea) {
+  const smooth = detail > 66 ? 0 : 1;
+  const out = [];
+  const emit = (labels, count, sizes) => {
+    for (let L = 1; L <= count; L++) {
+      if (sizes[L] < minArea) continue;
+      let ring = traceLabel(labels, w, h, L);
+      if (ring.length < 6) continue;
+      ring = chaikin(rdp(ring, tol), smooth);
+      if (ring.length >= 3) out.push(ring);
+    }
+  };
+  const fg = labelComponents((i) => ink[i] === 1, w, h);
+  emit(fg.labels, fg.count, fg.sizes);
+  // enclosed background = holes inside strokes (e.g. the loop of an outline)
+  const outside = new Uint8Array(w * h), st = [];
+  const push = (i) => { if (!ink[i] && !outside[i]) { outside[i] = 1; st.push(i); } };
+  for (let x = 0; x < w; x++) { push(x); push((h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { push(y * w); push(y * w + w - 1); }
+  while (st.length) { const p = st.pop(), x = p % w, y = (p / w) | 0; if (x > 0) push(p - 1); if (x < w - 1) push(p + 1); if (y > 0) push(p - w); if (y < h - 1) push(p + w); }
+  const bg = labelComponents((i) => !ink[i] && !outside[i], w, h);
+  emit(bg.labels, bg.count, bg.sizes);
+  return out;
+}
+
 /* ---------------- auto paper-corner detection ---------------- */
 export function detectPaperCorners(rgba, w, h) {
   // largest bright, low-saturation region ≈ the sheet
@@ -355,5 +421,21 @@ export function photoToLoops(rgba, sw, sh, opts = {}) {
   const cx = (minx + maxx) / 2, cy = (miny + maxy) / 2;
   const loop = contour.map(([x, y]) => [x - cx, -(y - cy)]);
 
-  return { loops: [loop], w: maxx - minx, h: maxy - miny, contour, warpW: W.w, warpH: W.h, H: W.H, mask };
+  // warpRGBA + (cx,cy) let the Pen editor show the rectified photo as a backdrop
+  // aligned with the centred loops: model point (px,py) → warp pixel (px+cx, cy-py).
+  const result = { loops: [loop], w: maxx - minx, h: maxy - miny, contour, warpW: W.w, warpH: W.h, H: W.H, mask, warpRGBA: W.data, cx, cy };
+  if (opts.lines) {
+    const minArea = Math.max(8, Math.round((longSide / 90) ** 2));
+    // keep only ink well INSIDE the silhouette: drops background strokes AND the
+    // boundary outline (already represented by the plate edge), and pulls lines
+    // away from the edge so ribbons stay disjoint => clean manifold.
+    const clip = erode(mask, W.w, W.h, Math.max(2, Math.round(longSide / 110)));
+    let inkInside = new Uint8Array(ink.length);
+    for (let i = 0; i < ink.length; i++) inkInside[i] = (ink[i] && clip[i]) ? 1 : 0;
+    // morphological "open" removes 1px spurs/whiskers that make thin ribbons non-manifold
+    inkInside = dilate(erode(inkInside, W.w, W.h, 1), W.w, W.h, 1);
+    const raw = inkLineLoops(inkInside, W.w, W.h, eps, detail, minArea);
+    result.lineLoops = raw.map((lp) => lp.map(([x, y]) => [x - cx, -(y - cy)]));
+  }
+  return result;
 }
