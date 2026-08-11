@@ -1,0 +1,381 @@
+// app.js — UI controller. Two input front-ends (PDF, Photo) feed one shared
+// scale → build → preview → STL pipeline.
+import { extractContours } from './pdf-extract.js';
+import { photoToLoops, detectPaperCorners } from './image-process.js';
+import { buildSolid, buildRelief, meshToSTL, punchHole, unionDisc, circlePolygon } from './geometry.js';
+import { Viewer } from './viewer.js';
+
+const $ = (id) => document.getElementById(id);
+const viewer = new Viewer($('view'));
+
+// theme (dark default; choice remembered)
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  $('themeToggle').textContent = t === 'light' ? '🌙' : '☀️';
+  viewer.setTheme(t);
+}
+let theme = localStorage.getItem('theme') || 'dark';
+applyTheme(theme);
+$('themeToggle').addEventListener('click', () => {
+  theme = theme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', theme);
+  applyTheme(theme);
+});
+
+let source = null;      // { loops (centred, Y-up, raw units), w, h } — pristine, un-rotated
+let rotation = 0;       // 0..3 quarter-turns; a property of the loaded file
+let fileName = 'model';
+let lastSTL = null;
+
+// keychain ring hole (Step 1). Position u,v = fraction of the model bbox (v from top).
+const hole = { on: false, mode: 'lug', dia: 4, ring: 2.5, u: 0.5, v: 0.08 };
+const holeView = { rect: null, drag: false };
+const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#4c9ffe';
+
+function setStatus(msg, kind = '') { const el = $('status'); el.textContent = msg; el.className = 'status ' + kind; }
+function num(id, def) { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : def; }
+const nextFrame = () => new Promise((r) => setTimeout(r, 12));
+
+/* ---------------- tabs ---------------- */
+document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('active', x === t));
+  const tab = t.dataset.tab;
+  $('pane-pdf').hidden = tab !== 'pdf';
+  $('pane-photo').hidden = tab !== 'photo';
+}));
+
+/* ---------------- shared build ---------------- */
+function syncControls() {
+  const relief = document.querySelector('input[name=mode]:checked').value === 'relief';
+  $('reliefRow').style.display = relief ? '' : 'none';
+  $('reliefKindRow').style.display = relief ? '' : 'none';
+  $('detailRow').style.display = relief ? '' : 'none';
+  $('modeHint').textContent = relief
+    ? 'База-силуэт + внутренние детали как выступы или канавки.'
+    : 'Внешний контур залит, внутренние — сквозные отверстия.';
+  const kind = document.querySelector('input[name=reliefKind]:checked')?.value || 'areas';
+  const linesAvail = !!(source && source.lineLoops && source.lineLoops.length);
+  $('reliefKindHint').textContent = (kind === 'lines' && !linesAvail)
+    ? '«По линиям» — для фото: загрузите рисунок на вкладке «Фото».'
+    : (kind === 'lines' ? 'Все штрихи рисунка подняты/утоплены на пластине-силуэте.' : '');
+  $('detailRow').querySelector('label').textContent =
+    (relief && kind === 'lines') ? 'Высота линий, мм' : 'Высота деталей, мм';
+  // ring hole — available in both modes
+  $('holeOpts').hidden = !hole.on;
+  $('ringField').style.display = hole.mode === 'lug' ? '' : 'none';
+}
+
+// apply the loaded file's rotation (0..3 quarter-turns) — each CW step (x,y)->(y,-x)
+function rotated(loops) {
+  let out = loops;
+  for (let i = 0; i < (rotation & 3); i++) out = out.map((lp) => lp.map(([x, y]) => [y, -x]));
+  return out;
+}
+
+function rebuild(fit = false) {
+  if (!source || !source.loops.length) { setStatus('Нет контура для сборки', 'warn'); return; }
+  const widthMM = num('width', 80);
+  const srcW = rotation & 1 ? source.h : source.w;   // odd turns swap W/H
+  const srcH = rotation & 1 ? source.w : source.h;
+  const scale = widthMM / (srcW || 1);
+  const modelH = srcH * scale;
+  let loops = rotated(source.loops).map((lp) => lp.map(([x, y]) => [x * scale, y * scale]));
+  const baseH = num('base', 5);
+  const mode = document.querySelector('input[name=mode]:checked').value;
+
+  // ring hole position (model is centred at origin; v measured from top)
+  const holeR = num('holeDia', 4) / 2;
+  const hx = (hole.u - 0.5) * widthMM;
+  const hy = (0.5 - hole.v) * modelH;
+  const lugR = hole.mode === 'lug' ? holeR + num('holeRing', 2.5) : 0;
+
+  let mesh;
+  if (mode === 'solid') {
+    if (hole.on) {
+      try { loops = punchHole(loops, hx, hy, holeR, lugR); }
+      catch (e) { console.error('hole:', e); }
+    }
+    mesh = buildSolid(loops, baseH);
+  } else {
+    const kind = document.querySelector('input[name=reliefKind]:checked')?.value || 'areas';
+    const useLines = kind === 'lines' && source.lineLoops && source.lineLoops.length;
+    let holes = [];
+    if (hole.on) {
+      try {
+        if (lugR > holeR) loops = unionDisc(loops, hx, hy, lugR); // flat lug in relief
+        holes = [circlePolygon(hx, hy, holeR)];
+      } catch (e) { console.error('hole:', e); }
+    }
+    let reliefLoops = loops;
+    if (useLines) {
+      const lines = rotated(source.lineLoops).map((lp) => lp.map(([x, y]) => [x * scale, y * scale]));
+      reliefLoops = [...loops, ...lines]; // silhouette plate + raised/recessed ink lines
+    }
+    mesh = buildRelief(reliefLoops, baseH, num('detail', 1.5), $('emboss').checked, holes);
+  }
+
+  viewer.setMesh(mesh.tris, fit);
+  lastSTL = meshToSTL(mesh);
+
+  const totH = mode === 'solid' ? baseH : baseH + ($('emboss').checked ? num('detail', 1.5) : 0);
+  $('info').innerHTML =
+    `Контуров: <b>${source.loops.length}</b> · Размер: <b>${widthMM.toFixed(1)}×${(srcH * scale).toFixed(1)}×${totH.toFixed(1)} мм</b> · ` +
+    `Треугольников: <b>${(mesh.tris.length / 9) | 0}</b>`;
+  $('download').disabled = false;
+  setStatus('Готово', 'ok');
+  if (hole.on) drawHoleView();
+}
+
+/* ---------------- ring-hole mini top-view + drag ---------------- */
+function drawHoleView() {
+  const cv = $('holeView'); if (!cv || !source) return;
+  const ctx = cv.getContext('2d');
+  const cw = cv.clientWidth || 240, ch = 150;
+  cv.width = cw; cv.height = ch;
+  ctx.clearRect(0, 0, cw, ch);
+  const loops = rotated(source.loops);
+  let mnx = Infinity, mny = Infinity, mxx = -Infinity, mxy = -Infinity;
+  for (const lp of loops) for (const [x, y] of lp) {
+    if (x < mnx) mnx = x; if (x > mxx) mxx = x; if (y < mny) mny = y; if (y > mxy) mxy = y;
+  }
+  const bw = mxx - mnx || 1, bh = mxy - mny || 1, pad = 14;
+  const s = Math.min((cw - 2 * pad) / bw, (ch - 2 * pad) / bh);
+  const ox = (cw - bw * s) / 2, oy = (ch - bh * s) / 2;
+  const toC = (x, y) => [(x - mnx) * s + ox, (mxy - y) * s + oy]; // Y-up → down
+  holeView.rect = { ox, oy, s, bw, bh };
+
+  const accent = cssVar('--accent');
+  ctx.fillStyle = 'rgba(120,150,190,0.15)';
+  ctx.strokeStyle = accent; ctx.lineWidth = 1.5;
+  for (const lp of loops) {
+    ctx.beginPath();
+    lp.forEach((p, i) => { const c = toC(p[0], p[1]); i ? ctx.lineTo(c[0], c[1]) : ctx.moveTo(c[0], c[1]); });
+    ctx.closePath(); ctx.stroke();
+  }
+  // marker
+  const mc = toC(mnx + hole.u * bw, mxy - hole.v * bh);
+  ctx.strokeStyle = accent; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(mc[0] - 11, mc[1]); ctx.lineTo(mc[0] + 11, mc[1]);
+  ctx.moveTo(mc[0], mc[1] - 11); ctx.lineTo(mc[0], mc[1] + 11); ctx.stroke();
+  ctx.beginPath(); ctx.arc(mc[0], mc[1], 7, 0, 7);
+  ctx.fillStyle = accent; ctx.fill();
+  ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+}
+{
+  const cv = $('holeView');
+  const setFromEvent = (e) => {
+    const r = holeView.rect; if (!r) return;
+    const rect = cv.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (cv.width / rect.width);
+    const y = (e.clientY - rect.top) * (cv.height / rect.height);
+    hole.u = Math.max(0, Math.min(1, (x - r.ox) / (r.bw * r.s)));
+    hole.v = Math.max(0, Math.min(1, (y - r.oy) / (r.bh * r.s)));
+  };
+  cv.addEventListener('pointerdown', (e) => { holeView.drag = true; cv.setPointerCapture(e.pointerId); setFromEvent(e); drawHoleView(); rebuild(false); });
+  cv.addEventListener('pointermove', (e) => { if (holeView.drag) { setFromEvent(e); drawHoleView(); rebuild(false); } });
+  cv.addEventListener('pointerup', () => { holeView.drag = false; });
+}
+
+// hole controls
+$('holeOn').addEventListener('change', (e) => { hole.on = e.target.checked; syncControls(); rebuild(false); });
+document.querySelectorAll('input[name=holeMode]').forEach((r) =>
+  r.addEventListener('change', () => { hole.mode = document.querySelector('input[name=holeMode]:checked').value; syncControls(); rebuild(false); }));
+['holeDia', 'holeRing'].forEach((id) => $(id).addEventListener('change', () => rebuild(false)));
+
+document.querySelectorAll('input[name=mode]').forEach((r) => r.addEventListener('change', () => { syncControls(); rebuild(false); }));
+document.querySelectorAll('input[name=reliefKind]').forEach((r) => r.addEventListener('change', () => { syncControls(); rebuild(false); }));
+['emboss', 'engrave', 'base', 'detail', 'width'].forEach((id) => $(id).addEventListener('change', () => rebuild(false)));
+$('regen').addEventListener('click', () => rebuild(false));
+
+// Rotate 90°. On the Photo tab this rotates the LOADED IMAGE itself (and re-runs
+// detection); on the PDF tab there is no image, so it rotates the contour.
+function rotateSource(cw) {
+  if (!$('pane-photo').hidden && photo.rgba) { rotatePhoto(cw); return; }
+  if (!source || !source.loops.length) return;
+  rotation = (rotation + (cw ? 1 : 3)) & 3;
+  rebuild(false);
+}
+document.querySelectorAll('.rot-btn').forEach((b) =>
+  b.addEventListener('click', () => rotateSource(b.dataset.rot === 'cw')));
+
+/* ---------------- PDF front-end ---------------- */
+async function loadPDF(file, fit = true) {
+  if (!file) return;
+  fileName = (file.name || 'model').replace(/\.pdf$/i, '');
+  $('dropHint').textContent = file.name;
+  setStatus('Разбор PDF…');
+  await nextFrame();
+  try {
+    const buf = await file.arrayBuffer();
+    const res = await extractContours(buf, { tol: num('tol', 0.15) });
+    if (!res.count) { setStatus('В PDF не найдено векторных контуров', 'err'); return; }
+    source = { loops: res.loops, w: res.w, h: res.h };
+    rebuild(fit);
+  } catch (e) { console.error(e); setStatus('Ошибка PDF: ' + (e.message || e), 'err'); }
+}
+$('file').addEventListener('change', (e) => { rotation = 0; hole.u = 0.5; hole.v = 0.08; loadPDF(e.target.files[0], true); });
+$('tol').addEventListener('change', () => { const f = $('file').files[0]; if (f) loadPDF(f, false); });
+{
+  const d = $('drop');
+  ['dragover', 'dragenter'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.remove('over'); }));
+  d.addEventListener('drop', (e) => { rotation = 0; hole.u = 0.5; hole.v = 0.08; loadPDF(e.dataTransfer.files[0]); });
+}
+
+/* ---------------- Photo front-end ---------------- */
+const photo = { img: null, rgba: null, sw: 0, sh: 0, corners: null, contourSrc: null };
+const pc = $('photoCanvas');
+const pctx = pc.getContext('2d');
+let viewScale = 1, viewOX = 0, viewOY = 0; // image→canvas mapping
+
+function imgToCanvas(p) { return [p[0] * viewScale + viewOX, p[1] * viewScale + viewOY]; }
+function canvasToImg(x, y) { return [(x - viewOX) / viewScale, (y - viewOY) / viewScale]; }
+
+function fitCanvas() {
+  const maxW = pc.clientWidth || 300, maxH = 360;
+  viewScale = Math.min(maxW / photo.sw, maxH / photo.sh);
+  const cw = Math.round(photo.sw * viewScale), ch = Math.round(photo.sh * viewScale);
+  pc.width = cw; pc.height = ch; viewOX = 0; viewOY = 0;
+}
+function redrawPhoto() {
+  if (!photo.img) return;
+  pctx.clearRect(0, 0, pc.width, pc.height);
+  pctx.drawImage(photo.img, 0, 0, pc.width, pc.height);
+  // silhouette overlay
+  if (photo.contourSrc && photo.contourSrc.length) {
+    pctx.beginPath();
+    photo.contourSrc.forEach((p, i) => { const c = imgToCanvas(p); i ? pctx.lineTo(c[0], c[1]) : pctx.moveTo(c[0], c[1]); });
+    pctx.closePath();
+    pctx.fillStyle = 'rgba(76,159,254,0.28)'; pctx.fill();
+    pctx.lineWidth = 2; pctx.strokeStyle = '#4c9ffe'; pctx.stroke();
+  }
+  // crop quad + handles
+  if (photo.corners) {
+    pctx.beginPath();
+    photo.corners.forEach((p, i) => { const c = imgToCanvas(p); i ? pctx.lineTo(c[0], c[1]) : pctx.moveTo(c[0], c[1]); });
+    pctx.closePath();
+    pctx.lineWidth = 1.5; pctx.strokeStyle = '#ffd479'; pctx.setLineDash([5, 4]); pctx.stroke(); pctx.setLineDash([]);
+    for (const p of photo.corners) {
+      const c = imgToCanvas(p);
+      pctx.beginPath(); pctx.arc(c[0], c[1], 8, 0, 7); pctx.fillStyle = '#ffd479'; pctx.fill();
+      pctx.strokeStyle = '#1a1f27'; pctx.lineWidth = 2; pctx.stroke();
+    }
+  }
+}
+
+async function loadPhoto(file) {
+  if (!file) return;
+  rotation = 0; hole.u = 0.5; hole.v = 0.08; // new photo resets orientation + hole
+  fileName = (file.name || 'model').replace(/\.[^.]+$/, '');
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    // read pixels at native (capped) resolution
+    const cap = 1600, s = Math.min(1, cap / Math.max(img.width, img.height));
+    const sw = Math.round(img.width * s), sh = Math.round(img.height * s);
+    const off = Object.assign(document.createElement('canvas'), { width: sw, height: sh });
+    const octx = off.getContext('2d', { willReadFrequently: true });
+    octx.drawImage(img, 0, 0, sw, sh);
+    photo.img = img; photo.sw = sw; photo.sh = sh;
+    photo.rgba = octx.getImageData(0, 0, sw, sh).data;
+    photo.corners = detectPaperCorners(photo.rgba, sw, sh);
+    photo.contourSrc = null;
+    $('photoHint').textContent = file.name;
+    fitCanvas(); redrawPhoto();
+    processPhoto(true); // new photo → fit camera once
+  };
+  img.src = url;
+}
+$('photoFile').addEventListener('change', (e) => loadPhoto(e.target.files[0]));
+{
+  const d = $('photoDrop');
+  ['dragover', 'dragenter'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.remove('over'); }));
+  d.addEventListener('drop', (e) => loadPhoto(e.dataTransfer.files[0]));
+}
+
+async function processPhoto(fit = false) {
+  if (!photo.rgba) { setStatus('Сначала выберите фото', 'warn'); return; }
+  setStatus('Распознаю силуэт…');
+  await nextFrame();
+  try {
+    const res = photoToLoops(photo.rgba, photo.sw, photo.sh, {
+      corners: photo.corners,
+      sensitivity: num('sens', 0),
+      detail: num('detail2', 50),
+      lines: true,
+    });
+    if (!res.loops.length) { setStatus('Силуэт не найден — подвиньте углы или измените чувствительность', 'err'); return; }
+    // map warped contour → source image coords for the overlay
+    const H = res.H;
+    photo.contourSrc = res.contour.map(([x, y]) => {
+      const w = H[6] * x + H[7] * y + H[8];
+      return [(H[0] * x + H[1] * y + H[2]) / w, (H[3] * x + H[4] * y + H[5]) / w];
+    });
+    redrawPhoto();
+    source = { loops: res.loops, w: res.w, h: res.h, lineLoops: res.lineLoops || [] };
+    rebuild(fit);
+  } catch (e) { console.error(e); setStatus('Ошибка обработки: ' + (e.message || e), 'err'); }
+}
+// Rotate the loaded photo itself by 90° (pixels + crop frame), then re-detect.
+// Camera is kept (processPhoto(false)).
+function rotatePhoto(cw) {
+  const { rgba, sw, sh } = photo;
+  const nw = sh, nh = sw;
+  const out = new Uint8ClampedArray(nw * nh * 4);
+  for (let y = 0; y < nh; y++) {
+    for (let x = 0; x < nw; x++) {
+      const sx = cw ? y : sw - 1 - y;
+      const sy = cw ? sh - 1 - x : x;
+      const o = (y * nw + x) * 4, s = (sy * sw + sx) * 4;
+      out[o] = rgba[s]; out[o + 1] = rgba[s + 1]; out[o + 2] = rgba[s + 2]; out[o + 3] = 255;
+    }
+  }
+  // displayable rotated source (redrawPhoto draws photo.img — a canvas is fine)
+  const cnv = Object.assign(document.createElement('canvas'), { width: nw, height: nh });
+  cnv.getContext('2d').putImageData(new ImageData(out, nw, nh), 0, 0);
+  photo.img = cnv; photo.rgba = out; photo.sw = nw; photo.sh = nh;
+  photo.corners = photo.corners.map(([px, py]) => (cw ? [sh - py, px] : [py, sw - px]));
+  photo.contourSrc = null;
+  fitCanvas(); redrawPhoto();
+  processPhoto(false);
+}
+$('recognize').addEventListener('click', () => processPhoto(false));
+$('sens').addEventListener('change', () => processPhoto(false));
+$('detail2').addEventListener('change', () => processPhoto(false));
+
+/* corner dragging (pointer = mouse + touch) */
+let drag = -1;
+pc.addEventListener('pointerdown', (e) => {
+  if (!photo.corners) return;
+  const rect = pc.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (pc.width / rect.width);
+  const y = (e.clientY - rect.top) * (pc.height / rect.height);
+  let best = -1, bd = 22;
+  photo.corners.forEach((p, i) => { const c = imgToCanvas(p); const d = Math.hypot(c[0] - x, c[1] - y); if (d < bd) { bd = d; best = i; } });
+  if (best >= 0) { drag = best; pc.setPointerCapture(e.pointerId); }
+});
+pc.addEventListener('pointermove', (e) => {
+  if (drag < 0) return;
+  const rect = pc.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (pc.width / rect.width);
+  const y = (e.clientY - rect.top) * (pc.height / rect.height);
+  const p = canvasToImg(x, y);
+  photo.corners[drag] = [Math.max(0, Math.min(photo.sw, p[0])), Math.max(0, Math.min(photo.sh, p[1]))];
+  redrawPhoto();
+});
+pc.addEventListener('pointerup', () => { if (drag >= 0) { drag = -1; processPhoto(); } });
+addEventListener('resize', () => { if (photo.img) { fitCanvas(); redrawPhoto(); } });
+
+/* ---------------- download ---------------- */
+$('download').addEventListener('click', () => {
+  if (!lastSTL) return;
+  const blob = new Blob([lastSTL], { type: 'model/stl' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = fileName + '.stl'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+
+syncControls();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
