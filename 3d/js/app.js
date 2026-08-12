@@ -76,7 +76,7 @@ function rotated(loops) {
   return out;
 }
 
-function rebuild(fit = false) {
+function rebuild(reframe = false) {
   if (!source || !source.loops.length) { setStatus('Нет контура для сборки', 'warn'); return; }
   const widthMM = num('width', 80);
   const srcW = rotation & 1 ? source.h : source.w;   // odd turns swap W/H
@@ -118,7 +118,7 @@ function rebuild(fit = false) {
     mesh = buildRelief(reliefLoops, baseH, num('detail', 1.5), $('emboss').checked, holes);
   }
 
-  viewer.setMesh(mesh.tris, fit);
+  viewer.setMesh(mesh.tris, reframe);
   lastSTL = meshToSTL(mesh);
 
   const totH = mode === 'solid' ? baseH : baseH + ($('emboss').checked ? num('detail', 1.5) : 0);
@@ -203,7 +203,7 @@ document.querySelectorAll('.rot-btn').forEach((b) =>
   b.addEventListener('click', () => rotateSource(b.dataset.rot === 'cw')));
 
 /* ---------------- PDF front-end ---------------- */
-async function loadPDF(file, fit = false) {
+async function loadPDF(file, reframe = false) {
   if (!file) return;
   fileName = (file.name || 'model').replace(/\.pdf$/i, '');
   $('dropHint').textContent = file.name;
@@ -215,16 +215,16 @@ async function loadPDF(file, fit = false) {
     if (!res.count) { setStatus('В PDF не найдено векторных контуров', 'err'); return; }
     source = { loops: res.loops, w: res.w, h: res.h };
     penBackdrop = null; // PDF: no raster, Pen editor shows contour on the grid
-    rebuild(fit);
+    rebuild(reframe);
   } catch (e) { console.error(e); setStatus('Ошибка PDF: ' + (e.message || e), 'err'); }
 }
-$('file').addEventListener('change', (e) => { rotation = 0; hole.u = 0.5; hole.v = 0.08; loadPDF(e.target.files[0]); });
+$('file').addEventListener('change', (e) => { rotation = 0; hole.u = 0.5; hole.v = 0.08; loadPDF(e.target.files[0], true); });
 $('tol').addEventListener('change', () => { const f = $('file').files[0]; if (f) loadPDF(f, false); });
 {
   const d = $('drop');
   ['dragover', 'dragenter'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.add('over'); }));
   ['dragleave', 'drop'].forEach((ev) => d.addEventListener(ev, (e) => { e.preventDefault(); d.classList.remove('over'); }));
-  d.addEventListener('drop', (e) => { rotation = 0; hole.u = 0.5; hole.v = 0.08; loadPDF(e.dataTransfer.files[0]); });
+  d.addEventListener('drop', (e) => { rotation = 0; hole.u = 0.5; hole.v = 0.08; loadPDF(e.dataTransfer.files[0], true); });
 }
 
 /* ---------------- Photo front-end ---------------- */
@@ -288,7 +288,7 @@ async function loadPhoto(file) {
     photo.contourSrc = null;
     $('photoHint').textContent = file.name;
     fitCanvas(); redrawPhoto();
-    processPhoto(false); // keep current camera angle on new photo
+    processPhoto(true); // new photo → reframe (keep angle, ensure model in view)
   };
   img.src = url;
 }
@@ -300,7 +300,7 @@ $('photoFile').addEventListener('change', (e) => loadPhoto(e.target.files[0]));
   d.addEventListener('drop', (e) => loadPhoto(e.dataTransfer.files[0]));
 }
 
-async function processPhoto(fit = false) {
+async function processPhoto(reframe = false) {
   if (!photo.rgba) { setStatus('Сначала выберите фото', 'warn'); return; }
   setStatus('Распознаю силуэт…');
   await nextFrame();
@@ -324,7 +324,7 @@ async function processPhoto(fit = false) {
     penBackdrop = res.warpRGBA
       ? { rgba: res.warpRGBA, w: res.warpW, h: res.warpH, cx: res.cx, cy: res.cy }
       : null;
-    rebuild(fit);
+    rebuild(reframe);
   } catch (e) { console.error(e); setStatus('Ошибка обработки: ' + (e.message || e), 'err'); }
 }
 // Rotate the loaded photo itself by 90° (pixels + crop frame), then re-detect.
@@ -419,6 +419,17 @@ function penRedo() {
 }
 const penCv = $('penCanvas');
 const HIT = 10;         // px pick radius
+// cursor shown when hovering the close target (add mode) — like Illustrator/Figma
+const PEN_CLOSE_CURSOR =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='6' fill='none' stroke='white' stroke-width='2.5'/%3E%3Ccircle cx='12' cy='12' r='2' fill='white'/%3E%3C/svg%3E\") 12 12, crosshair";
+// is the pointer over the open active path's first node (→ clicking will close)?
+function penOverCloseTarget(cx, cy) {
+  if (pen.tool !== 'add' || pen.active == null) return false;
+  const ap = pen.paths[pen.active];
+  if (!ap || ap.closed || ap.nodes.length < 2) return false;
+  const f = m2c(ap.nodes[0].x, ap.nodes[0].y);
+  return Math.hypot(f[0] - cx, f[1] - cy) <= HIT;
+}
 
 const m2c = (x, y) => [x * pen.scale + pen.ox, -y * pen.scale + pen.oy];
 const c2m = (cx, cy) => [(cx - pen.ox) / pen.scale, -(cy - pen.oy) / pen.scale];
@@ -472,12 +483,15 @@ function penDraw() {
 
   const accent = cssVar('--accent');
   for (const p of pen.paths) {
-    if (p.nodes.length < 2) continue;
-    const poly = pathToPolyline(p, penTol());
-    ctx.beginPath();
-    poly.forEach((pt, i) => { const c = m2c(pt[0], pt[1]); i ? ctx.lineTo(c[0], c[1]) : ctx.moveTo(c[0], c[1]); });
-    if (p.closed) ctx.closePath();
-    ctx.lineWidth = 2; ctx.strokeStyle = accent; ctx.stroke();
+    if (!p.nodes.length) continue;
+    // contour line needs ≥2 nodes; a lone first point still shows its anchor below
+    if (p.nodes.length >= 2) {
+      const poly = pathToPolyline(p, penTol());
+      ctx.beginPath();
+      poly.forEach((pt, i) => { const c = m2c(pt[0], pt[1]); i ? ctx.lineTo(c[0], c[1]) : ctx.moveTo(c[0], c[1]); });
+      if (p.closed) ctx.closePath();
+      ctx.lineWidth = 2; ctx.strokeStyle = accent; ctx.stroke();
+    }
 
     // handles
     ctx.strokeStyle = 'rgba(150,170,200,0.7)'; ctx.lineWidth = 1;
@@ -654,7 +668,11 @@ penCv.addEventListener('pointerdown', (e) => {
 penCv.addEventListener('pointermove', (e) => {
   if (ptrs.has(e.pointerId)) { const [cx, cy] = penEvt(e); ptrs.set(e.pointerId, { x: cx, y: cy }); }
   if (gesture) { if (ptrs.size >= 2) gestureMove(); return; }
-  if (!pen.drag) return;
+  if (!pen.drag) {
+    const [hx, hy] = penEvt(e);   // hover: swap cursor over the close target
+    penCv.style.cursor = penOverCloseTarget(hx, hy) ? PEN_CLOSE_CURSOR : '';
+    return;
+  }
   const [cx, cy] = penEvt(e);
   const d = pen.drag;
   if (d.kind === 'pan') { pen.ox = d.ox + (cx - d.sx); pen.oy = d.oy + (cy - d.sy); penDraw(); return; }
@@ -695,6 +713,7 @@ function penEndPointer(e) {
 }
 penCv.addEventListener('pointerup', penEndPointer);
 penCv.addEventListener('pointercancel', penEndPointer);
+penCv.addEventListener('pointerleave', () => { penCv.style.cursor = ''; });
 
 penCv.addEventListener('wheel', (e) => {
   e.preventDefault();

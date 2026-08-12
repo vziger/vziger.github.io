@@ -54,10 +54,11 @@ export class Viewer {
   }
 
   // tris: flat array (9 floats/triangle) in model space (x right, y up, z thickness)
-  // fit: recentre/zoom the camera to the model. The very first model always fits
-  // (via _fitted); after that the camera angle is kept — even on a new file load —
-  // unless a caller explicitly passes fit=true.
-  setMesh(tris, fit = false) {
+  // reframe: on a NEW file load, keep the current viewing ANGLE but move the camera
+  // distance/target so the model is always in frame (never an empty preview). The
+  // very first model does a full _fit (default 3/4 view). Plain option tweaks pass
+  // reframe=false and keep the camera exactly as the user left it.
+  setMesh(tris, reframe = false) {
     if (this.mesh) { this.scene.remove(this.mesh); this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
     const n = tris.length / 3;
     const pos = new Float32Array(n * 3);
@@ -75,7 +76,8 @@ export class Viewer {
     this.mesh = new THREE.Mesh(geo, mat);
     this.mesh.position.y = -geo.boundingBox.min.y; // base sits on the grid
     this.scene.add(this.mesh);
-    if (fit || !this._fitted) { this._fit(geo.boundingBox); this._fitted = true; }
+    if (!this._fitted) { this._fit(geo.boundingBox); this._fitted = true; }
+    else if (reframe) { this._reframe(geo.boundingBox); }
   }
 
   _fit(box) {
@@ -89,6 +91,22 @@ export class Viewer {
     this.controls.target.copy(center);
     const g = Math.max(size.x, size.z) * 2.2;
     this.grid.scale.setScalar(Math.max(1, g / 400));
+  }
+
+  // keep the current view direction, but re-fit distance + target to a new model
+  _reframe(box) {
+    const size = new THREE.Vector3(); box.getSize(size);
+    const center = new THREE.Vector3(); box.getCenter(center);
+    center.y -= box.min.y; // mesh base sits on the grid
+    const radius = Math.max(size.x, size.y, size.z) || 50;
+    const dist = radius * 2.4;
+    let dir = this.camera.position.clone().sub(this.controls.target);
+    if (dir.lengthSq() < 1e-6) dir.set(0.6, 0.7, 1); // fallback if degenerate
+    dir.normalize();
+    this.camera.position.copy(center).addScaledVector(dir, dist);
+    this.camera.near = radius / 100; this.camera.far = radius * 100; this.camera.updateProjectionMatrix();
+    this.controls.target.copy(center);
+    this.grid.scale.setScalar(Math.max(1, Math.max(size.x, size.z) * 2.2 / 400));
   }
 
   // recolour the grid for light/dark so it stays visible on either background

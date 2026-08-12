@@ -1,7 +1,7 @@
 // sw.js — offline shell.
 // App code (HTML/CSS/JS) = network-first so updates appear on reload;
 // heavy vendored libs & icons = cache-first. Offline falls back to cache.
-const CACHE = 'pdf2stl-v21';
+const CACHE = 'pdf2stl-v24';
 const ASSETS = [
   './',
   './index.html',
