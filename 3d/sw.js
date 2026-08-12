@@ -1,7 +1,7 @@
 // sw.js — offline shell.
 // App code (HTML/CSS/JS) = network-first so updates appear on reload;
 // heavy vendored libs & icons = cache-first. Offline falls back to cache.
-const CACHE = 'pdf2stl-v15';
+const CACHE = 'pdf2stl-v21';
 const ASSETS = [
   './',
   './index.html',
@@ -53,7 +53,10 @@ self.addEventListener('fetch', (e) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
         return res;
-      }).catch(() => caches.match(req).then((hit) => hit || caches.match('./index.html')))
+      }).catch(() => caches.match(req).then((hit) =>
+        // index.html fallback is ONLY for navigations; never substitute HTML for a
+        // failed JS/CSS/module request (that triggers a MIME-type module error).
+        hit || (req.mode === 'navigate' ? caches.match('./index.html') : Response.error())))
     );
   } else {
     // cache-first (vendor libs, icons, images)

@@ -2,6 +2,19 @@
 import * as THREE from 'three';
 import { OrbitControls } from '../vendor/OrbitControls.js';
 
+// Grid colours per theme (axis = centre lines, line = the rest). Edit here.
+const GRID = {
+  size: 400, divisions: 40,
+  dark:  { axis: 0x3a6ea5, line: 0x2a2f3a, opacity: 0.85 },
+  light: { axis: 0x2f7ff0, line: 0xc3ccd8, opacity: 0.55 },
+};
+function makeGrid(light) {
+  const c = light ? GRID.light : GRID.dark;
+  const g = new THREE.GridHelper(GRID.size, GRID.divisions, c.axis, c.line);
+  g.material.opacity = c.opacity; g.material.transparent = true;
+  return g;
+}
+
 export class Viewer {
   constructor(canvas) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -22,8 +35,7 @@ export class Viewer {
     dir2.position.set(-60, 40, -40);
     this.scene.add(dir2);
 
-    this.grid = new THREE.GridHelper(400, 40, 0x3a6ea5, 0x2a2f3a);
-    this.grid.material.opacity = 0.35; this.grid.material.transparent = true;
+    this.grid = makeGrid(false); // dark default; setTheme recolours on init
     this.scene.add(this.grid);
 
     this.mesh = null;
@@ -42,8 +54,9 @@ export class Viewer {
   }
 
   // tris: flat array (9 floats/triangle) in model space (x right, y up, z thickness)
-  // fit: recentre/zoom the camera to the model. Only pass true on a *new* model
-  // (file/photo load) — option tweaks keep the user's current viewing angle.
+  // fit: recentre/zoom the camera to the model. The very first model always fits
+  // (via _fitted); after that the camera angle is kept — even on a new file load —
+  // unless a caller explicitly passes fit=true.
   setMesh(tris, fit = false) {
     if (this.mesh) { this.scene.remove(this.mesh); this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
     const n = tris.length / 3;
@@ -84,9 +97,7 @@ export class Viewer {
     const s = this.grid.scale.x;
     this.scene.remove(this.grid);
     this.grid.geometry.dispose(); this.grid.material.dispose();
-    this.grid = new THREE.GridHelper(400, 40, light ? 0x2f7ff0 : 0x3a6ea5, light ? 0xc3ccd8 : 0x2a2f3a);
-    this.grid.material.opacity = light ? 0.6 : 0.35;
-    this.grid.material.transparent = true;
+    this.grid = makeGrid(light);
     this.grid.scale.setScalar(s);
     this.scene.add(this.grid);
   }

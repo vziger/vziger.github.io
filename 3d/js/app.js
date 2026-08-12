@@ -203,7 +203,7 @@ document.querySelectorAll('.rot-btn').forEach((b) =>
   b.addEventListener('click', () => rotateSource(b.dataset.rot === 'cw')));
 
 /* ---------------- PDF front-end ---------------- */
-async function loadPDF(file, fit = true) {
+async function loadPDF(file, fit = false) {
   if (!file) return;
   fileName = (file.name || 'model').replace(/\.pdf$/i, '');
   $('dropHint').textContent = file.name;
@@ -218,7 +218,7 @@ async function loadPDF(file, fit = true) {
     rebuild(fit);
   } catch (e) { console.error(e); setStatus('Ошибка PDF: ' + (e.message || e), 'err'); }
 }
-$('file').addEventListener('change', (e) => { rotation = 0; hole.u = 0.5; hole.v = 0.08; loadPDF(e.target.files[0], true); });
+$('file').addEventListener('change', (e) => { rotation = 0; hole.u = 0.5; hole.v = 0.08; loadPDF(e.target.files[0]); });
 $('tol').addEventListener('change', () => { const f = $('file').files[0]; if (f) loadPDF(f, false); });
 {
   const d = $('drop');
@@ -288,7 +288,7 @@ async function loadPhoto(file) {
     photo.contourSrc = null;
     $('photoHint').textContent = file.name;
     fitCanvas(); redrawPhoto();
-    processPhoto(true); // new photo → fit camera once
+    processPhoto(false); // keep current camera angle on new photo
   };
   img.src = url;
 }
@@ -711,6 +711,7 @@ penCv.addEventListener('wheel', (e) => {
 document.querySelectorAll('input[name=penTool]').forEach((r) =>
   r.addEventListener('change', () => { pen.tool = document.querySelector('input[name=penTool]:checked').value; pen.active = null; penDraw(); }));
 
+$('penReset').addEventListener('click', () => { penFit(); penDraw(); }); // recenter + reset zoom
 $('penUndo').addEventListener('click', penUndo);
 $('penRedo').addEventListener('click', penRedo);
 $('penImport').addEventListener('click', () => { penHistory(); pen.paths = []; pen.active = null; penImport(); penSync(); });
