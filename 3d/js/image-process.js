@@ -151,6 +151,27 @@ function morph(mask, w, h, r, isDilate) {
   return out;
 }
 
+// A1 edge cleanup (used only in the "smoothed" option).
+// 3×3 majority (median) filter — removes single-pixel stair-steps/spurs on a mask.
+function median3(mask, w, h) {
+  const out = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    let s = 0, c = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const nx = x + dx, ny = y + dy;
+      if (nx >= 0 && ny >= 0 && nx < w && ny < h) { s += mask[ny * w + nx]; c++; }
+    }
+    out[y * w + x] = (s * 2 > c) ? 1 : 0;
+  }
+  return out;
+}
+// morphological open (drop spurs) then close (fill nicks) at radius r
+function openClose(mask, w, h, r) {
+  let m = dilate(erode(mask, w, h, r), w, h, r);
+  m = erode(dilate(m, w, h, r), w, h, r);
+  return m;
+}
+
 /* ---------------- connected component (largest) + fill holes ---------------- */
 function largestComponent(mask, w, h) {
   const lbl = new Int32Array(w * h).fill(0);
@@ -292,8 +313,8 @@ function traceLabel(labels, w, h, target) {
 }
 
 // All ink strokes (foreground) + their enclosed holes, as simplified ribbon loops.
-function inkLineLoops(ink, w, h, tol, detail, minArea) {
-  const smooth = detail > 66 ? 0 : 1;
+function inkLineLoops(ink, w, h, tol, detail, minArea, extraSmooth = 0) {
+  const smooth = (detail > 66 ? 0 : 1) + extraSmooth;
   const out = [];
   const emit = (labels, count, sizes) => {
     for (let L = 1; L <= count; L++) {
@@ -368,6 +389,7 @@ export function photoToLoops(rgba, sw, sh, opts = {}) {
   const longSide = opts.longSide || 800;
   const sens = opts.sensitivity || 0;
   const detail = opts.detail ?? 50;
+  const smooth = !!opts.smooth;   // A1+A2 edge-cleanup option
 
   const W = warp(rgba, sw, sh, corners, longSide);
   const { norm, sat } = grayAndSat(W.data, W.w, W.h);
@@ -406,6 +428,8 @@ export function photoToLoops(rgba, sw, sh, opts = {}) {
   if (res.ratio < 1.8) res = silhouette(ink, baseR * 2);
   if (res.ratio < 1.8) res = silhouette(drawn, baseR);
   let mask = res.m;
+  // A1: clean the silhouette mask before tracing (median + open/close)
+  if (smooth) mask = openClose(median3(mask, W.w, W.h), W.w, W.h, 1);
 
   let contour = traceBoundary(mask, W.w, W.h);
   if (contour.length < 8) return { loops: [], w: 0, h: 0, contour: [], warpW: W.w, warpH: W.h, H: W.H, mask };
@@ -413,7 +437,7 @@ export function photoToLoops(rgba, sw, sh, opts = {}) {
   const eps = 0.8 + (100 - detail) * 0.06;    // higher detail → smaller epsilon
   contour = rdp(contour, eps);
   const smoothIters = detail > 66 ? 1 : (detail > 33 ? 2 : 3);
-  contour = chaikin(contour, smoothIters);
+  contour = chaikin(contour, smoothIters + (smooth ? 2 : 0)); // A2: extra polyline smoothing
 
   // centre + Y-up
   let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
@@ -434,7 +458,9 @@ export function photoToLoops(rgba, sw, sh, opts = {}) {
     for (let i = 0; i < ink.length; i++) inkInside[i] = (ink[i] && clip[i]) ? 1 : 0;
     // morphological "open" removes 1px spurs/whiskers that make thin ribbons non-manifold
     inkInside = dilate(erode(inkInside, W.w, W.h, 1), W.w, W.h, 1);
-    const raw = inkLineLoops(inkInside, W.w, W.h, eps, detail, minArea);
+    // A1 for lines: median (majority) filter smooths ribbon edges without eroding thin strokes
+    if (smooth) inkInside = median3(inkInside, W.w, W.h);
+    const raw = inkLineLoops(inkInside, W.w, W.h, eps, detail, minArea, smooth ? 1 : 0);
     result.lineLoops = raw.map((lp) => lp.map(([x, y]) => [x - cx, -(y - cy)]));
   }
   return result;

@@ -65,11 +65,11 @@ body {
 .topbar h1 { font-size: 17px; margin: 0; letter-spacing: .2px; }
 .topbar .sub { color: var(--muted); font-size: 13px; }
 
-main { flex: 1; display: grid; grid-template-columns: 320px 1fr; min-height: 0; }
+main { flex: 1; display: grid; grid-template-columns: 480px 1fr; min-height: 0; }
 
 .panel {
   border-right: 1px solid var(--line); padding: 16px; overflow-y: auto;
-  display: flex; flex-direction: column; gap: 14px; background: var(--panel);
+  display: flex; flex-direction: column; gap: 24px; background: var(--panel);
 }
 .tabs { display: flex; gap: 6px; background: var(--panel2); padding: 4px; border-radius: 10px; border: 1px solid var(--line); }
 .tab {
@@ -91,8 +91,9 @@ main { flex: 1; display: grid; grid-template-columns: 320px 1fr; min-height: 0; 
   width: 100%; height: 360px; border-radius: 10px; border: 1px solid var(--line);
   background: var(--canvas-bg); display: block; touch-action: none; cursor: crosshair;
 }
+.corner-tools { position: absolute; top: 8px; left: 8px; display: flex; gap: 6px; z-index: 2; }
 .pen-reset {
-  position: absolute; top: 8px; left: 8px; width: 30px; height: 30px;
+  width: 30px; height: 30px;
   display: flex; align-items: center; justify-content: center;
   color: var(--text); cursor: pointer;
   background: color-mix(in srgb, var(--panel2) 82%, transparent);
@@ -104,6 +105,12 @@ main { flex: 1; display: grid; grid-template-columns: 320px 1fr; min-height: 0; 
 .btn-row .btn { flex: 1; }
 
 input[type=range] { width: 100%; accent-color: var(--accent); }
+.slider-row { display: flex; align-items: center; gap: 6px; }
+.slider-row input[type=range] { flex: 1; }
+.slider-row .slider-step {
+  flex: 0 0 auto; width: 34px; height: 34px; padding: 0; font-size: 18px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
 
 .drop {
   display: block; border: 1.5px dashed var(--line); border-radius: var(--radius);
@@ -115,7 +122,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 #dropHint { color: var(--muted); font-size: 13px; word-break: break-word; }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
-.field > label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.field > label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding-left: 11px;}
 input[type=number] {
   background: var(--panel2); border: 1px solid var(--line); color: var(--text);
   border-radius: 8px; padding: 9px 11px; font-size: 15px; width: 100%;
@@ -132,13 +139,13 @@ input[type=number]:focus { outline: none; border-color: var(--accent); }
   border: 1px solid var(--line); background: var(--panel2); font-size: 14px; transition: .15s;
 }
 .seg input:checked + span { border-color: var(--accent); background: var(--seg-bg); color: var(--seg-fg); }
-.hint { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+.hint { margin: 2px 0 0; font-size: 12px; color: var(--muted); padding: 0 11px}
 
 .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); cursor: pointer; }
 .check input { width: 16px; height: 16px; accent-color: var(--accent); }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
 .subfield { display: flex; flex-direction: column; gap: 6px; }
-.subfield > label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.subfield > label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding-left: 11px;}
 .hole-view {
   width: 100%; height: 150px; margin-top: 10px; display: block;
   background: var(--canvas-bg); border: 1px solid var(--line); border-radius: 8px;

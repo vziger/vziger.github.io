@@ -58,7 +58,7 @@ export class Viewer {
   // distance/target so the model is always in frame (never an empty preview). The
   // very first model does a full _fit (default 3/4 view). Plain option tweaks pass
   // reframe=false and keep the camera exactly as the user left it.
-  setMesh(tris, reframe = false) {
+  setMesh(tris, reframe = false, baseH = null, detailH = null) {
     if (this.mesh) { this.scene.remove(this.mesh); this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
     const n = tris.length / 3;
     const pos = new Float32Array(n * 3);
@@ -72,7 +72,30 @@ export class Viewer {
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.computeVertexNormals();
     geo.computeBoundingBox();
-    const mat = new THREE.MeshStandardMaterial({ color: 0x6bb7ff, metalness: 0.1, roughness: 0.65, flatShading: false, side: THREE.DoubleSide });
+
+    // Shade by SIGNED height around the plate top (baseH): raised details (above)
+    // get LIGHTER than the base, recesses (below) get DARKER — so embossed tops pop
+    // and engraved floors read deep. Contrast is referenced to the relief depth
+    // (detailH) so shallow grooves still reach dark. Height = pos[i+1] in mm.
+    let minH = Infinity, maxH = -Infinity;
+    for (let i = 1; i < pos.length; i += 3) { if (pos[i] < minH) minH = pos[i]; if (pos[i] > maxH) maxH = pos[i]; }
+    const top = (baseH != null) ? baseH : maxH;   // "base colour" plane
+    const ref = Math.max(detailH || (maxH - minH) || 1, 1e-3); // depth that reaches full dark/light
+    // linear-space components: three converts sRGB→linear for material.color, but
+    // vertex colours are taken as-is, so convert here or the tint reads washed out
+    const bc = new THREE.Color(0x6bb7ff);
+    const base = [bc.r, bc.g, bc.b];
+    const DARK = 0.4, LIGHT = 1.3; // brightness at full recess / full relief
+    const col = new Float32Array(n * 3);
+    for (let v = 0; v < n; v++) {
+      const h = pos[v * 3 + 1];
+      const d = Math.min(1, Math.abs(h - top) / ref);
+      const f = h >= top ? 1 + (LIGHT - 1) * d : 1 - (1 - DARK) * d;
+      col[v * 3] = base[0] * f; col[v * 3 + 1] = base[1] * f; col[v * 3 + 2] = base[2] * f;
+    }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+
+    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, metalness: 0.1, roughness: 0.65, flatShading: false, side: THREE.DoubleSide });
     this.mesh = new THREE.Mesh(geo, mat);
     this.mesh.position.y = -geo.boundingBox.min.y; // base sits on the grid
     this.scene.add(this.mesh);
@@ -91,6 +114,37 @@ export class Viewer {
     this.controls.target.copy(center);
     const g = Math.max(size.x, size.z) * 2.2;
     this.grid.scale.setScalar(Math.max(1, g / 400));
+  }
+
+  // recentre + reset scale to the current model, keeping the camera angle.
+  // With no model yet: recentre on the origin at the default distance, keep angle.
+  resetView() {
+    if (this.mesh) {
+      this.mesh.geometry.computeBoundingBox();
+      this._reframe(this.mesh.geometry.boundingBox);
+      return;
+    }
+    const dist = Math.hypot(60, 80, 120);
+    let dir = this.camera.position.clone().sub(this.controls.target);
+    if (dir.lengthSq() < 1e-6) dir.set(60, 80, 120);
+    dir.normalize();
+    this.controls.target.set(0, 0, 0);
+    this.camera.position.copy(dir.multiplyScalar(dist));
+    this.grid.scale.setScalar(1);
+  }
+
+  // reset the camera to the default 3/4 view (angle + framing).
+  // With no model yet: restore the initial camera pose.
+  fitView() {
+    if (this.mesh) {
+      this.mesh.geometry.computeBoundingBox();
+      this._fit(this.mesh.geometry.boundingBox);
+      return;
+    }
+    this.controls.target.set(0, 0, 0);
+    this.camera.position.set(60, 80, 120);
+    this.camera.near = 0.1; this.camera.far = 5000; this.camera.updateProjectionMatrix();
+    this.grid.scale.setScalar(1);
   }
 
   // keep the current view direction, but re-fit distance + target to a new model

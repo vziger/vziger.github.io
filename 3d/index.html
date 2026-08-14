@@ -41,13 +41,6 @@
           <button class="btn ghost rot-btn" data-rot="cw" type="button" title="По часовой">⟳ 90°</button>
         </div>
       </div>
-      <details class="adv">
-        <summary>Дополнительно</summary>
-        <div class="field">
-          <label for="tol">Точность сглаживания (меньше = глаже)</label>
-          <input type="number" id="tol" value="0.15" min="0.02" max="1" step="0.01">
-        </div>
-      </details>
       <button class="btn ghost pen-edit" type="button">✏️ Править пером</button>
     </div>
 
@@ -70,11 +63,28 @@
       </div>
       <div class="field">
         <label for="sens">Чувствительность</label>
-        <input type="range" id="sens" min="-60" max="60" value="0" step="2">
+        <div class="slider-row">
+          <input type="range" id="sens" min="-60" max="60" value="0" step="2">
+          <button class="btn ghost slider-step" type="button" data-slider="sens" data-dir="-1" title="Меньше">−</button>
+          <button class="btn ghost slider-step" type="button" data-slider="sens" data-dir="1" title="Больше">+</button>
+        </div>
       </div>
       <div class="field">
         <label for="detail2">Детализация контура</label>
-        <input type="range" id="detail2" min="0" max="100" value="50" step="5">
+        <div class="slider-row">
+          <input type="range" id="detail2" min="0" max="100" value="50" step="5">
+          <button class="btn ghost slider-step" type="button" data-slider="detail2" data-dir="-1" title="Меньше">−</button>
+          <button class="btn ghost slider-step" type="button" data-slider="detail2" data-dir="1" title="Больше">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Край силуэта/линий</label>
+        <div class="seg">
+          <label><input type="radio" name="edgeSmooth" value="off" checked><span>Вариант 1</span></label>
+          <label><input type="radio" name="edgeSmooth" value="on"><span>Вариант 2</span></label>
+        </div>
+        <p class="hint">Вариант 1 — резче, больше заусенцев<br>
+          Вариант 2 — сглаженный, меньше заусенцев, больше полигонов</p>
       </div>
       <button id="recognize" class="btn ghost">Распознать силуэт</button>
       <button class="btn ghost pen-edit" type="button">✏️ Править пером</button>
@@ -83,14 +93,16 @@
     <div class="tabpane" id="pane-pen" hidden>
       <div class="pen-stage">
         <canvas id="penCanvas" class="pen-canvas"></canvas>
-        <button id="penReset" class="pen-reset" type="button" title="Сбросить вид: по центру и исходный масштаб" aria-label="Сбросить вид">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9"/>
-            <path d="M20 9V5.5A1.5 1.5 0 0 0 18.5 4H15"/>
-            <path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20H9"/>
-            <path d="M20 15v3.5A1.5 1.5 0 0 1 18.5 20H15"/>
-          </svg>
-        </button>
+        <div class="corner-tools">
+          <button id="penReset" class="pen-reset" type="button" title="Сбросить вид: по центру и исходный масштаб" aria-label="Сбросить вид">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9"/>
+              <path d="M20 9V5.5A1.5 1.5 0 0 0 18.5 4H15"/>
+              <path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20H9"/>
+              <path d="M20 15v3.5A1.5 1.5 0 0 1 18.5 20H15"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <p class="hint" id="penHint">Возьмите текущий контур или нарисуйте с нуля. Колесо — зум, тащить фон — панорама.</p>
       <div class="seg" id="penTools">
@@ -99,8 +111,8 @@
         <label><input type="radio" name="penTool" value="del"><span title="Удалить узел или ручку (D)">✕ Удалить</span></label>
       </div>
       <div class="btn-row">
-        <button id="penUndo" class="btn ghost" type="button" title="Отменить (Ctrl/Cmd+Z)" disabled>↩ Отмена</button>
-        <button id="penRedo" class="btn ghost" type="button" title="Повторить (Ctrl/Cmd+Shift+Z)" disabled>↪ Повтор</button>
+        <button id="penUndo" class="btn ghost" type="button" title="Отменить (Ctrl/Cmd+Z)" disabled>↩ Отменить</button>
+        <button id="penRedo" class="btn ghost" type="button" title="Повторить (Ctrl/Cmd+Shift+Z)" disabled>↪ Повторить</button>
       </div>
       <div class="btn-row">
         <button id="penImport" class="btn ghost" type="button" title="Загрузить контур из PDF/Фото">⭳ Взять контур</button>
@@ -108,9 +120,19 @@
       </div>
     </div>
 
-    <div class="field">
-      <label for="width">Ширина модели, мм</label>
-      <input type="number" id="width" value="80" min="5" max="300" step="1">
+    <div class="grid2" style="margin-top:0; grid-template-columns:1fr 1fr 1fr">
+      <div class="field">
+        <label for="width">Ширина, мм</label>
+        <input type="number" id="width" value="80" min="5" max="300" step="1">
+      </div>
+      <div class="field">
+        <label for="base">Толщина, мм</label>
+        <input type="number" id="base" value="5" min="0.4" max="100" step="0.2">
+      </div>
+      <div class="field">
+        <label for="tol" title="Точность сглаживания контура PDF: меньше = глаже">Сглаживание</label>
+        <input type="number" id="tol" value="0.15" min="0.02" max="1" step="0.01">
+      </div>
     </div>
 
     <div class="field">
@@ -120,11 +142,6 @@
         <label><input type="radio" name="mode" value="relief"><span>Рельеф</span></label>
       </div>
       <p class="hint" id="modeHint">Внешний контур залит, внутренние — сквозные отверстия.</p>
-    </div>
-
-    <div class="field">
-      <label for="base">Толщина базы, мм</label>
-      <input type="number" id="base" value="5" min="0.4" max="100" step="0.2">
     </div>
 
     <div class="field" id="reliefKindRow">
@@ -181,6 +198,22 @@
 
   <section class="stage">
     <canvas id="view"></canvas>
+    <div class="corner-tools">
+      <button id="viewReset" class="pen-reset" type="button" title="По центру и исходный масштаб (угол не меняется)" aria-label="Центрировать модель">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9"/>
+          <path d="M20 9V5.5A1.5 1.5 0 0 0 18.5 4H15"/>
+          <path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20H9"/>
+          <path d="M20 15v3.5A1.5 1.5 0 0 1 18.5 20H15"/>
+        </svg>
+      </button>
+      <button id="viewResetAngle" class="pen-reset" type="button" title="Сбросить угол камеры на дефолтный" aria-label="Сбросить угол камеры">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/>
+          <path d="M12 3v18M4 7.5l8 4.5 8-4.5"/>
+        </svg>
+      </button>
+    </div>
     <div class="info" id="info"></div>
   </section>
 </main>

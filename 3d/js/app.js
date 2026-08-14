@@ -118,7 +118,8 @@ function rebuild(reframe = false) {
     mesh = buildRelief(reliefLoops, baseH, num('detail', 1.5), $('emboss').checked, holes);
   }
 
-  viewer.setMesh(mesh.tris, reframe);
+  // baseH = "full colour" plate level; detailH = relief depth for the shading contrast
+  viewer.setMesh(mesh.tris, reframe, baseH, num('detail', 1.5));
   lastSTL = meshToSTL(mesh);
 
   const totH = mode === 'solid' ? baseH : baseH + ($('emboss').checked ? num('detail', 1.5) : 0);
@@ -190,6 +191,8 @@ document.querySelectorAll('input[name=mode]').forEach((r) => r.addEventListener(
 document.querySelectorAll('input[name=reliefKind]').forEach((r) => r.addEventListener('change', () => { syncControls(); rebuild(false); }));
 ['emboss', 'engrave', 'base', 'detail', 'width'].forEach((id) => $(id).addEventListener('change', () => rebuild(false)));
 $('regen').addEventListener('click', () => rebuild(false));
+$('viewReset').addEventListener('click', () => viewer.resetView()); // recentre + reset scale, keep angle
+$('viewResetAngle').addEventListener('click', () => viewer.fitView()); // reset camera to default 3/4 angle
 
 // Rotate 90°. On the Photo tab this rotates the LOADED IMAGE itself (and re-runs
 // detection); on the PDF tab there is no image, so it rotates the contour.
@@ -309,6 +312,7 @@ async function processPhoto(reframe = false) {
       corners: photo.corners,
       sensitivity: num('sens', 0),
       detail: num('detail2', 50),
+      smooth: document.querySelector('input[name=edgeSmooth]:checked')?.value === 'on',
       lines: true,
     });
     if (!res.loops.length) { setStatus('Силуэт не найден — подвиньте углы или измените чувствительность', 'err'); return; }
@@ -353,28 +357,90 @@ function rotatePhoto(cw) {
 $('recognize').addEventListener('click', () => processPhoto(false));
 $('sens').addEventListener('change', () => processPhoto(false));
 $('detail2').addEventListener('change', () => processPhoto(false));
+document.querySelectorAll('input[name=edgeSmooth]').forEach((r) => r.addEventListener('change', () => processPhoto(false)));
+// +/- step buttons nudge a range slider by its step and re-run detection
+document.querySelectorAll('.slider-step').forEach((b) => b.addEventListener('click', () => {
+  const el = $(b.dataset.slider);
+  const step = (parseFloat(el.step) || 1) * (b.dataset.dir === '-1' ? -1 : 1);
+  const min = parseFloat(el.min), max = parseFloat(el.max);
+  el.value = Math.max(min, Math.min(max, (parseFloat(el.value) || 0) + step));
+  processPhoto(false);
+}));
 
-/* corner dragging (pointer = mouse + touch) */
-let drag = -1;
+/* corner dragging + whole-quad move (pointer = mouse + touch) */
+let drag = -1;        // corner index being dragged, or -1
+let dragOff = [0, 0]; // offset (image coords) between the grabbed corner and the pointer
+let savedCursor = '';  // cursor before a drag started, restored on release
+let quadMove = null;  // { sx, sy, start:[[x,y]×4], minx,miny,maxx,maxy } while moving the frame
+const CORNER_HIT = 20; // px (canvas space) pick radius for a corner handle
+// nearest corner to a canvas point within CORNER_HIT, or -1
+function nearestCorner(x, y) {
+  let best = -1, bd = CORNER_HIT;
+  photo.corners.forEach((p, i) => { const c = imgToCanvas(p); const d = Math.hypot(c[0] - x, c[1] - y); if (d < bd) { bd = d; best = i; } });
+  return best;
+}
+const pcEvt = (e) => { const r = pc.getBoundingClientRect(); return [(e.clientX - r.left) * (pc.width / r.width), (e.clientY - r.top) * (pc.height / r.height)]; };
+// point-in-polygon on the corner quad, in image coords
+function insideQuad(ix, iy) {
+  const q = photo.corners; if (!q) return false;
+  let inside = false;
+  for (let i = 0, j = q.length - 1; i < q.length; j = i++) {
+    const xi = q[i][0], yi = q[i][1], xj = q[j][0], yj = q[j][1];
+    if ((yi > iy) !== (yj > iy) && ix < ((xj - xi) * (iy - yi)) / (yj - yi + 1e-9) + xi) inside = !inside;
+  }
+  return inside;
+}
 pc.addEventListener('pointerdown', (e) => {
   if (!photo.corners) return;
-  const rect = pc.getBoundingClientRect();
-  const x = (e.clientX - rect.left) * (pc.width / rect.width);
-  const y = (e.clientY - rect.top) * (pc.height / rect.height);
-  let best = -1, bd = 22;
-  photo.corners.forEach((p, i) => { const c = imgToCanvas(p); const d = Math.hypot(c[0] - x, c[1] - y); if (d < bd) { bd = d; best = i; } });
-  if (best >= 0) { drag = best; pc.setPointerCapture(e.pointerId); }
+  savedCursor = pc.style.cursor;   // remember hover cursor to restore on release
+  const [x, y] = pcEvt(e);
+  const best = nearestCorner(x, y);
+  if (best >= 0) {
+    drag = best;
+    const [px, py] = canvasToImg(x, y);          // keep grab offset so the corner
+    dragOff = [photo.corners[best][0] - px, photo.corners[best][1] - py]; // doesn't snap to the cursor
+    pc.style.cursor = 'grabbing';                 // closed fist = corner grabbed
+    pc.setPointerCapture(e.pointerId);
+    return;
+  }
+  // not on a corner but inside the frame → drag the whole quad
+  const [ix, iy] = canvasToImg(x, y);
+  if (insideQuad(ix, iy)) {
+    const xs = photo.corners.map((p) => p[0]), ys = photo.corners.map((p) => p[1]);
+    quadMove = { sx: ix, sy: iy, start: photo.corners.map((p) => [p[0], p[1]]),
+      minx: Math.min(...xs), miny: Math.min(...ys), maxx: Math.max(...xs), maxy: Math.max(...ys) };
+    pc.setPointerCapture(e.pointerId);
+  }
 });
 pc.addEventListener('pointermove', (e) => {
-  if (drag < 0) return;
-  const rect = pc.getBoundingClientRect();
-  const x = (e.clientX - rect.left) * (pc.width / rect.width);
-  const y = (e.clientY - rect.top) * (pc.height / rect.height);
-  const p = canvasToImg(x, y);
-  photo.corners[drag] = [Math.max(0, Math.min(photo.sw, p[0])), Math.max(0, Math.min(photo.sh, p[1]))];
-  redrawPhoto();
+  const [x, y] = pcEvt(e);
+  if (drag >= 0) {
+    const p = canvasToImg(x, y);
+    const cx = p[0] + dragOff[0], cy = p[1] + dragOff[1]; // apply grab offset (no snap)
+    photo.corners[drag] = [Math.max(0, Math.min(photo.sw, cx)), Math.max(0, Math.min(photo.sh, cy))];
+    redrawPhoto();
+    return;
+  }
+  if (quadMove) {
+    const [ix, iy] = canvasToImg(x, y);
+    // clamp the delta so the whole quad stays inside the image (shape preserved)
+    let dx = ix - quadMove.sx, dy = iy - quadMove.sy;
+    dx = Math.max(-quadMove.minx, Math.min(photo.sw - quadMove.maxx, dx));
+    dy = Math.max(-quadMove.miny, Math.min(photo.sh - quadMove.maxy, dy));
+    photo.corners = quadMove.start.map(([px, py]) => [px + dx, py + dy]);
+    redrawPhoto();
+    return;
+  }
+  // hover: match the click test — corner wins (grab), else inside the frame → move
+  if (nearestCorner(x, y) >= 0) { pc.style.cursor = ''; return; } // CSS default = grab
+  const [hx, hy] = canvasToImg(x, y);
+  pc.style.cursor = insideQuad(hx, hy) ? 'move' : '';
 });
-pc.addEventListener('pointerup', () => { if (drag >= 0) { drag = -1; processPhoto(); } });
+pc.addEventListener('pointerup', () => {
+  pc.style.cursor = savedCursor;                 // restore the cursor from before the drag
+  if (drag >= 0) { drag = -1; processPhoto(); }
+  else if (quadMove) { quadMove = null; processPhoto(); }
+});
 addEventListener('resize', () => { if (photo.img) { fitCanvas(); redrawPhoto(); } });
 
 /* ---------------- Pen editor (vector contour) ---------------- */
