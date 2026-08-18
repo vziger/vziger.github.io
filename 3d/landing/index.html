@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SCHOOL 911 — мастер-класс «Оживи рисунок»</title>
+<title>SCHOOL 911&nbsp;— мастер-класс «Оживи рисунок»</title>
 <meta name="description" content="Мастер-класс для мероприятий: ребёнок рисует фигуру на бумаге, а мы превращаем её в 3D-модель и печатаем брелок на месте.">
 <style>
   :root{
@@ -53,7 +53,7 @@
   /* ---------- buttons ---------- */
   .btn{
     display:inline-flex;align-items:center;gap:.6em;cursor:pointer;
-    font:inherit;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px;
+    font:inherit;font-weight:700;letter-spacing:.06em;font-size:13px;
     padding:14px 26px;border:1px solid var(--accent);border-radius:0;
     background:transparent;color:var(--text);transition:.18s ease;
   }
@@ -72,7 +72,7 @@
   .logo .n{font-size:18px;color:var(--muted)}
   nav.main{margin-left:auto;display:flex;gap:28px}
   nav.main a{
-    font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);
+    font-size:13px;letter-spacing:.08em;color:var(--text-dim);
     font-weight:600;transition:.15s;
   }
   nav.main a:hover{color:var(--text)}
@@ -85,7 +85,7 @@
     background:rgba(20,20,20,.96);backdrop-filter:saturate(140%) blur(10px);
   }
   .mobile-nav a{
-    font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);
+    font-size:15px;letter-spacing:.06em;color:var(--text-dim);
     font-weight:600;padding:14px 2px;border-bottom:1px solid var(--line);transition:.15s;
   }
   .mobile-nav a:hover{color:var(--text)}
@@ -122,7 +122,7 @@
   .hero .lead{margin-top:26px;max-width:640px}
   .hero-actions{margin-top:38px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
   .hero-actions .ghost-link{
-    font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);font-weight:600;
+    font-size:13px;letter-spacing:.08em;color:var(--text-dim);font-weight:600;
     border-bottom:1px solid var(--line-2);padding-bottom:4px;transition:.15s;
   }
   .hero-actions .ghost-link:hover{color:var(--text);border-color:var(--text)}
@@ -133,8 +133,6 @@
   .hero-meta .stat span{color:var(--muted);font-size:13px;letter-spacing:.04em;text-transform:uppercase}
 
   /* ---------- how it works ---------- */
-  .head-row{display:flex;flex-wrap:wrap;gap:16px 40px;align-items:flex-end;justify-content:space-between;margin-bottom:clamp(36px,6vw,64px)}
-  .head-row .lead{max-width:440px;margin:0}
   .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line)}
   .step{background:var(--bg2);padding:30px clamp(18px,2vw,28px) 36px;position:relative;min-height:230px;display:flex;flex-direction:column}
   .step .num{font-size:13px;letter-spacing:.2em;color:var(--muted);font-weight:700}
@@ -152,6 +150,12 @@
 
   /* ---------- service / features ---------- */
   .service{background:var(--bg2)}
+  .head-stack{margin-bottom:clamp(36px,6vw,64px)}
+  .head-stack .eyebrow{margin:0 0 18px}
+  .head-split{display:flex;flex-wrap:wrap;gap:16px 40px;align-items:flex-start;justify-content:space-between}
+  .head-split .section-title{margin:0}
+  .head-split .lead{max-width:440px;margin:0;padding-top:6px}
+  @media (max-width:820px){.head-split .lead{padding-top:0}}
   .features{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
   .feature{background:var(--bg2);padding:32px clamp(20px,2.4vw,34px) 38px;display:flex;flex-direction:column}
   .feature .ic{width:34px;height:34px;color:var(--text);margin-bottom:22px}
@@ -298,18 +302,18 @@
     <div class="wrap">
       <div class="hero-inner">
         <p class="eyebrow">Мастер-класс для мероприятий</p>
-        <h1 class="display">Ребёнок рисует —<br>мы печатаем <em>брелок</em></h1>
+        <h1 class="display">Ребёнок рисует&nbsp;—<br>мы&nbsp;печатаем <em>брелок</em></h1>
         <p class="lead">
           Интерактивная зона для вашего праздника, фестиваля или корпоратива.
-          Гость рисует простую фигуру на бумаге — а мы за пару минут превращаем её
-          в 3D-модель и печатаем настоящий брелок, который он забирает с собой.
+          Гость рисует простую фигуру на&nbsp;бумаге&nbsp;— а&nbsp;мы&nbsp;за&nbsp;пару минут превращаем её
+          в&nbsp;3D-модель и&nbsp;печатаем настоящий брелок, который он&nbsp;забирает с&nbsp;собой.
         </p>
         <div class="hero-actions">
           <a class="btn btn--solid" href="#lead">Оставить заявку</a>
           <a class="ghost-link" href="#how">Как это работает</a>
         </div>
         <div class="hero-meta">
-          <div class="stat"><b>~3 мин</b><span>от рисунка до печати</span></div>
+          <div class="stat"><b>~3 мин</b><span>от&nbsp;рисунка до&nbsp;печати</span></div>
           <div class="stat"><b>3–99 лет</b><span>участвуют все гости</span></div>
           <div class="stat"><b>100%</b><span>уникальный сувенир</span></div>
         </div>
@@ -320,37 +324,37 @@
   <!-- ============ HOW IT WORKS ============ -->
   <section id="how" class="section-pad">
     <div class="wrap">
-      <div class="head-row">
-        <div>
-          <p class="eyebrow">Процесс</p>
+      <div class="head-stack">
+        <p class="eyebrow">Процесс</p>
+        <div class="head-split">
           <h2 class="section-title">Как это работает</h2>
+          <p class="lead">Четыре простых шага прямо на&nbsp;площадке&nbsp;— без подготовки и&nbsp;навыков со&nbsp;стороны гостей.</p>
         </div>
-        <p class="lead">Четыре простых шага прямо на площадке — без подготовки и навыков со стороны гостей.</p>
       </div>
       <div class="steps">
         <div class="step">
           <span class="num">01</span>
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
           <h3>Рисунок</h3>
-          <p>Ребёнок рисует простую фигуру маркером на листке бумаги.</p>
+          <p>Ребёнок рисует простую фигуру маркером на&nbsp;листке бумаги.</p>
         </div>
         <div class="step">
           <span class="num">02</span>
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3.5"/></svg>
           <h3>Скан</h3>
-          <p>Фотографируем рисунок или загружаем PDF в наш сервис.</p>
+          <p>Фотографируем рисунок или загружаем PDF в&nbsp;наш сервис.</p>
         </div>
         <div class="step">
           <span class="num">03</span>
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7Z"/><path d="M3 7l9 5 9-5"/><path d="M12 22V12"/></svg>
           <h3>3D-модель</h3>
-          <p>Сервис распознаёт контур и строит объёмную модель брелока.</p>
+          <p>Сервис распознаёт контур и&nbsp;строит объёмную модель брелока.</p>
         </div>
         <div class="step">
           <span class="num">04</span>
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6Z"/></svg>
           <h3>Печать</h3>
-          <p>Печатаем на 3D-принтере — гость забирает готовый брелок с собой.</p>
+          <p>Печатаем на&nbsp;3D-принтере&nbsp;— гость забирает готовый брелок с&nbsp;собой.</p>
         </div>
       </div>
     </div>
@@ -359,49 +363,49 @@
   <!-- ============ SERVICE / FEATURES ============ -->
   <section id="service" class="service section-pad">
     <div class="wrap">
-      <div class="head-row">
-        <div>
-          <p class="eyebrow">Технология</p>
+      <div class="head-stack">
+        <p class="eyebrow">Технология</p>
+        <div class="head-split">
           <h2 class="section-title">Наш сервис<br>под капотом</h2>
+          <p class="lead">Собственное веб-приложение, которое превращает рисунок в&nbsp;готовую к&nbsp;печати 3D-модель. Работает на&nbsp;планшете прямо на&nbsp;площадке.</p>
         </div>
-        <p class="lead">Собственное веб-приложение, которое превращает рисунок в готовую к печати 3D-модель. Работает на планшете прямо на площадке.</p>
       </div>
 
       <div class="features">
         <div class="feature">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
-          <h3>PDF и фото</h3>
-          <p>Загружаем векторный PDF или фотографируем рисунок на бумаге — контур распознаётся автоматически.</p>
+          <h3>PDF и&nbsp;фото</h3>
+          <p>Загружаем векторный PDF или фотографируем рисунок на&nbsp;бумаге&nbsp;— контур распознаётся автоматически.</p>
           <span class="tag">Два пайплайна</span>
         </div>
         <div class="feature">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5Z"/><path d="M2 12l10 5 10-5"/><path d="M2 17l10 5 10-5"/></svg>
-          <h3>Сплошная и рельеф</h3>
-          <p>Плоский брелок или объёмный рельеф с выступами и канавками по деталям рисунка.</p>
+          <h3>Сплошная и&nbsp;рельеф</h3>
+          <p>Плоский брелок или объёмный рельеф с&nbsp;выступами и&nbsp;канавками по&nbsp;деталям рисунка.</p>
           <span class="tag">Два режима</span>
         </div>
         <div class="feature">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
           <h3>3D-превью</h3>
-          <p>Модель видно сразу, с окраской по высоте — можно показать ребёнку перед печатью.</p>
-          <span class="tag">Окраска по высоте</span>
+          <p>Модель видно сразу, с&nbsp;окраской по&nbsp;высоте&nbsp;— можно показать ребёнку перед печатью.</p>
+          <span class="tag">Окраска по&nbsp;высоте</span>
         </div>
         <div class="feature">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M12 11v9"/><path d="M9 20h6"/></svg>
           <h3>Отверстие под кольцо</h3>
-          <p>Готовый брелок с петелькой — сразу на ключи, рюкзак или связку.</p>
+          <p>Готовый брелок с&nbsp;петелькой&nbsp;— сразу на&nbsp;ключи, рюкзак или связку.</p>
           <span class="tag">Режим «Брелок»</span>
         </div>
         <div class="feature">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3Z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18Z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
           <h3>Векторный редактор «Перо»</h3>
-          <p>Дорисовываем и правим контур прямо на месте — можно улучшить сложный рисунок.</p>
+          <p>Дорисовываем и&nbsp;правим контур прямо на&nbsp;месте&nbsp;— можно улучшить сложный рисунок.</p>
           <span class="tag">Ручная правка</span>
         </div>
         <div class="feature">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/><path d="M8 12l3 3 6-7"/></svg>
-          <h3>Сглаживание и поворот</h3>
-          <p>Аккуратный край и правильная ориентация модели — чистая печать без брака.</p>
+          <h3>Сглаживание и&nbsp;поворот</h3>
+          <p>Аккуратный край и&nbsp;правильная ориентация модели&nbsp;— чистая печать без брака.</p>
           <span class="tag">Качество печати</span>
         </div>
       </div>
@@ -409,9 +413,9 @@
       <div class="highlight">
         <div class="ht">
           <h3>Работает без интернета</h3>
-          <p>Приложение (PWA) запускается на планшете и работает автономно — не зависит от Wi-Fi на площадке. Тёмная и светлая тема для любого освещения.</p>
+          <p>Приложение запускается на&nbsp;планшете и&nbsp;работает автономно&nbsp;— не&nbsp;зависит от Wi-Fi на&nbsp;площадке. Тёмная и&nbsp;светлая тема для любого освещения.</p>
         </div>
-        <span class="badge">Offline-ready · PWA</span>
+        <span class="badge">Offline-ready</span>
       </div>
     </div>
   </section>
@@ -419,12 +423,12 @@
   <!-- ============ GALLERY ============ -->
   <section id="gallery" class="section-pad">
     <div class="wrap">
-      <div class="head-row">
-        <div>
-          <p class="eyebrow">Примеры</p>
-          <h2 class="section-title">От рисунка —<br>к брелоку</h2>
+      <div class="head-stack">
+        <p class="eyebrow">Примеры</p>
+        <div class="head-split">
+          <h2 class="section-title">От&nbsp;рисунка&nbsp;—<br>к&nbsp;брелоку</h2>
+          <p class="lead">Настоящие рисунки гостей наших мероприятий. Каждый брелок уникален&nbsp;— второго такого не&nbsp;существует.</p>
         </div>
-        <p class="lead">Настоящие рисунки гостей наших мероприятий. Каждый брелок уникален — второго такого не существует.</p>
       </div>
 
       <div class="gallery-grid">
@@ -443,7 +447,7 @@
               <span>скоро</span>
             </div>
           </div>
-          <p class="pair-cap"><b>Котик.</b> Рельефный брелок с петелькой под кольцо.</p>
+          <p class="pair-cap"><b>Котик.</b> Рельефный брелок с&nbsp;петелькой под кольцо.</p>
         </div>
 
         <div class="pair">
@@ -479,7 +483,7 @@
               <span>скоро</span>
             </div>
           </div>
-          <p class="pair-cap"><b>Любимый герой.</b> Рельеф с выступами по деталям рисунка.</p>
+          <p class="pair-cap"><b>Любимый герой.</b> Рельеф с&nbsp;выступами по&nbsp;деталям рисунка.</p>
         </div>
 
         <div class="pair">
@@ -497,7 +501,7 @@
               <span>скоро</span>
             </div>
           </div>
-          <p class="pair-cap"><b>Фантазия ребёнка.</b> Дорисовали контур «Пером» — и в печать.</p>
+          <p class="pair-cap"><b>Фантазия ребёнка.</b> Дорисовали контур «Пером»&nbsp;— и&nbsp;в&nbsp;печать.</p>
         </div>
       </div>
 
@@ -514,8 +518,8 @@
       <div class="lead-grid">
         <div class="lead-copy">
           <p class="eyebrow">Заявка</p>
-          <h2 class="section-title">Привезём<br>на ваше<br>мероприятие</h2>
-          <p class="lead">Оставьте контакты — рассчитаем стоимость под формат и число гостей, ответим в течение дня.</p>
+          <h2 class="section-title">Привезём<br>на&nbsp;ваше<br>мероприятие</h2>
+          <p class="lead">Оставьте контакты&nbsp;— рассчитаем стоимость под формат и&nbsp;число гостей, ответим в&nbsp;течение дня.</p>
           <div class="lead-contacts">
             <a href="tel:+79162171882">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.6a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2Z"/></svg>
@@ -559,15 +563,15 @@
               <textarea id="f-msg" name="msg" placeholder="Город, число гостей, площадка, пожелания…"></textarea>
             </div>
             <div class="form-actions">
-              <span class="privacy">Нажимая «Отправить», вы соглашаетесь на обработку контактных данных для ответа на заявку.</span>
+              <span class="privacy">Нажимая «Отправить», вы&nbsp;соглашаетесь на&nbsp;обработку контактных данных для ответа на&nbsp;заявку.</span>
               <button type="submit" class="btn btn--solid">Отправить заявку</button>
             </div>
           </form>
 
           <div class="form-ok" id="formOk">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>
-            <h3>Заявка готова к отправке</h3>
-            <p>Мы открыли ваш почтовый клиент с заполненным письмом — осталось нажать «Отправить». Или свяжитесь с нами напрямую по телефону выше.</p>
+            <h3>Заявка готова к&nbsp;отправке</h3>
+            <p>Мы&nbsp;открыли ваш почтовый клиент с&nbsp;заполненным письмом&nbsp;— осталось нажать «Отправить». Или свяжитесь с&nbsp;нами напрямую по&nbsp;телефону выше.</p>
           </div>
         </div>
       </div>
