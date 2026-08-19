@@ -247,15 +247,15 @@
   .field.full{grid-column:1 / -1}
   .field label{
     display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
-    color:var(--muted);font-weight:700;margin-bottom:10px;
+    color:var(--muted);font-weight:700;margin-bottom:8px;padding:0 12px;
   }
   .field label .req{color:var(--text-dim)}
   .field input,.field select,.field textarea{
     width:100%;font:inherit;font-size:15px;color:var(--text);
-    background:transparent;border:0;border-bottom:1px solid var(--line-2);
-    padding:8px 0;outline:none;transition:.15s;border-radius:0;
+    background:#0a0a0a;border:0;border-bottom:1px solid var(--line-2);
+    padding:8px 12px;outline:none;transition:.15s;border-radius:0;
   }
-  .field textarea{resize:vertical;min-height:44px}
+  .field textarea{resize:vertical;min-height:100px}
   .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--text)}
   .field input::placeholder,.field textarea::placeholder{color:var(--muted)}
   .field select{appearance:none;cursor:pointer}
@@ -277,7 +277,7 @@
     transition:background-color 9999s ease 0s;
   }
   .form-actions{grid-column:1 / -1;background:var(--bg2);padding:22px clamp(18px,2vw,26px);display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;justify-content:space-between}
-  .form-actions .privacy{color:var(--muted);font-size:12px;letter-spacing:.02em;max-width:360px;line-height:1.5}
+  .form-actions .privacy{color:var(--text);font-size:15px;letter-spacing:.02em;max-width:360px;line-height:1.5}
   .form-ok{
     background:var(--bg2);border:1px solid var(--line-2);padding:clamp(28px,4vw,44px);
     display:none;flex-direction:column;gap:12px;
@@ -586,7 +586,7 @@
               <textarea id="f-msg" name="msg" placeholder="Город, число гостей, площадка, пожелания…"></textarea>
             </div>
             <div class="form-actions">
-              <span class="privacy">Нажимая «Отправить», вы&nbsp;соглашаетесь на&nbsp;обработку контактных данных для ответа на&nbsp;заявку.</span>
+              <span class="privacy">Нажимая «Отправить», вы&nbsp;соглашаетесь на&nbsp;обработку персональных данных для ответа на&nbsp;заявку</span>
               <button type="submit" class="btn btn--solid">Отправить заявку</button>
             </div>
           </form>
