@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>html{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Конструктор тарифов</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#F2F3F8;
+  --surface:#FFFFFF;
+  --surface-2:#FAFAFD;
+  --ink:#191B28;
+  --ink-2:#4A4E63;
+  --muted:#868BA3;
+  --line:#E2E4EF;
+  --line-strong:#CFD2E2;
+  --accent:#5B4BE1;
+  --accent-soft:#EEEBFD;
+  --accent-ink:#4033B8;
+  --warn:#B4530A;
+  --warn-soft:#FDF0E3;
+  --ok:#1D7A54;
+  --ok-soft:#E6F4EE;
+  --red:#A32B2B;
+  --red-soft:#FBE4E4;
+  --shadow:0 1px 2px rgba(25,27,40,.06), 0 8px 24px -12px rgba(25,27,40,.18);
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12131B;
+    --surface:#1A1C26;
+    --surface-2:#20222E;
+    --ink:#ECEDF4;
+    --ink-2:#B6BACD;
+    --muted:#7C819A;
+    --line:#2B2E3D;
+    --line-strong:#3A3E51;
+    --accent:#8E80FF;
+    --accent-soft:#262452;
+    --accent-ink:#B7ADFF;
+    --warn:#E7A464;
+    --warn-soft:#3A2A18;
+    --ok:#63C79C;
+    --ok-soft:#173226;
+    --red:#F0A0A0;
+    --red-soft:#3B1F1F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12131B;
+  --surface:#1A1C26;
+  --surface-2:#20222E;
+  --ink:#ECEDF4;
+  --ink-2:#B6BACD;
+  --muted:#7C819A;
+  --line:#2B2E3D;
+  --line-strong:#3A3E51;
+  --accent:#8E80FF;
+  --accent-soft:#262452;
+  --accent-ink:#B7ADFF;
+  --warn:#E7A464;
+  --warn-soft:#3A2A18;
+  --ok:#63C79C;
+  --ok-soft:#173226;
+  --red:#F0A0A0;
+  --red-soft:#3B1F1F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Golos Text',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+
+.wrap{max-width:1240px;margin:0 auto;padding:28px 20px 64px}
+
+/* ---------- head ---------- */
+.masthead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
+.masthead h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+.masthead p{margin:6px 0 0;color:var(--ink-2);max-width:62ch}
+.badge-proto{
+  display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
+  background:var(--accent-soft);color:var(--accent-ink);font-size:12px;font-weight:600;
+  letter-spacing:.02em;white-space:nowrap;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:block}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto}
+.tab{
+  appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  padding:11px 15px;font:inherit;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;
+}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent-ink);border-bottom-color:var(--accent);font-weight:600}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
+
+.panel[hidden]{display:none}
+
+/* ---------- toolbar ---------- */
+.toolbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  padding:12px 14px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius) var(--radius) 0 0;border-bottom:0;
+}
+.tool-label{font-size:12px;color:var(--muted);font-weight:500}
+select,input[type=number],input[type=text]{
+  font:inherit;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line-strong);border-radius:7px;padding:6px 9px;
+}
+select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn{
+  font:inherit;font-weight:500;cursor:pointer;padding:6px 12px;border-radius:7px;
+  border:1px solid var(--line-strong);background:var(--surface-2);color:var(--ink);
+}
+.btn:hover{border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{filter:brightness(1.08);color:#fff}
+.spacer{flex:1 1 auto}
+.toolbar+.toolbar,.partnerbar+.toolbar{border-radius:0;border-top:1px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:disabled:hover{border-color:var(--line-strong);color:var(--ink)}
+.btn-primary:disabled:hover{border-color:var(--accent);color:#fff}
+
+/* модалка подтверждения */
+.ovl{position:fixed;inset:0;background:rgba(15,16,24,.45);display:grid;place-items:center;z-index:60;padding:20px}
+.modal{
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:22px 24px;max-width:460px;width:100%;box-shadow:0 24px 60px -20px rgba(0,0,0,.5);
+}
+.modal h3{margin:0 0 10px;font-size:17px;font-weight:600}
+.modal p{margin:0 0 6px;color:var(--ink-2);font-size:14px;line-height:1.55}
+.modal p b{color:var(--ink)}
+.modal .switch{margin-top:14px;align-items:flex-start;line-height:1.45}
+.mbtns{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.switch{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:var(--ink-2);user-select:none}
+.switch input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+
+/* ---------- table ---------- */
+.tablebox{
+  background:var(--surface);border:1px solid var(--line);border-radius:0 0 var(--radius) var(--radius);
+  overflow-x:auto;box-shadow:var(--shadow);
+}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:1020px}
+th,td{text-align:right;padding:0;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th{
+  position:sticky;top:0;z-index:3;background:var(--surface-2);
+  font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+  padding:9px 10px;border-bottom:1px solid var(--line-strong);
+}
+thead th.grouphead{text-align:center;border-left:1px solid var(--line);color:var(--ink-2)}
+th.rowhead,td.rowhead{
+  text-align:left;position:sticky;left:0;z-index:2;background:var(--surface);
+  padding:9px 14px;min-width:230px;border-right:1px solid var(--line);
+}
+thead th.rowhead{z-index:4;background:var(--surface-2)}
+tbody tr:hover td{background:var(--surface-2)}
+tbody tr:hover td.rowhead{background:var(--surface-2)}
+
+tr.grouprow td.rowhead{font-weight:600}
+tr.countryrow td.rowhead{padding-left:34px;color:var(--ink-2);font-weight:400}
+tr.countryrow td.rowhead::before{
+  content:'';position:absolute;left:18px;top:50%;width:8px;height:1px;background:var(--line-strong);
+}
+td.rowhead{position:sticky;position:-webkit-sticky}
+.grp-chip{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;padding:2px 6px;
+  border-radius:4px;margin-right:8px;background:var(--accent-soft);color:var(--accent-ink);
+}
+.grp-chip.mo1{background:var(--warn-soft);color:var(--warn)}
+.grp-chip.mo2{background:#FBE4E4;color:#A32B2B}
+:root[data-theme="dark"] .grp-chip.mo2{background:#3B1F1F;color:#F0A0A0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .grp-chip.mo2{background:#3B1F1F;color:#F0A0A0}}
+
+.cell input{
+  width:100%;border:0;background:transparent;padding:9px 10px;text-align:right;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;
+  font-size:13px;color:var(--ink);border-radius:0;
+}
+.cell input::placeholder{color:var(--muted);opacity:.65}
+.cell{position:relative;border-left:1px solid transparent}
+.cell:focus-within{box-shadow:inset 0 0 0 2px var(--accent)}
+.cell.own input{font-weight:600}
+.cell.inherited input{color:var(--muted);font-weight:400}
+.cell.override{background:var(--warn-soft)}
+.cell.override input{color:var(--warn);font-weight:600}
+.cell.override::after{
+  content:'';position:absolute;top:5px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--warn);
+}
+.cell.svc-start{border-left:1px solid var(--line)}
+.cell.edited{background:var(--ok-soft);box-shadow:inset 2px 0 0 var(--ok)}
+.cell.edited input{color:var(--ok);font-weight:600}
+.cell.edited::after{background:var(--ok)}
+.cell.edited:focus-within{box-shadow:inset 0 0 0 2px var(--accent)}
+
+/* отключённая ячейка */
+.cw{position:relative;display:flex;align-items:center;justify-content:flex-end}
+.offbtn{
+  position:absolute;left:3px;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;padding:0;display:grid;place-items:center;
+  border:0;border-radius:4px;background:transparent;color:var(--muted);
+  font-size:12px;line-height:1;cursor:pointer;opacity:0;
+}
+.cell:hover .offbtn,.cell:focus-within .offbtn{opacity:1}
+.offbtn:hover{background:var(--surface);color:var(--red)}
+.offbtn:focus-visible{opacity:1;outline:2px solid var(--accent);outline-offset:0}
+.offmark{padding:9px 10px;font-size:13px;color:var(--red);font-weight:600}
+.cell.off{background:var(--red-soft)}
+.cell.off::after{background:var(--red)}
+.cell.off .offbtn{opacity:.75;color:var(--red)}
+.cell.off-inh{background:transparent}
+.cell.off-inh .offmark{color:var(--muted);font-weight:400;opacity:.7}
+.cell.off-inh::after{display:none}
+.sw.off{background:var(--red-soft);border-color:var(--red)}
+tr.noaccess td.rowhead{opacity:.6}
+td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;font-style:italic}
+
+/* колонка комиссии */
+th.commhead{border-right:2px solid var(--line-strong);text-align:right;min-width:86px}
+td.commcell{border-right:2px solid var(--line-strong);background:var(--surface-2)}
+tbody tr:hover td.commcell{background:var(--surface-2)}
+td.commcell input{width:100%}
+.commro{display:block;padding:9px 10px;text-align:right;font-size:13px;color:var(--muted);opacity:.7}
+td.commcell.override{background:var(--warn-soft)}
+td.commcell.edited{background:var(--ok-soft)}
+
+.legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:22px;height:14px;border-radius:4px;border:1px solid var(--line-strong);display:inline-block}
+.sw.base{background:var(--surface)}
+.sw.inh{background:var(--surface);opacity:.55}
+.sw.ovr{background:var(--warn-soft);border-color:var(--warn)}
+.sw.edt{background:var(--ok-soft);border-color:var(--ok)}
+
+/* ---------- info blocks ---------- */
+.note{
+  margin-top:18px;padding:14px 16px;border-left:3px solid var(--accent);
+  background:var(--surface);border-radius:0 var(--radius) var(--radius) 0;color:var(--ink-2);
+}
+.note b{color:var(--ink)}
+.note p{margin:0 0 8px}
+.note p:last-child{margin-bottom:0}
+
+.partnerbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:14px 16px;margin-bottom:0;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius) var(--radius) 0 0;border-bottom:0;
+}
+.pname{font-size:16px;font-weight:600}
+.pmeta{font-size:12.5px;color:var(--muted)}
+.pmeta b{color:var(--ink-2);font-weight:500}
+
+/* ---------- access tab ---------- */
+.access{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.acard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.acard h3{margin:0 0 4px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:9px}
+.acard .cnt{font-size:12px;color:var(--muted);font-weight:400;margin-left:auto}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:4px 9px;border-radius:999px;
+  border:1px solid var(--line-strong);background:var(--surface-2);color:var(--muted);cursor:pointer;user-select:none;
+}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink);font-weight:500}
+.chip .tick{width:13px;text-align:center;font-size:11px}
+.acard .switch{margin-top:2px}
+.summary{
+  margin-top:16px;padding:13px 16px;background:var(--accent-soft);color:var(--accent-ink);
+  border-radius:var(--radius);font-size:13.5px;
+}
+.summary b{font-weight:600}
+
+/* ---------- theme toggle ---------- */
+.headtools{display:flex;align-items:center;gap:10px}
+.themebtn{
+  display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:12.5px;font-weight:500;
+  padding:6px 12px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2);
+}
+.themebtn:hover{border-color:var(--accent);color:var(--accent-ink)}
+.themebtn svg{width:14px;height:14px;flex:none}
+
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);
+  background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:13px;
+  opacity:0;pointer-events:none;transition:opacity .18s ease, transform .18s ease;z-index:50;
+  box-shadow:0 8px 24px -8px rgba(0,0,0,.45);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <h1>Конструктор тарифов — проверка модели</h1>
+      <p>Три группы стран задают цену, страна переопределяет только то, что реально отличается, партнёр — только то, что отличается у него. Кликните по любой цене и поправьте: увидите, как ячейка меняет статус.</p>
+    </div>
+    <div class="headtools">
+      <button class="themebtn" id="themeBtn" type="button" aria-label="Переключить тему">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+        <span id="themeLabel">Тема</span>
+      </button>
+      <span class="badge-proto"><span class="dot"></span>Прототип для обсуждения</span>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-panel="p-base">1. Прайс-лист «Дистрибьютор — базовый»</button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="p-partner">2. Цены партнёра</button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="p-access">3. Доступ к странам</button>
+  </div>
+
+  <!-- ============ PANEL 1 ============ -->
+  <section class="panel" id="p-base" role="tabpanel">
+    <div class="toolbar">
+      <span class="tool-label">Прайс-лист</span>
+      <select id="pricelist">
+        <option>Дистрибьютор — базовый</option>
+        <option>Туроператор — базовый</option>
+        <option>Туроператор — премиум</option>
+      </select>
+      <label class="switch"><input type="checkbox" id="showCountriesBase" checked> Показать страны</label>
+      <span class="spacer"></span>
+      <span class="tool-label">Изменить все цены на</span>
+      <input type="number" id="pct" value="500" step="100" style="width:88px" aria-label="Сумма изменения в рублях">
+      <span class="tool-label">₽</span>
+      <button class="btn btn-primary" id="applyPct">Применить</button>
+      <button class="btn" id="resetBase">Сбросить</button>
+    </div>
+    <div class="toolbar toolbar-2">
+      <span class="tool-label">Ввести изменения тарифов</span>
+      <select id="applyMode">
+        <option value="now">Немедленно</option>
+        <option value="date">С даты</option>
+        <option value="draft">Как черновик</option>
+      </select>
+      <input type="date" id="applyDate" hidden aria-label="Дата вступления в силу">
+      <input type="text" id="draftName" hidden placeholder="Название черновика" style="width:190px" aria-label="Название черновика">
+      <span class="spacer"></span>
+      <span class="tool-label" id="editedCount">изменений нет</span>
+      <button class="btn btn-primary" id="saveBtn" disabled>Сохранить</button>
+    </div>
+    <div class="tablebox"><table id="tblBase"></table></div>
+    <div class="legend">
+      <span><i class="sw base"></i> цена группы</span>
+      <span><i class="sw inh"></i> страна наследует цену группы</span>
+      <span><i class="sw ovr"></i> исключение по стране</span>
+      <span><i class="sw edt"></i> изменено вами, не сохранено</span>
+      <span><i class="sw off"></i> ⊘ отключено — услуга не продаётся</span>
+    </div>
+  </section>
+
+  <!-- ============ PANEL 2 ============ -->
+  <section class="panel" id="p-partner" role="tabpanel" hidden>
+    <div class="partnerbar">
+      <div>
+        <div class="pname">
+          <span class="tool-label" style="margin-right:8px">Партнёр</span>
+          <select id="partnerSel" style="font-size:15px;font-weight:600;padding:5px 10px"></select>
+        </div>
+        <div class="pmeta" id="pMeta"></div>
+      </div>
+      <span class="spacer"></span>
+      <label class="switch"><input type="checkbox" id="showCountriesPartner" checked> Показать страны</label>
+      <button class="btn" id="resetPartner">Убрать все свои цены</button>
+    </div>
+    <div class="toolbar toolbar-2">
+      <span class="tool-label">Ввести изменения тарифов</span>
+      <select id="applyModeP">
+        <option value="now">Немедленно</option>
+        <option value="date">С даты</option>
+        <option value="draft">Как черновик</option>
+      </select>
+      <input type="date" id="applyDateP" hidden aria-label="Дата вступления в силу">
+      <input type="text" id="draftNameP" hidden placeholder="Название черновика" style="width:190px" aria-label="Название черновика">
+      <span class="spacer"></span>
+      <span class="tool-label" id="editedCountP">изменений нет</span>
+      <button class="btn btn-primary" id="saveBtnP" disabled>Сохранить</button>
+    </div>
+    <div class="tablebox"><table id="tblPartner"></table></div>
+    <div class="legend">
+      <span><i class="sw inh"></i> наследуется из прайс-листа</span>
+      <span><i class="sw ovr"></i> своя цена партнёра</span>
+      <span><i class="sw edt"></i> изменено вами, не сохранено</span>
+      <span><i class="sw off"></i> ⊘ отключено — услуга не продаётся</span>
+      <span style="color:var(--muted)">пустая ячейка = наследование; сотрите значение, чтобы вернуть базовую цену</span>
+    </div>
+    <div class="note">
+      <p><b>Экран тот же.</b> Серые цифры — не данные партнёра, а то, что он получит из прайс-листа. Оранжевые — его собственные. Ровно так и выглядит «исключение из базового тарифа»: у этого партнёра своя цена на весь ряд МО-2 и на Тур 180 в БО, остальное наследуется.</p>
+      <p>Впишите цену в любую серую ячейку — появится своя. Сотрите её — вернётся наследование. Никакие категории и тарифы в справочнике при этом не создаются.</p>
+      <p><b>Показаны только страны, доступные этому партнёру</b> — то, что он реально может продать. Переключитесь на Rusalia: у неё в доступе одна Камбоджа, поэтому БО и МО-1 схлопываются в строку «недоступна ни одна страна». Полный список стран живёт на вкладке «Прайс-лист», доступ настраивается на вкладке «Доступ».</p>
+      <p><b>Комиссия</b> задаётся целиком на группу и от услуги не зависит: 45% на БО у этого партнёра против 50% в базовом прайсе, МО-1 и МО-2 наследуются. На строках стран она показана серым справочно — переопределить её по отдельной стране нельзя.</p>
+      <p><b>Три разных состояния, не путать.</b> Пустая ячейка = «беру цену сверху». Кнопка ⊘ слева в ячейке = «эта услуга по этой стране не продаётся вообще»: партнёр не увидит её ни в ЛК, ни в виджете, и наследование её не воскресит. Отключение так же наследуется вниз: выключили на группе — выключено у всех её стран, пока страна не скажет обратное.</p>
+    </div>
+  </section>
+
+  <!-- ============ PANEL 3 ============ -->
+  <section class="panel" id="p-access" role="tabpanel" hidden>
+    <div class="toolbar" style="border-radius:var(--radius);border-bottom:1px solid var(--line);margin-bottom:14px">
+      <span class="tool-label">Партнёр</span>
+      <select id="partnerSelA" style="font-weight:600"></select>
+      <span class="spacer"></span>
+      <span class="tool-label" id="pMetaA"></span>
+    </div>
+    <div class="access" id="accessGrid"></div>
+    <div class="summary" id="accessSummary"></div>
+    <div class="note">
+      <p><b>Здесь больше нет цен.</b> Доступ — отдельная сущность: какие страны партнёр вправе продавать. «Только Индия» — одна галочка, а не новая категория с пятью тарифами-двойниками.</p>
+      <p>Именно из-за смешения доступа и цены в справочнике накопились cat-1, cat-2a, cat-2b, cat-camb и ещё два десятка подгрупп.</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="ovl" id="ovl" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h3 id="mTitle">Применить изменения</h3>
+    <div id="mBody"></div>
+    <label class="switch" id="mAlsoWrap"><input type="checkbox" id="mAlso"> Обновить индивидуальные цены партнёров на ту же сумму</label>
+    <div class="mbtns">
+      <button class="btn" id="mCancel">Отмена</button>
+      <button class="btn btn-primary" id="mOk">Применить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  const SERVICES = [
+    {id:'t30_1', label:'30 (1)', grp:'Туризм'},
+    {id:'t30_2', label:'30 (2)', grp:'Туризм'},
+    {id:'t90_1', label:'90 (1)', grp:'Туризм'},
+    {id:'t90_2', label:'90 (2)', grp:'Туризм'},
+    {id:'t180',  label:'180',    grp:'Туризм'},
+    {id:'b1_30',  label:'1×30',   grp:'Бизнес'},
+    {id:'b1_90',  label:'1×90',   grp:'Бизнес'},
+    {id:'b2_30',  label:'2×30',   grp:'Бизнес'},
+    {id:'b2_90',  label:'2×90',   grp:'Бизнес'},
+    {id:'bm180',  label:'м. 180', grp:'Бизнес'},
+    {id:'bm365',  label:'м. 365', grp:'Бизнес'},
+    {id:'bm1095', label:'м. 1095',grp:'Бизнес'}
+  ];
+
+  const GROUPS = [
+    {id:'bo',  chip:'БО',   name:'Безопасные',
+     countries:['Турция','ОАЭ','Таиланд','Малайзия','Сингапур','Катар','Оман','Саудовская Аравия']},
+    {id:'mo1', chip:'МО-1', name:'Опасные — 1',
+     countries:['Китай','Вьетнам','Шри-Ланка','Филиппины','Индия','Египет','Марокко','Тунис']},
+    {id:'mo2', chip:'МО-2', name:'Опасные — 2',
+     countries:['Камбоджа','Мадагаскар','Коста-Рика','Иран','Пакистан','Нигерия']}
+  ];
+
+  const BASE0 = {
+    bo:  [3100,2900,4000,4300,5500,6500,7200,8100,8900,12000,16500,24000],
+    mo1: [4300,4100,5000,5200,6000,7400,8300,9200,10100,13800,18900,27500],
+    mo2: [4800,4800,5900,6300,7300,8600,9600,10700,11800,16100,22000,32000]
+  };
+  const COUNTRY0 = {
+    'Коста-Рика': { t90_1:7900 },
+    'Китай':      { t180:6400, t30_1:'off', t30_2:'off' }
+  };
+  const COMM0 = { bo:50, mo1:30, mo2:30 };
+
+  const PARTNERS0 = [
+    {
+      id:'3910', name:'Domina Hotel Novosibirsk', type:'Дистрибьютор',
+      plist:'Дистрибьютор — базовый',
+      grp:{ mo2:{t30_1:4500,t30_2:4500,t90_1:5500,t90_2:5900,t180:6900}, bo:{t180:5100} },
+      ctr:{ 'Индия':{t90_1:5600} },
+      comm:{ bo:45 },
+      access:{ bo:{all:true,only:[]}, mo1:{all:false,only:['Индия','Китай']}, mo2:{all:false,only:['Коста-Рика']} }
+    },
+    {
+      id:'4965', name:'Welton Club', type:'Дистрибьютор',
+      plist:'Дистрибьютор — базовый',
+      grp:{}, ctr:{}, comm:{},
+      access:{ bo:{all:true,only:[]}, mo1:{all:true,only:[]}, mo2:{all:true,only:[]} }
+    },
+    {
+      id:'1234', name:'Rusalia — Irena Domingo', type:'Туроператор',
+      plist:'Туроператор — премиум',
+      grp:{ mo2:{t30_1:4100,t30_2:4100,t90_1:5000,t90_2:5200,t180:6000} },
+      ctr:{}, comm:{ mo1:30, mo2:30 },
+      access:{ bo:{all:false,only:[]}, mo1:{all:false,only:[]}, mo2:{all:false,only:['Камбоджа']} }
+    }
+  ];
+
+  const clone = o => JSON.parse(JSON.stringify(o));
+  let base = clone(BASE0), countryExc = clone(COUNTRY0);
+  let comm = clone(COMM0);
+  let PARTNERS = clone(PARTNERS0);
+  let curP = 0;
+  let P = PARTNERS[0];
+  let pGrp = P.grp, pCtr = P.ctr, pComm = P.comm, access = P.access;
+
+  function countExc(p){
+    let n = Object.keys(p.comm).length;
+    Object.keys(p.grp).forEach(g => n += Object.keys(p.grp[g]).length);
+    Object.keys(p.ctr).forEach(c => n += Object.keys(p.ctr[c]).length);
+    return n;
+  }
+  function availCountries(p, g){
+    const st = p.access[g.id];
+    return st.all ? g.countries.slice() : g.countries.filter(c => st.only.indexOf(c) !== -1);
+  }
+  function countCountries(p){
+    return GROUPS.reduce((n,g)=> n + (p.access[g.id].all ? g.countries.length : p.access[g.id].only.length), 0);
+  }
+
+  const fmt = n => (n===''||n===null||n===undefined||isNaN(n)) ? '' : Number(n).toLocaleString('ru-RU');
+  const parse = s => { const n = parseInt(String(s).replace(/[^\d]/g,''),10); return isNaN(n)?null:n; };
+  const svcIndex = id => SERVICES.findIndex(s=>s.id===id);
+
+  let toastTimer;
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+  }
+
+  function head(){
+    let h = '<thead><tr><th class="rowhead" rowspan="2">Группа стран / страна</th>';
+    h += '<th class="commhead" rowspan="2">Комиссия,&nbsp;%</th>';
+    h += '<th class="grouphead" colspan="5">Туризм</th><th class="grouphead" colspan="7">Бизнес-виза</th></tr><tr>';
+    SERVICES.forEach((s,i)=>{ h += '<th'+(i===0||i===5?' class="svc-start"':'')+'>'+s.label+'</th>'; });
+    return h + '</tr></thead>';
+  }
+
+  const edited = new Set();
+  const keyOf = d => [d.kind, d.p||'', d.group||'', d.country||'', d.svc].join('|');
+
+  const OFF = 'off';
+
+  function cell(cls, own, inh, data, key){
+    if(key && edited.has(key)) cls += ' edited';
+    const has = own !== null && own !== undefined;
+    const eff = has ? own : inh;
+    let inner;
+    if(eff === OFF){
+      cls += ' off' + (has ? '' : ' off-inh');
+      inner = '<span class="offmark" title="'+(has?'Услуга отключена':'Отключена уровнем выше')+'">&#8856;</span>';
+    } else {
+      inner = '<input class="mono" inputmode="numeric" value="'+(has?fmt(own):'')+
+              '" placeholder="'+(inh===null||inh===undefined||inh===OFF?'':fmt(inh))+'" '+data+' aria-label="Цена">';
+    }
+    const btn = '<button type="button" class="offbtn" '+data+' title="'+
+                (eff===OFF?'Включить обратно':'Отключить эту услугу')+'">'+
+                (eff===OFF?'&#8635;':'&#8856;')+'</button>';
+    return '<td class="cell '+cls+'"><div class="cw">'+inner+btn+'</div></td>';
+  }
+
+  function commCell(own, inh, data, key, editable){
+    let cls = 'cell commcell';
+    const has = own !== null && own !== undefined;
+    if(!editable) return '<td class="'+cls+'"><span class="commro">'+(has?own:inh)+'</span></td>';
+    if(key && edited.has(key)) cls += ' edited';
+    if(has && inh !== null && inh !== undefined) cls += ' override';
+    if(!has) cls += ' inherited';
+    return '<td class="'+cls+'"><input class="mono" inputmode="numeric" value="'+(has?own:'')+
+           '" placeholder="'+(inh===null||inh===undefined?'':inh)+'" '+data+' aria-label="Комиссия, %"></td>';
+  }
+
+  function getVal(kind, group, country, svc){
+    if(kind==='base') return base[group][svcIndex(svc)];
+    if(kind==='country') return countryExc[country] ? countryExc[country][svc] : undefined;
+    if(kind==='pgroup') return pGrp[group] ? pGrp[group][svc] : undefined;
+    return pCtr[country] ? pCtr[country][svc] : undefined;
+  }
+  function setVal(kind, group, country, svc, v){
+    if(kind==='base'){
+      base[group][svcIndex(svc)] = (v===null) ? BASE0[group][svcIndex(svc)] : v;
+      return;
+    }
+    const store = kind==='country' ? countryExc : kind==='pgroup' ? pGrp : pCtr;
+    const k = (kind==='pgroup') ? group : country;
+    if(v===null){ if(store[k]) delete store[k][svc]; }
+    else { store[k] = store[k] || {}; store[k][svc] = v; }
+  }
+
+  /* ---------- panel 1 ---------- */
+  function renderBase(){
+    const showC = document.getElementById('showCountriesBase').checked;
+    let html = head() + '<tbody>';
+    GROUPS.forEach(g=>{
+      html += '<tr class="grouprow"><td class="rowhead"><span class="grp-chip '+g.id+'">'+g.chip+'</span>'+g.name+
+              ' <span style="color:var(--muted);font-weight:400">· '+g.countries.length+'</span></td>';
+      html += commCell(comm[g.id], null,
+                       'data-kind="basecomm" data-group="'+g.id+'" data-svc="comm"',
+                       'basecomm||'+g.id+'||comm', true);
+      SERVICES.forEach((s,i)=>{
+        html += cell('own'+(i===0||i===5?' svc-start':''), base[g.id][i], null,
+                     'data-kind="base" data-group="'+g.id+'" data-svc="'+s.id+'"',
+                     'base||'+g.id+'||'+s.id);
+      });
+      html += '</tr>';
+      if(showC){
+        g.countries.forEach(c=>{
+          html += '<tr class="countryrow"><td class="rowhead">'+c+'</td>';
+          html += commCell(null, comm[g.id], '', '', false);
+          SERVICES.forEach((s,i)=>{
+            const own = countryExc[c] && countryExc[c][s.id] !== undefined ? countryExc[c][s.id] : null;
+            const cls = (own!==null?'override':'inherited') + (i===0||i===5?' svc-start':'');
+            html += cell(cls, own, base[g.id][i], 'data-kind="country" data-country="'+c+'" data-group="'+g.id+'" data-svc="'+s.id+'"',
+                         'country||'+g.id+'|'+c+'|'+s.id);
+          });
+          html += '</tr>';
+        });
+      }
+    });
+    document.getElementById('tblBase').innerHTML = html + '</tbody>';
+    updateSaveState();
+  }
+
+  /* ---------- panel 2 ---------- */
+  function renderPartner(){
+    const showC = document.getElementById('showCountriesPartner').checked;
+    let html = head() + '<tbody>';
+    GROUPS.forEach(g=>{
+      const avail = availCountries(P, g);
+      if(!avail.length){
+        html += '<tr class="grouprow noaccess"><td class="rowhead"><span class="grp-chip '+g.id+'">'+g.chip+
+                '</span>'+g.name+'</td><td class="cell noacc" colspan="13">'+
+                'партнёру недоступна ни одна страна этой группы</td></tr>';
+        return;
+      }
+      html += '<tr class="grouprow"><td class="rowhead"><span class="grp-chip '+g.id+'">'+g.chip+'</span>'+g.name+
+              ' <span style="color:var(--muted);font-weight:400">· '+avail.length+'</span></td>';
+      html += commCell(pComm[g.id] === undefined ? null : pComm[g.id], comm[g.id],
+                       'data-kind="pcomm" data-p="'+P.id+'" data-group="'+g.id+'" data-svc="comm"',
+                       'pcomm|'+P.id+'|'+g.id+'||comm', true);
+      SERVICES.forEach((s,i)=>{
+        const own = pGrp[g.id] && pGrp[g.id][s.id] !== undefined ? pGrp[g.id][s.id] : null;
+        const cls = (own!==null?'override':'inherited') + (i===0||i===5?' svc-start':'');
+        html += cell(cls, own, base[g.id][i], 'data-kind="pgroup" data-p="'+P.id+'" data-group="'+g.id+'" data-svc="'+s.id+'"',
+                     'pgroup|'+P.id+'|'+g.id+'||'+s.id);
+      });
+      html += '</tr>';
+      if(showC){
+        avail.forEach(c=>{
+          html += '<tr class="countryrow"><td class="rowhead">'+c+'</td>';
+          html += commCell(null, pComm[g.id] === undefined ? comm[g.id] : pComm[g.id], '', '', false);
+          SERVICES.forEach((s,i)=>{
+            const own = pCtr[c] && pCtr[c][s.id] !== undefined ? pCtr[c][s.id] : null;
+            let inh = base[g.id][i];
+            if(countryExc[c] && countryExc[c][s.id] !== undefined) inh = countryExc[c][s.id];
+            if(pGrp[g.id] && pGrp[g.id][s.id] !== undefined) inh = pGrp[g.id][s.id];
+            const cls = (own!==null?'override':'inherited') + (i===0||i===5?' svc-start':'');
+            html += cell(cls, own, inh, 'data-kind="pcountry" data-p="'+P.id+'" data-country="'+c+'" data-group="'+g.id+'" data-svc="'+s.id+'"',
+                         'pcountry|'+P.id+'|'+g.id+'|'+c+'|'+s.id);
+          });
+          html += '</tr>';
+        });
+      }
+    });
+    document.getElementById('tblPartner').innerHTML = html + '</tbody>';
+    updateSaveState();
+  }
+
+  /* ---------- edits ---------- */
+  function onEdit(e){
+    const inp = e.target;
+    if(inp.tagName !== 'INPUT' || !inp.dataset.kind) return;
+    const v = parse(inp.value);
+    const {kind, group, svc, country} = inp.dataset;
+    const idx = svcIndex(svc);
+    edited.add(keyOf(inp.dataset));
+
+    if(kind === 'basecomm'){
+      if(v!==null) comm[group] = Math.min(100, v);
+    } else if(kind === 'pcomm'){
+      if(v===null) delete pComm[group]; else pComm[group] = Math.min(100, v);
+    } else if(kind === 'base'){
+      if(v!==null) base[group][idx] = v;
+    } else if(kind === 'country'){
+      if(v===null){ if(countryExc[country]) delete countryExc[country][svc]; }
+      else { countryExc[country] = countryExc[country] || {}; countryExc[country][svc] = v; }
+    } else if(kind === 'pgroup'){
+      if(v===null){ if(pGrp[group]) delete pGrp[group][svc]; }
+      else { pGrp[group] = pGrp[group] || {}; pGrp[group][svc] = v; }
+    } else if(kind === 'pcountry'){
+      if(v===null){ if(pCtr[country]) delete pCtr[country][svc]; }
+      else { pCtr[country] = pCtr[country] || {}; pCtr[country][svc] = v; }
+    }
+    renderBase(); renderPartner();
+  }
+
+  function onToggle(e){
+    const b = e.target.closest('.offbtn');
+    if(!b) return;
+    const {kind, group, svc, country} = b.dataset;
+    const cur = getVal(kind, group, country, svc);
+    setVal(kind, group, country, svc, cur === OFF ? null : OFF);
+    edited.add(keyOf(b.dataset));
+    renderBase(); renderPartner();
+    toast(cur === OFF ? 'Услуга снова продаётся' : 'Услуга отключена — заказать её нельзя');
+  }
+
+  document.getElementById('tblBase').addEventListener('change', onEdit);
+  document.getElementById('tblPartner').addEventListener('change', onEdit);
+  document.getElementById('tblBase').addEventListener('click', onToggle);
+  document.getElementById('tblPartner').addEventListener('click', onToggle);
+
+  document.getElementById('showCountriesBase').addEventListener('change', renderBase);
+  document.getElementById('showCountriesPartner').addEventListener('change', renderPartner);
+
+  document.getElementById('applyPct').addEventListener('click', function(){
+    const d = parseInt(document.getElementById('pct').value, 10);
+    if(isNaN(d) || d === 0) { toast('Введите сумму: положительная поднимает цены, отрицательная опускает'); return; }
+    let changed = 0;
+    GROUPS.forEach(g=>{
+      base[g.id] = base[g.id].map((v,i) => {
+        if(typeof v !== 'number') return v;
+        changed++;
+        edited.add('base||'+g.id+'||'+SERVICES[i].id);
+        return Math.max(0, v + d);
+      });
+    });
+    renderBase(); renderPartner();
+    const exc = Object.keys(countryExc).reduce((n,c)=>n+Object.keys(countryExc[c]).length,0);
+    toast(changed + ' базовых цен ' + (d>0?'подняты на ':'снижены на ') + fmt(Math.abs(d)) +
+          ' ₽. Исключений не тронуто: ' + exc);
+  });
+
+  document.getElementById('resetBase').addEventListener('click', function(){
+    base = clone(BASE0); countryExc = clone(COUNTRY0); comm = clone(COMM0);
+    edited.clear();
+    renderBase(); renderPartner(); toast('Прайс-лист вернулся к исходному');
+  });
+
+  document.getElementById('resetPartner').addEventListener('click', function(){
+    P.grp = {}; P.ctr = {}; P.comm = {};
+    pGrp = P.grp; pCtr = P.ctr; pComm = P.comm;
+    scopeKeys('partner').forEach(k => edited.delete(k));
+    renderPartner(); toast('Партнёр полностью на базовом прайс-листе — 0 своих цен');
+  });
+
+  /* ---------- выбор партнёра ---------- */
+  const selP = document.getElementById('partnerSel');
+  const selA = document.getElementById('partnerSelA');
+
+  function fillPartnerSelects(){
+    const opts = PARTNERS.map((p,i)=> '<option value="'+i+'">'+p.name+' · '+p.id+'</option>').join('');
+    selP.innerHTML = opts; selA.innerHTML = opts;
+    selP.value = curP; selA.value = curP;
+  }
+
+  function partnerMeta(){
+    const exc = countExc(P);
+    return 'Тип: <b>'+P.type+'</b> · Прайс-лист: <b>'+P.plist+'</b> · Доступно стран: <b>'+countCountries(P)+
+           '</b> · Своих цен: <b>'+ (exc || 'нет') +'</b>';
+  }
+
+  function setPartner(i){
+    curP = +i;
+    P = PARTNERS[curP];
+    pGrp = P.grp; pCtr = P.ctr; pComm = P.comm; access = P.access;
+    selP.value = curP; selA.value = curP;
+    renderPartner(); renderAccess();
+  }
+
+  selP.addEventListener('change', e => setPartner(e.target.value));
+  selA.addEventListener('change', e => setPartner(e.target.value));
+
+  /* ---------- panel 3 ---------- */
+  function renderAccess(){
+    let html = '';
+    GROUPS.forEach(g=>{
+      const st = access[g.id];
+      const n = st.all ? g.countries.length : st.only.length;
+      html += '<div class="acard"><h3><span class="grp-chip '+g.id+'">'+g.chip+'</span>'+g.name+
+              '<span class="cnt">'+n+' из '+g.countries.length+'</span></h3>'+
+              '<label class="switch"><input type="checkbox" data-all="'+g.id+'"'+(st.all?' checked':'')+'> Вся группа целиком</label>'+
+              '<div class="chips">';
+      g.countries.forEach(c=>{
+        const on = st.all || st.only.indexOf(c) !== -1;
+        html += '<span class="chip'+(on?' on':'')+'" data-group="'+g.id+'" data-country="'+c+'" role="checkbox" tabindex="0" aria-checked="'+on+'">'+
+                '<span class="tick">'+(on?'✓':'+')+'</span>'+c+'</span>';
+      });
+      html += '</div></div>';
+    });
+    document.getElementById('accessGrid').innerHTML = html;
+
+    const total = GROUPS.reduce((n,g)=> n + (access[g.id].all ? g.countries.length : access[g.id].only.length), 0);
+    const parts = GROUPS.map(g=>{
+      const st = access[g.id];
+      if(st.all) return 'вся ' + g.chip;
+      if(!st.only.length) return null;
+      return g.chip + ': ' + st.only.join(', ');
+    }).filter(Boolean);
+    document.getElementById('accessSummary').innerHTML =
+      'Партнёру <b>' + P.name + '</b> доступно <b>' + total + '</b> стран — ' + (parts.join(' · ') || 'ничего не выбрано') + '.';
+    document.getElementById('pMetaA').innerHTML = partnerMeta();
+    document.getElementById('pMeta').innerHTML = partnerMeta();
+  }
+
+  document.getElementById('accessGrid').addEventListener('change', function(e){
+    const g = e.target.dataset.all;
+    if(!g) return;
+    access[g].all = e.target.checked;
+    if(e.target.checked) access[g].only = [];
+    renderAccess(); renderPartner();
+  });
+
+  function toggleChip(el){
+    const g = el.dataset.group, c = el.dataset.country;
+    if(!g) return;
+    const st = access[g];
+    if(st.all){ st.all = false; st.only = GROUPS.find(x=>x.id===g).countries.filter(x=>x!==c); }
+    else {
+      const i = st.only.indexOf(c);
+      if(i===-1) st.only.push(c); else st.only.splice(i,1);
+    }
+    renderAccess(); renderPartner();
+  }
+  document.getElementById('accessGrid').addEventListener('click', e=>{
+    const chip = e.target.closest('.chip'); if(chip) toggleChip(chip);
+  });
+  document.getElementById('accessGrid').addEventListener('keydown', e=>{
+    if(e.key!==' ' && e.key!=='Enter') return;
+    const chip = e.target.closest('.chip'); if(chip){ e.preventDefault(); toggleChip(chip); }
+  });
+
+  /* ---------- tabs ---------- */
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', String(t===tab)));
+      document.querySelectorAll('.panel').forEach(p=>{ p.hidden = (p.id !== tab.dataset.panel); });
+    });
+  });
+
+  /* ---------- ввод изменений тарифов ---------- */
+  const ovl = document.getElementById('ovl');
+  let pending = null;
+
+  function plural(n, one, few, many){
+    const m10 = n % 10, m100 = n % 100;
+    if(m10 === 1 && m100 !== 11) return one;
+    if(m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  }
+
+  function ruDate(v){
+    if(!v) return '';
+    const p = v.split('-');
+    return p[2] + '.' + p[1] + '.' + p[0];
+  }
+
+  function scopePrefixes(scope){
+    if(scope === 'base') return ['base|','basecomm|','country|'];
+    return ['pgroup|'+P.id+'|', 'pcountry|'+P.id+'|', 'pcomm|'+P.id+'|'];
+  }
+  function scopeKeys(scope){
+    const pre = scopePrefixes(scope);
+    return Array.from(edited).filter(k => pre.some(p => k.indexOf(p) === 0));
+  }
+
+  function initSaveBar(sfx, scope, texts){
+    const modeSel = document.getElementById('applyMode'+sfx);
+    const dateInp = document.getElementById('applyDate'+sfx);
+    const nameInp = document.getElementById('draftName'+sfx);
+    const saveBtn = document.getElementById('saveBtn'+sfx);
+    const cntLbl  = document.getElementById('editedCount'+sfx);
+
+    modeSel.addEventListener('change', function(){
+      dateInp.hidden = modeSel.value !== 'date';
+      nameInp.hidden = modeSel.value !== 'draft';
+      saveBtn.textContent = modeSel.value === 'draft' ? 'Сохранить черновик' : 'Сохранить';
+    });
+
+    saveBtn.addEventListener('click', function(){
+      const mode = modeSel.value;
+      if(mode === 'date' && !dateInp.value){ toast('Укажите дату вступления в силу'); dateInp.focus(); return; }
+      const n = scopeKeys(scope).length;
+      const t = texts(mode, n, nameInp.value, dateInp.value);
+
+      document.getElementById('mTitle').textContent = t.title;
+      document.getElementById('mBody').innerHTML = t.body;
+      document.getElementById('mOk').textContent = t.ok;
+      document.getElementById('mAlsoWrap').hidden = !t.also;
+      document.getElementById('mAlso').checked = false;
+      pending = { scope: scope, mode: mode, n: n, date: dateInp.value, btn: saveBtn };
+      ovl.hidden = false;
+      document.getElementById('mOk').focus();
+    });
+
+    return function(){
+      const n = scopeKeys(scope).length;
+      cntLbl.textContent = n ? (n + ' ' + plural(n,'изменение','изменения','изменений') + ' не сохранено') : 'изменений нет';
+      cntLbl.style.color = n ? 'var(--ok)' : 'var(--muted)';
+      saveBtn.disabled = n === 0;
+    };
+  }
+
+  const AFFECT = '<p>Затронет <b>82 партнёра</b>. У <b>14</b> заданы свои цены по этим услугам.</p>';
+
+  const updBase = initSaveBar('', 'base', function(mode, n, name, date){
+    if(mode === 'draft') return {
+      title:'Сохранить как черновик', ok:'Сохранить черновик', also:false,
+      body:'<p><b>' + n + ' ' + plural(n,'изменение','изменения','изменений') + '</b> уйдёт в черновик' +
+           (name ? ' «' + name + '»' : '') + '. Действующие цены не меняются: партнёры продолжают работать ' +
+           'по текущему прайсу, пока черновик не опубликуют.</p>'
+    };
+    if(mode === 'date') return {
+      title:'Запланировать изменения', ok:'Запланировать', also:true,
+      body:'<p>Новые цены вступят в силу <b>' + ruDate(date) + '</b> и до этой даты ни на что не влияют.</p>' + AFFECT
+    };
+    return {
+      title:'Применить немедленно', ok:'Применить', also:true,
+      body:'<p>Изменения вступят в силу сразу после сохранения.</p>' + AFFECT
+    };
+  });
+
+  const PARTNER_ONLY = () => '<p>Затронет только партнёра <b>' + P.name + '</b>. ' +
+                       'Базовый прайс-лист и остальные партнёры не меняются.</p>';
+
+  const updPartner = initSaveBar('P', 'partner', function(mode, n, name, date){
+    if(mode === 'draft') return {
+      title:'Сохранить как черновик', ok:'Сохранить черновик', also:false,
+      body:'<p><b>' + n + ' ' + plural(n,'изменение','изменения','изменений') + '</b> уйдёт в черновик' +
+           (name ? ' «' + name + '»' : '') + '. Партнёр продолжает работать по текущим ценам, пока черновик не опубликуют.</p>'
+    };
+    if(mode === 'date') return {
+      title:'Запланировать изменения', ok:'Запланировать', also:false,
+      body:'<p>Свои цены партнёра вступят в силу <b>' + ruDate(date) + '</b> и до этой даты ни на что не влияют.</p>' + PARTNER_ONLY()
+    };
+    return {
+      title:'Применить немедленно', ok:'Применить', also:false,
+      body:'<p>Изменения вступят в силу сразу после сохранения.</p>' + PARTNER_ONLY()
+    };
+  });
+
+  function updateSaveState(){ updBase(); updPartner(); }
+
+  function closeModal(){ ovl.hidden = true; if(pending && pending.btn) pending.btn.focus(); }
+  document.getElementById('mCancel').addEventListener('click', closeModal);
+  ovl.addEventListener('click', e=>{ if(e.target === ovl) closeModal(); });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && !ovl.hidden) closeModal(); });
+
+  document.getElementById('mOk').addEventListener('click', function(){
+    if(!pending) return;
+    const {scope, mode, n, date} = pending;
+    const also = document.getElementById('mAlso').checked &&
+                 !document.getElementById('mAlsoWrap').hidden;
+
+    scopeKeys(scope).forEach(k => edited.delete(k));
+    renderBase(); renderPartner();
+    ovl.hidden = true;
+    pending = null;
+
+    const who = scope === 'base' ? '' : ' у партнёра';
+    const tail = also ? ' Индивидуальные цены партнёров обновлены вместе с базой.' : '';
+    if(mode === 'draft') toast('Черновик сохранён: ' + n + ' ' + plural(n,'изменение','изменения','изменений') + '. Цены не тронуты');
+    else if(mode === 'date') toast('Запланировано на ' + ruDate(date) + '.' + tail);
+    else toast('Изменения применены' + who + '.' + tail);
+  });
+
+  /* ---------- theme toggle ---------- */
+  const ICONS = {
+    system:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 3a9 9 0 0 1 0 18" fill="currentColor" stroke="none"/>',
+    light:'<circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    dark:'<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>'
+  };
+  const LABELS = {system:'Как в системе', light:'Светлая', dark:'Тёмная'};
+  const ORDER = ['system','light','dark'];
+  let theme = 'system';
+
+  function applyTheme(){
+    if(theme === 'system') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById('themeIcon').innerHTML = ICONS[theme];
+    document.getElementById('themeLabel').textContent = LABELS[theme];
+  }
+  document.getElementById('themeBtn').addEventListener('click', function(){
+    theme = ORDER[(ORDER.indexOf(theme) + 1) % ORDER.length];
+    applyTheme();
+  });
+  applyTheme();
+
+  fillPartnerSelects();
+  renderBase(); renderPartner(); renderAccess();
+})();
+</script>
+
+</body>
+</html>
