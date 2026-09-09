@@ -86,6 +86,10 @@ body{
 .masthead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
 .masthead h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
 .masthead p{margin:6px 0 0;color:var(--ink-2);max-width:62ch}
+.masthead p.scope-note{
+  margin-top:9px;font-size:13px;font-weight:500;color:var(--warn);
+  display:inline-block;padding:4px 11px;border-radius:6px;background:var(--warn-soft);
+}
 .badge-proto{
   display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
   background:var(--accent-soft);color:var(--accent-ink);font-size:12px;font-weight:600;
@@ -305,6 +309,7 @@ td.commcell.edited{background:var(--ok-soft)}
   <div class="masthead">
     <div>
       <h1>Конструктор тарифов — проверка модели</h1>
+      <p class="scope-note">Прототип пока рассчитан только на цены через виджет</p>
       <p>Три группы стран задают цену, страна переопределяет только то, что реально отличается, партнёр — только то, что отличается у него. Кликните по любой цене и поправьте: увидите, как ячейка меняет статус.</p>
     </div>
     <div class="headtools">
@@ -329,9 +334,9 @@ td.commcell.edited{background:var(--ok-soft)}
       <select id="pricelist">
         <option>Дистрибьютор — базовый</option>
         <option>Туроператор — базовый</option>
-        <option>Туроператор — премиум</option>
+        <option>iVisa — цены</option>
       </select>
-      <label class="switch"><input type="checkbox" id="showCountriesBase" checked> Показать страны</label>
+      <label class="switch"><input type="checkbox" id="showCountriesBase"> Показать страны</label>
       <span class="spacer"></span>
       <span class="tool-label">Изменить все цены на</span>
       <input type="number" id="pct" value="500" step="100" style="width:88px" aria-label="Сумма изменения в рублях">
@@ -373,7 +378,7 @@ td.commcell.edited{background:var(--ok-soft)}
         <div class="pmeta" id="pMeta"></div>
       </div>
       <span class="spacer"></span>
-      <label class="switch"><input type="checkbox" id="showCountriesPartner" checked> Показать страны</label>
+      <label class="switch"><input type="checkbox" id="showCountriesPartner"> Показать страны</label>
       <button class="btn" id="resetPartner">Убрать все свои цены</button>
     </div>
     <div class="toolbar toolbar-2">
@@ -494,7 +499,7 @@ td.commcell.edited{background:var(--ok-soft)}
     },
     {
       id:'1234', name:'Rusalia — Irena Domingo', type:'Туроператор',
-      plist:'Туроператор — премиум',
+      plist:'iVisa — цены',
       grp:{ mo2:{t30_1:4100,t30_2:4100,t90_1:5000,t90_2:5200,t180:6000} },
       ctr:{}, comm:{ mo1:30, mo2:30 },
       access:{ bo:{all:false,only:[]}, mo1:{all:false,only:[]}, mo2:{all:false,only:['Камбоджа']} }
