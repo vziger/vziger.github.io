@@ -13,7 +13,7 @@
   color-scheme:light;
   --bg:#F2F3F8; --surface:#FFFFFF; --surface-2:#FAFAFD;
   --ink:#191B28; --ink-2:#4A4E63; --muted:#868BA3;
-  --line:#E2E4EF; --line-strong:#CFD2E2;
+  --line:#E2E4EF; --line-strong:#CFD2E2; --menu-hover:#E8EAF4;
   --accent:#5B4BE1; --accent-soft:#EEEBFD; --accent-ink:#4033B8;
   --warn:#B4530A; --warn-soft:#FDF0E3;
   --ok:#1D7A54; --ok-soft:#E6F4EE;
@@ -27,7 +27,7 @@
     color-scheme:dark;
     --bg:#12131B; --surface:#1A1C26; --surface-2:#20222E;
     --ink:#ECEDF4; --ink-2:#B6BACD; --muted:#7C819A;
-    --line:#2B2E3D; --line-strong:#3A3E51;
+    --line:#2B2E3D; --line-strong:#3A3E51; --menu-hover:#2E3243;
     --accent:#8E80FF; --accent-soft:#262452; --accent-ink:#B7ADFF;
     --warn:#E7A464; --warn-soft:#3A2A18;
     --ok:#63C79C; --ok-soft:#173226;
@@ -40,7 +40,7 @@
   color-scheme:dark;
   --bg:#12131B; --surface:#1A1C26; --surface-2:#20222E;
   --ink:#ECEDF4; --ink-2:#B6BACD; --muted:#7C819A;
-  --line:#2B2E3D; --line-strong:#3A3E51;
+  --line:#2B2E3D; --line-strong:#3A3E51; --menu-hover:#2E3243;
   --accent:#8E80FF; --accent-soft:#262452; --accent-ink:#B7ADFF;
   --warn:#E7A464; --warn-soft:#3A2A18;
   --ok:#63C79C; --ok-soft:#173226;
@@ -56,7 +56,7 @@ body{
   font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
 }
 .mono{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
-.wrap{max-width:1360px;margin:0 auto;padding:28px 20px 64px}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 20px 64px}
 
 /* head */
 .masthead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px}
@@ -102,7 +102,7 @@ body{
 .toolbar > .tool-label:first-child{min-width:104px}
 .plwrap{position:relative;display:inline-flex}
 .plnote{
-  position:absolute;top:calc(100% + 4px);left:2px;white-space:nowrap;
+  position:absolute;top:calc(100% + 4px);left:10px;white-space:nowrap;
   font-size:11.5px;color:var(--muted);
 }
 .toolbar-pl{padding-bottom:30px}
@@ -110,6 +110,14 @@ select,input[type=number],input[type=text],input[type=date]{
   font:inherit;color:var(--ink);background:var(--surface-2);
   border:1px solid var(--line-strong);border-radius:7px;padding:6px 9px;
 }
+/* своя стрелка: у системной на macOS нельзя отодвинуть отступ справа */
+select{
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  padding-right:30px;
+  background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238A8FA6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;background-size:10px 6px;
+}
+select::-ms-expand{display:none}
 select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .btn{
   font:inherit;font-weight:500;cursor:pointer;padding:6px 12px;border-radius:7px;
@@ -167,7 +175,7 @@ thead th{
   padding:8px 8px;border-bottom:1px solid var(--line-strong);
 }
 th.blockhead{
-  text-align:center;color:var(--ink-2);border-left:2px solid var(--line-strong);letter-spacing:.06em;
+  text-align:center;color:var(--ink-2);border-left:1px solid var(--line-strong);letter-spacing:.06em;
 }
 th.blockhead.on{color:var(--accent-ink);background:var(--accent-soft)}
 th.blockhead.off{color:var(--teal);background:var(--teal-soft)}
@@ -210,8 +218,8 @@ td.rowhead{position:sticky;position:-webkit-sticky}
 .cell.override{background:var(--warn-soft)}
 .cell.override input{color:var(--warn);font-weight:600}
 .cell.override::after{content:'';position:absolute;top:5px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--warn)}
-.cell.block-start{border-left:2px solid var(--line-strong)}
-thead th.block-start{border-left:2px solid var(--line-strong)}
+.cell.block-start{border-left:1px solid var(--line-strong)}
+thead th.block-start{border-left:1px solid var(--line-strong)}
 .cell.edited{background:var(--ok-soft);box-shadow:inset 2px 0 0 var(--ok)}
 .cell.edited input{color:var(--ok);font-weight:600}
 .cell.edited::after{background:var(--ok)}
@@ -248,8 +256,8 @@ th.commhead{text-align:right}
 
 /* колонка «Юр. лицо» */
 th.enthead{text-align:left}
-td.entcell{background:var(--surface-2);text-align:left;position:relative;border-right:1px solid var(--line);vertical-align:middle}
-td.entmerged{border-top:1px solid var(--line)}
+td.entcell{background:var(--surface-2);text-align:left;position:relative;vertical-align:middle}
+td.entmerged{border-top:0}
 tbody tr:hover td.entcell{background:var(--surface-2)}
 .entbtn{
   display:flex;align-items:center;gap:7px;width:100%;
@@ -286,6 +294,17 @@ thead th.hascol{padding:0;height:1px}
 .colbtn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .colbtn.open{background:var(--accent);color:#fff}
 .colbtn.open .mk{opacity:1}
+select.nativehidden{display:none}
+.selbtn{
+  font:inherit;display:inline-flex;align-items:center;gap:14px;justify-content:space-between;
+  background:var(--surface-2);border:1px solid var(--line-strong);border-radius:7px;
+  padding:6px 11px 6px 9px;color:var(--ink);cursor:pointer;text-align:left;
+}
+.selbtn .mk{width:10px;height:6px;opacity:.55;flex:none}
+.selbtn:hover{border-color:var(--accent)}
+.selbtn:hover .mk{opacity:1}
+.selbtn.open{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.selbtn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .colmenu{
   position:fixed;z-index:70;background:var(--surface);border:1px solid var(--line-strong);
   border-radius:9px;box-shadow:0 16px 40px -12px rgba(0,0,0,.45);padding:5px;min-width:186px;
@@ -298,7 +317,8 @@ thead th.hascol{padding:0;height:1px}
   display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:0;background:none;
   font:inherit;font-size:13.5px;padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--ink);
 }
-.colmenu button:hover{background:var(--surface-2)}
+.colmenu button:hover,.colmenu button:focus-visible{background:var(--menu-hover)}
+.colmenu.selmenu button{padding-right:30px}
 .colmenu button .mk{width:14px;text-align:center;font-weight:700}
 .colmenu button.act-on .mk{color:var(--ok)}
 .colmenu button.act-off .mk{color:var(--red)}
@@ -341,12 +361,13 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
 .pname .tool-label{width:var(--klabel);white-space:nowrap}
 .pmeta .k{white-space:nowrap}
 .pmeta{
-  display:inline-grid;grid-template-columns:calc(var(--klabel) + 11px) auto;gap:3px 14px;
+  display:inline-grid;grid-template-columns:calc(var(--klabel) + 12px) auto;gap:3px 14px;
   margin-top:10px;font-size:12.5px;line-height:1.35;
 }
 .pmeta .k{color:var(--muted)}
 .pmeta .v{color:var(--ink);font-weight:500}
 .pmeta .sub{color:var(--muted);font-weight:400}
+.switch.chedited{color:var(--ok);font-weight:600}
 .chantoggles{display:flex;gap:16px;align-items:center;padding:8px 12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line)}
 
 /* access */
@@ -444,10 +465,10 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     </div>
     <div class="tablebox"><table id="tblBase"></table></div>
     <div class="legend">
-      <span><i class="sw base">2 000</i> цена группы</span>
-      <span><i class="sw inh">2 000</i> наследуется</span>
-      <span><i class="sw ovr">3 800</i> исключение</span>
-      <span><i class="sw edt">4 100</i> изменено, не сохранено</span>
+      <span><i class="sw base">2 000</i> цена группы</span>
+      <span><i class="sw inh">2 000</i> наследуется</span>
+      <span><i class="sw ovr">3 800</i> исключение</span>
+      <span><i class="sw edt">4 100</i> изменено, не сохранено</span>
       <span><i class="sw off">—</i> — не продаётся в этом канале</span>
     </div>
   </section>
@@ -458,7 +479,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
       <div class="pbrow">
         <div class="pname">
           <span class="tool-label" style="margin-right:14px">Партнёр</span>
-          <select id="partnerSel" style="font-size:15px;font-weight:600;padding:5px 10px"></select>
+          <select id="partnerSel" style="font-size:15px;font-weight:600;padding:5px 30px 5px 10px"></select>
         </div>
         <div class="chantoggles">
           <span class="tool-label">Разрешённые каналы продаж</span>
@@ -495,9 +516,9 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     </div>
     <div class="tablebox"><table id="tblPartner"></table></div>
     <div class="legend">
-      <span><i class="sw inh">2 000</i> наследуется из прайс-листа</span>
-      <span><i class="sw ovr">3 800</i> своя цена партнёра</span>
-      <span><i class="sw edt">4 100</i> изменено, не сохранено</span>
+      <span><i class="sw inh">2 000</i> наследуется из прайс-листа</span>
+      <span><i class="sw ovr">3 800</i> своя цена партнёра</span>
+      <span><i class="sw edt">4 100</i> изменено, не сохранено</span>
       <span style="color:var(--muted)">приглушённый блок — канал выключен</span>
     </div>
     <div class="note">
@@ -723,7 +744,9 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
   const edited = new Set();
   const OFF = 'off';
 
-  const fmt = n => (n===''||n===null||n===undefined||isNaN(n)) ? '' : Number(n).toLocaleString('ru-RU');
+  // разряды разделяем узким неразрывным пробелом (U+202F)
+  const fmt = n => (n===''||n===null||n===undefined||isNaN(n)) ? ''
+    : Number(n).toLocaleString('ru-RU').replace(/\u00A0|\u2009| /g, '\u202F');
   const parseNum = s => { const n = parseInt(String(s).replace(/[^\d]/g,''),10); return isNaN(n)?null:n; };
   const svcIndex = id => SERVICES.findIndex(s=>s.id===id);
   const catOfSvc = id => { if(id==='comm') return null; const s=SERVICES.find(x=>x.id===id); return s?s.cat:null; };
@@ -816,7 +839,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
   }
 
   function commCell(own, inh, data, key, editable, dim){
-    let cls = 'cell commcell' + (dim?' dim':'');
+    let cls = 'cell commcell block-start' + (dim?' dim':'');
     const has = own !== null && own !== undefined;
     if(!editable) return '<td class="'+cls+'"><span class="commro">'+(has?own:inh)+'</span></td>';
     if(key && edited.has(key)) cls += ' edited';
@@ -841,7 +864,9 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     const ck = opts.tbl + '|' + curCat + '|' + (opts.comm ? 'c' : 'n');
     let colW = COLW[ck];
     if(colW === undefined || (opts.tbl === 'base' && chanFilter === 'all')){
-      const box = opts.box || 1200;
+      // считаем от постоянной ширины макета 1200 px — обе таблицы одинаковы
+      // и не зависят от того, видима ли вкладка в момент отрисовки
+      const box = 1200;
       const commAll = opts.comm ? CW_COMM : 0;
       colW = Math.max(CW, Math.min(CW_MAX,
         Math.floor((box - CW_HEAD - CW_ENT - commAll) / (2 * svcs.length))));
@@ -1077,6 +1102,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
   /* ================= чтение/запись значений ================= */
   function getVal(d){
     const idx = svcIndex(d.svc);
+    if(d.kind==='pchan') return P.channels[d.chan];
     if(d.kind==='base') return L().base[d.chan][d.group][idx];
     if(d.kind==='baseent') return L().ent[d.group];
     if(d.kind==='pent') return P.ent[d.group];
@@ -1088,6 +1114,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
   }
   function setVal(d, v){
     const idx = svcIndex(d.svc);
+    if(d.kind==='pchan'){ P.channels[d.chan] = !!v; return; }
     if(d.kind==='base'){ L().base[d.chan][d.group][idx] = (v===null) ? LISTS0[curList].base[d.chan][d.group][idx] : v; return; }
     if(d.kind==='basecomm'){ if(v!==null) L().comm[d.group] = Math.min(100, v); return; }
     if(d.kind==='pcomm'){ if(v===null) delete P.comm[d.group]; else P.comm[d.group] = Math.min(100, v); return; }
@@ -1176,13 +1203,18 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     const m = document.createElement('div');
     m.className = 'colmenu';
     m.setAttribute('role','menu');
-    m.innerHTML = '<div class="cap">'+cap+'</div>' + items.map(it =>
+    m.innerHTML = (cap ? '<div class="cap">'+cap+'</div>' : '') + items.map(it =>
       '<button role="menuitem" data-v="'+it.val+'" class="'+(it.cls||'')+'">'+
       '<span class="mk">'+(it.mark||'')+'</span>'+it.label+'</button>').join('');
     document.body.appendChild(m);
     const r = btn.getBoundingClientRect();
+    if(btn.classList.contains('selbtn')){
+      m.classList.add('selmenu');
+      m.style.minWidth = Math.round(r.width) + 'px';
+    }
     m.style.top  = Math.round(Math.min(r.bottom + 6, window.innerHeight - m.offsetHeight - 10)) + 'px';
-    m.style.left = Math.round(Math.min(r.left - 8, window.innerWidth - m.offsetWidth - 10)) + 'px';
+    const dx = btn.classList.contains('selbtn') ? 0 : -8;   // селект — ровно под кнопкой
+    m.style.left = Math.round(Math.min(r.left + dx, window.innerWidth - m.offsetWidth - 10)) + 'px';
     m.addEventListener('click', function(e){
       const a = e.target.closest('button'); if(!a) return;
       onPick(a.dataset.v);
@@ -1190,6 +1222,47 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     });
     btn.classList.add('open');
     colMenu = m; colBtn = btn;
+  }
+
+  /* ---- селекты в стиле меню столбцов ---- */
+  const CHEV = '<svg class="mk" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function enhanceSelect(sel){
+    if(!sel || sel.dataset.enhanced) return;
+    sel.dataset.enhanced = '1';
+    const cs = getComputedStyle(sel);
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'selbtn';
+    btn.setAttribute('aria-haspopup','menu');
+    btn.style.fontSize = cs.fontSize;
+    btn.style.fontWeight = cs.fontWeight;
+    btn.style.paddingLeft = cs.paddingLeft;
+    btn.style.paddingTop = cs.paddingTop;
+    btn.style.paddingBottom = cs.paddingBottom;
+    sel.parentNode.insertBefore(btn, sel.nextSibling);
+    sel.classList.add('nativehidden');
+    function sync(){
+      const o = sel.options[sel.selectedIndex];
+      btn.innerHTML = '<span class="sl">' + (o ? o.textContent : '') + '</span>' + CHEV;
+    }
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(colBtn === btn){ closeColMenu(); return; }
+      openMenu(btn, null, Array.from(sel.options).map(function(o){
+        return {val:o.value, label:o.textContent,
+                mark:(o.value === sel.value ? '✓' : ''),
+                cls:(o.value === sel.value ? 'act-on' : '')};
+      }), function(v){
+        if(v === sel.value) return;
+        sel.value = v; sync();
+        sel.dispatchEvent(new Event('change', {bubbles:true}));
+      });
+    });
+    sel.addEventListener('change', sync);
+    sel.__sync = sync;
+    sync();
+  }
+  function syncSelects(){
+    document.querySelectorAll('select.nativehidden').forEach(function(s){ if(s.__sync) s.__sync(); });
   }
 
   function openColMenu(btn){
@@ -1223,6 +1296,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     if(cb){ e.preventDefault(); (colBtn === cb) ? closeColMenu() : openColMenu(cb); return; }
     const eb = e.target.closest('.entbtn');
     if(eb){ e.preventDefault(); (colBtn === eb) ? closeColMenu() : openEntMenu(eb); return; }
+    if(e.target.closest('.selbtn')) return;   // у селекта свой обработчик: второй клик закрывает
     if(colMenu && !e.target.closest('.colmenu')) closeColMenu();
   }, true);
   document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeColMenu(); });
@@ -1291,7 +1365,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
 
   /* ================= переключатели ================= */
   function keysFor(scope, cat){
-    const kinds = scope==='base' ? ['base','basecomm','baseent','country'] : ['pgroup','pcomm','pent','pcountry'];
+    const kinds = scope==='base' ? ['base','basecomm','baseent','country'] : ['pgroup','pcomm','pent','pcountry','pchan'];
     const pid = scope==='base' ? curList : P.id;
     return Array.from(edited).filter(k=>{
       const p = k.split('|');
@@ -1370,9 +1444,22 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
   function ruDate(v){ if(!v) return ''; const p = v.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
 
   function splitByChan(keys){
-    let on = 0, off = 0;
-    keys.forEach(k=>{ const c = k.split('|')[2]; if(c === 'off') off++; else on++; });
-    return {on:on, off:off};
+    let on = 0, off = 0, chan = [];
+    keys.forEach(k=>{
+      const p = k.split('|');
+      if(p[0] === 'pchan'){ chan.push(p[2]); return; }   // вкл/выкл канала считаем отдельно
+      if(p[2] === 'off') off++; else on++;
+    });
+    return {on:on, off:off, chan:chan};
+  }
+  // строка про включённые/выключенные каналы продаж
+  function chanStateLine(split){
+    if(!split.chan || !split.chan.length) return '';
+    const parts = split.chan.map(function(ch){
+      const info = CHANS.find(c=>c.id===ch);
+      return '<b>' + info.label + '</b> — ' + (P.channels[ch] ? 'включён' : 'выключен');
+    });
+    return '<p>Права на каналы продаж: ' + parts.join(', ') + '.</p>';
   }
 
   function initSaveBar(sfx, scope, texts, suffix){
@@ -1447,8 +1534,9 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
   });
 
   const updPartner = initSaveBar('P', 'partner', function(mode, n, split, name, date){
-    const scopeLine = '<p>Сохраняются правки по категории <b>' + catLabel() + '</b>: ' + n + ' ' +
-                      plural(n,'изменение','изменения','изменений') + '.</p>' + chanLine(split);
+    const scopeLine = '<p>Сохраняются правки по партнёру: ' + n + ' ' +
+                      plural(n,'изменение','изменения','изменений') + '.</p>' +
+                      chanLine(split) + chanStateLine(split);
     const only = '<p>Затронет только партнёра <b>'+P.name+'</b>. Базовый прайс-лист и остальные партнёры не меняются.</p>';
     if(mode === 'draft') return {
       title:'Сохранить как черновик', ok:'Сохранить черновик', also:false,
@@ -1474,7 +1562,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     const {scope, mode, n, date} = pending;
     const also = document.getElementById('mAlso').checked && !document.getElementById('mAlsoWrap').hidden;
     forget(keysFor(scope, curCat));
-    renderBase(); renderPartner();
+    renderBase(); renderPartner(); markChanEdits();
     ovl.hidden = true; pending = null;
     const tail = also ? ' Индивидуальные цены партнёров обновлены вместе с базой.' : '';
     if(mode === 'draft') toast('Черновик сохранён: ' + n + ' ' + plural(n,'изменение','изменения','изменений'));
@@ -1525,18 +1613,29 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     selP.value = curP; selA.value = curP;
     document.getElementById('chOn').checked = P.channels.on;
     document.getElementById('chOff').checked = P.channels.off;
-    renderPartner(); renderAccess(); renderSegs();
+    renderPartner(); renderAccess(); renderSegs(); markChanEdits(); syncSelects();
   }
   selP.addEventListener('change', e => setPartner(e.target.value));
   selA.addEventListener('change', e => setPartner(e.target.value));
 
+  const chanKey = ch => 'pchan|' + P.id + '|' + ch + '|||chan';
+  function markChanEdits(){
+    [['on','chOn'],['off','chOff']].forEach(function(pair){
+      const lbl = document.getElementById(pair[1]).parentElement;
+      lbl.classList.toggle('chedited', edited.has(chanKey(pair[0])));
+    });
+  }
+  function toggleChan(ch, checked, label){
+    applyChange({kind:'pchan', p:P.id, chan:ch, svc:'chan'}, checked);
+    renderPartner(); renderAccess(); markChanEdits();
+    toast('Канал «' + label + '» ' + (checked ? 'включён' : 'выключен') +
+          ' для ' + P.name + ' — не забудьте сохранить');
+  }
   document.getElementById('chOn').addEventListener('change', function(){
-    P.channels.on = this.checked; renderPartner(); renderAccess();
-    toast('Канал «Онлайн» ' + (this.checked ? 'включён' : 'выключен') + ' для ' + P.name);
+    toggleChan('on', this.checked, 'Онлайн');
   });
   document.getElementById('chOff').addEventListener('change', function(){
-    P.channels.off = this.checked; renderPartner(); renderAccess();
-    toast('Канал «Оффлайн» ' + (this.checked ? 'включён' : 'выключен') + ' для ' + P.name);
+    toggleChan('off', this.checked, 'Оффлайн');
   });
 
   /* ================= доступ ================= */
@@ -1629,8 +1728,12 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
   fillPartnerSelects();
   document.getElementById('chOn').checked = P.channels.on;
   document.getElementById('chOff').checked = P.channels.off;
+  markChanEdits();
   renderSegs();
   renderBase(); renderPartner(); renderAccess();
+  ['pricelist','massChan','partnerSel','partnerSelA'].forEach(function(id){
+    enhanceSelect(document.getElementById(id));
+  });
 })();
 </script>
 
