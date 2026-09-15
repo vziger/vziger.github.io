@@ -17,7 +17,7 @@
   --accent:#5B4BE1; --accent-soft:#EEEBFD; --accent-soft-2:#DDD8FA; --accent-ink:#4033B8;
   --warn:#B4530A; --warn-soft:#FDF0E3;
   --ok:#1D7A54; --ok-soft:#E6F4EE;
-  --red:#A32B2B; --red-soft:#FBE4E4;
+  --red:#A32B2B; --red-soft:#FBE4E4; --off-soft:#FCEDED;
   --teal:#0F6E80; --teal-soft:#E2F2F5; --teal-soft-2:#CBE7EC;
   --shadow:0 1px 2px rgba(25,27,40,.06), 0 8px 24px -12px rgba(25,27,40,.18);
   --radius:10px;
@@ -31,7 +31,7 @@
     --accent:#8E80FF; --accent-soft:#262452; --accent-soft-2:#332F6B; --accent-ink:#B7ADFF;
     --warn:#E7A464; --warn-soft:#3A2A18;
     --ok:#63C79C; --ok-soft:#173226;
-    --red:#F0A0A0; --red-soft:#3B1F1F;
+    --red:#F0A0A0; --red-soft:#3B1F1F; --off-soft:#2C1C1C;
     --teal:#6FC8D8; --teal-soft:#123138; --teal-soft-2:#1A434C;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
   }
@@ -44,7 +44,7 @@
   --accent:#8E80FF; --accent-soft:#262452; --accent-soft-2:#332F6B; --accent-ink:#B7ADFF;
   --warn:#E7A464; --warn-soft:#3A2A18;
   --ok:#63C79C; --ok-soft:#173226;
-  --red:#F0A0A0; --red-soft:#3B1F1F;
+  --red:#F0A0A0; --red-soft:#3B1F1F; --off-soft:#2C1C1C;
   --teal:#6FC8D8; --teal-soft:#123138; --teal-soft-2:#1A434C;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
 }
@@ -103,7 +103,7 @@ body{
 .plwrap{position:relative;display:inline-flex}
 .plnote{
   position:absolute;top:calc(100% + 4px);left:10px;white-space:nowrap;
-  font-size:11.5px;color:var(--muted);
+  font-size:11.5px;color:var(--ink-2);
 }
 .toolbar-pl{padding-bottom:30px}
 select,input[type=number],input[type=text],input[type=date]{
@@ -180,7 +180,7 @@ th.blockhead{
 }
 th.blockhead.on{color:var(--accent-ink);background:var(--accent-soft)}
 th.blockhead.off{color:var(--teal);background:var(--teal-soft)}
-th.blockhead.dimmed{opacity:.5}
+th.blockhead.dimmed,thead th.dimmed{opacity:.5}
 thead th.svc-on,th.commhead{background:var(--accent-soft)}
 thead th.svc-off{background:var(--teal-soft)}
 thead th.svc-on .colbtn,thead th.svc-on .chl,th.commhead{color:var(--accent-ink)}
@@ -198,7 +198,7 @@ th.rowhead,td.rowhead{
 thead th.rowhead{z-index:4;background:var(--surface-2)}
 tbody tr:hover td{background:var(--row-hover)}
 tbody tr:hover td.rowhead{background:var(--row-hover)}
-tr.grouprow td.rowhead{font-weight:600}
+tr.grouprow td.rowhead{font-weight:600;white-space:nowrap}
 tr.countryrow td.rowhead{padding-left:30px;color:var(--ink-2);font-weight:400}
 tr.countryrow td.rowhead::before{
   content:'';position:absolute;left:18px;top:50%;width:8px;height:1px;background:var(--line-strong);
@@ -211,6 +211,10 @@ td.rowhead{position:sticky;position:-webkit-sticky}
 }
 .grp-chip.mo1{background:var(--warn-soft);color:var(--warn)}
 .grp-chip.mo2{background:var(--red-soft);color:var(--red)}
+.hidedit{
+  display:inline-block;width:8px;height:8px;border-radius:999px;background:var(--ok);
+  margin-left:7px;vertical-align:middle;cursor:default;
+}
 .grp-chip.bz1{background:var(--accent-soft);color:var(--accent-ink)}
 .grp-chip.bz2{background:var(--warn-soft);color:var(--warn)}
 
@@ -247,7 +251,7 @@ thead th.block-start{border-left:0}
 .offbtn:hover{background:var(--surface);border-color:var(--line-strong);color:var(--red)}
 .offbtn:focus-visible{opacity:1;outline:2px solid var(--accent)}
 .offmark{display:block;width:100%;padding:8px 26px 8px 6px;text-align:right;font-size:12px;color:var(--red);font-weight:600}
-.cell.off{background:var(--red-soft)}
+.cell.off{background:var(--off-soft)}
 .cell.off::after{background:var(--red)}
 .cell.off .offbtn,.cell.edited .offbtn{opacity:.8}
 .cell.off .offbtn{opacity:.85;color:var(--ok)}
@@ -311,6 +315,10 @@ select.nativehidden{display:none}
   padding:6px 11px 6px 9px;color:var(--ink);cursor:pointer;text-align:left;
 }
 .selbtn .mk{width:10px;height:6px;opacity:.55;flex:none}
+.selbtn .slwrap{position:relative;display:block;min-width:0}
+.selbtn .sl{display:block;white-space:nowrap}
+.selbtn .sizer{display:block;height:0;overflow:hidden;visibility:hidden}
+.selbtn .sizer i{display:block;font-style:normal;white-space:nowrap}
 .selbtn:hover{background:var(--control-hover)}
 .selbtn:hover .mk{opacity:1}
 .selbtn.open{background:var(--control-hover);box-shadow:0 0 0 2px var(--accent-soft)}
@@ -331,9 +339,13 @@ select.nativehidden{display:none}
 .colmenu button{
   display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:0;background:none;
   font:inherit;font-size:13.5px;padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--ink);
+  white-space:nowrap;
 }
 .colmenu button:hover,.colmenu button:focus-visible{background:var(--menu-hover)}
 .colmenu.selmenu button{padding-right:30px}
+.colmenu.selmenu.withids{box-sizing:border-box}
+.colmenu.selmenu.withids button{padding-right:10px}
+.colmenu .mi-id{margin-left:auto;padding-left:14px;color:var(--muted);white-space:nowrap}
 .colmenu button .mk{width:14px;text-align:center;font-weight:700}
 .colmenu button.act-on .mk{color:var(--ok)}
 .colmenu button.act-off .mk{color:var(--red)}
@@ -342,6 +354,8 @@ td.commcell{background:transparent}
 td.commcell:focus-within,td.commcell.override:focus-within,td.commcell.edited:focus-within{box-shadow:none}
 td.commcell input:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--accent);border-radius:5px}
 td.commmerged{border-top:0;vertical-align:middle}
+/* раскрытые страны: объединённые ячейки прижимаем к строке группы */
+td.entmerged.attop,td.commmerged.attop{vertical-align:top;padding-top:7px}
 tbody tr:hover td.commcell{background:var(--row-hover)}
 td.commmerged{border-top:0;vertical-align:middle}
 td.commcell input{width:100%}
@@ -397,7 +411,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
 .acard .cnt{font-size:12px;color:var(--muted);font-weight:400;margin-left:auto}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
 .chip{
-  display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:4px 9px;border-radius:999px;
+  display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:4px 14px 4px 9px;border-radius:999px;
   border:1px solid transparent;background:var(--control);color:var(--ink-2);cursor:pointer;user-select:none;
 }
 .chip:hover{background:var(--control-hover);color:var(--ink)}
@@ -482,6 +496,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
       </span>
       <span class="spacer"></span>
       <span class="tool-label" id="editedCount">изменений нет</span>
+      <button class="btn" id="undoBtn" hidden>Отменить изменения</button>
       <button class="btn btn-primary" id="saveBtn" disabled>Сохранить</button>
     </div>
     <div class="tablebox"><table id="tblBase"></table></div>
@@ -490,7 +505,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
       <span><i class="sw inh">2 000</i> наследуется</span>
       <span><i class="sw ovr">3 800</i> исключение</span>
       <span><i class="sw edt">4 100</i> изменено, не сохранено</span>
-      <span><i class="sw off">—</i> — не продаётся в этом канале</span>
+      <span><i class="sw off">—</i> не продаётся в этом канале</span>
     </div>
   </section>
 
@@ -533,6 +548,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
         <input type="text" id="draftNameP" hidden placeholder="Название черновика" style="width:180px" aria-label="Название черновика">
       </span>
       <span class="tool-label" id="editedCountP">изменений нет</span>
+      <button class="btn" id="undoBtnP" hidden>Отменить изменения</button>
       <button class="btn btn-primary" id="saveBtnP" disabled>Сохранить</button>
     </div>
     <div class="tablebox"><table id="tblPartner"></table></div>
@@ -628,9 +644,9 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
   const isBiz = () => curCat === 'biz';
 
   const PRICELISTS = [
-    {id:'dist',  name:'Дистрибьюторы — Fix цены', n:82,
+    {id:'dist',  name:'Дистрибьюторы — Fix цены', n:82, exc:14,
      one:'дистрибьютора', few:'дистрибьютора', many:'дистрибьюторов'},
-    {id:'to',    name:'Туроператоры — Fix цены',  n:27,
+    {id:'to',    name:'Туроператоры — Fix цены',  n:27, exc:5,
      one:'туроператора',  few:'туроператора',  many:'туроператоров'},
     {id:'ivisa', name:'iVisa — цены', owner:true}
   ];
@@ -777,7 +793,8 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     const l = PRICELISTS.find(x => x.id === curList) || {};
     document.getElementById('plNote').textContent = l.owner
       ? 'Собственные цены овнера — виджет и ЛК iVisa'
-      : 'Действует для ' + l.n + ' ' + plural(l.n, l.one, l.few, l.many);
+      : 'Действует для ' + l.n + ' ' + plural(l.n, l.one, l.few, l.many) +
+        (l.exc ? ', у ' + l.exc + ' — индивидуальные цены' : '');
   }
   const partnerHasComm = () => P.plist !== 'ivisa';
 
@@ -846,7 +863,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
   }
 
   function entCell(own, inh, data, key, editable, dim, span){
-    let cls = 'cell entcell' + (dim ? ' dim' : '') + (span ? ' entmerged' : '');
+    let cls = 'cell entcell' + (dim ? ' dim' : '') + (span ? ' entmerged' : '') + (span > 2 ? ' attop' : '');
     const rs = span ? ' rowspan="'+span+'"' : '';
     const has = own !== null && own !== undefined;
     if(!editable) return '<td class="'+cls+'"'+rs+'><span class="entro">'+entName(has?own:inh)+'</span></td>';
@@ -860,7 +877,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
   }
 
   function commCell(own, inh, data, key, editable, dim, span){
-    let cls = 'cell commcell block-start' + (dim?' dim':'') + (span?' commmerged':'');
+    let cls = 'cell commcell block-start' + (dim?' dim':'') + (span?' commmerged':'') + (span > 2 ? ' attop' : '');
     const rs = span ? ' rowspan="'+span+'"' : '';
     const has = own !== null && own !== undefined;
     if(!editable) return '<td class="'+cls+'"'+rs+'><span class="commro">'+(has?own:inh)+'</span></td>';
@@ -872,6 +889,23 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
            ' aria-label="Комиссия, %"></td>';
   }
   const isMO = g => g.id === 'mo1' || g.id === 'mo2';
+
+  // сколько несохранённых правок спрятано в свёрнутых странах группы
+  function hiddenEdits(kind, pid, g){
+    let n = 0;
+    edited.forEach(function(k){
+      const p = k.split('|');
+      if(p[0] === kind && p[1] === pid && p[3] === g.id && p[4]) n++;
+    });
+    return n;
+  }
+  function hiddenBadge(kind, pid, g, showC){
+    if(showC) return '';
+    const n = hiddenEdits(kind, pid, g);
+    if(!n) return '';
+    return '<span class="hidedit" data-tip="'+n+' '+plural(n,'изменение','изменения','изменений')+
+           ' в странах этой группы — включите «Показать страны»"></span>';
+  }
 
   /* ================= шапка таблицы ================= */
   function visibleChans(){ return chanFilter==='all' ? ['on','off'] : [chanFilter]; }
@@ -916,8 +950,8 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
       const info = CHANS.find(c=>c.id===ch);
       r1 += '<th class="blockhead '+ch+dim+'" colspan="'+(svcs.length + (withComm?1:0))+'">'+
             info.label + (opts.dimmed && opts.dimmed[ch] ? ' · выключен' : '') + '</th>';
-      if(withComm) r2 += '<th class="commhead block-start">Комиссия,&nbsp;%</th>';
-      const svcCls = ' svc-' + ch;
+      if(withComm) r2 += '<th class="commhead block-start'+dim+'">Комиссия,&nbsp;%</th>';
+      const svcCls = ' svc-' + ch + dim;
       svcs.forEach((s,i)=>{
         const cls = (i===0 && !withComm) ? ' class="block-start"' : '';
         const canEdit = !(opts.dimmed && opts.dimmed[ch]);
@@ -952,7 +986,8 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
 
     curGroups().forEach(g=>{
       html += '<tr class="grouprow"><td class="rowhead"><span class="grp-chip '+g.id+'">'+g.chip+'</span>'+g.name+
-              ' <span style="color:var(--muted);font-weight:400">· '+g.countries.length+'</span></td>';
+              ' <span style="color:var(--muted);font-weight:400">· '+g.countries.length+'</span>'+
+              hiddenBadge('country', curList, g, showC)+'</td>';
       if(isBiz()){
         /* в бизнесе юр. лицо не применимо — колонки нет */
       } else if(g.id === 'bo'){
@@ -1057,7 +1092,8 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
         return;
       }
       html += '<tr class="grouprow"><td class="rowhead"><span class="grp-chip '+g.id+'">'+g.chip+'</span>'+g.name+
-              ' <span style="color:var(--muted);font-weight:400">· '+avail.length+'</span></td>';
+              ' <span style="color:var(--muted);font-weight:400">· '+avail.length+'</span>'+
+              hiddenBadge('pcountry', P.id, g, showC)+'</td>';
       if(isBiz()){
         /* в бизнесе юр. лицо не применимо — колонки нет */
       } else if(g.id === 'bo'){
@@ -1247,7 +1283,8 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     const r = btn.getBoundingClientRect();
     if(btn.classList.contains('selbtn')){
       m.classList.add('selmenu');
-      m.style.minWidth = Math.round(r.width) + 'px';
+      if(m.querySelector('.mi-id')) m.classList.add('withids');
+      m.style.minWidth = Math.round(r.width) + 'px';   // не уже контрола, но текст в одну строку
     }
     m.style.top  = Math.round(Math.min(r.bottom + 6, window.innerHeight - m.offsetHeight - 10)) + 'px';
     const dx = btn.classList.contains('selbtn') ? 0 : -8;   // селект — ровно под кнопкой
@@ -1302,15 +1339,25 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     btn.style.paddingBottom = cs.paddingBottom;
     sel.parentNode.insertBefore(btn, sel.nextSibling);
     sel.classList.add('nativehidden');
+    // ширину задаёт скрытый список всех вариантов — она не зависит от выбранного
+    const sizer = Array.from(sel.options).map(function(o){
+      return '<i>' + o.textContent + '</i>';
+    }).join('');
     function sync(){
       const o = sel.options[sel.selectedIndex];
-      btn.innerHTML = '<span class="sl">' + (o ? o.textContent : '') + '</span>' + CHEV;
+      btn.innerHTML = '<span class="slwrap"><span class="sl">' + (o ? o.textContent : '') +
+                      '</span><span class="sizer">' + sizer + '</span></span>' + CHEV;
     }
     btn.addEventListener('click', function(e){
       e.stopPropagation();
       if(colBtn === btn){ closeColMenu(); return; }
       openMenu(btn, null, Array.from(sel.options).map(function(o){
-        return {val:o.value, label:o.textContent,
+        // «Название · id» — id прижимаем к правому краю
+        const parts = o.textContent.split(' · ');
+        const lbl = parts.length > 1
+          ? parts[0] + '<span class="mi-id">· ' + parts.slice(1).join(' · ') + '</span>'
+          : o.textContent;
+        return {val:o.value, label:lbl,
                 mark:(o.value === sel.value ? '✓' : ''),
                 cls:(o.value === sel.value ? 'act-on' : '')};
       }), function(v){
@@ -1322,6 +1369,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     sel.addEventListener('change', sync);
     sel.__sync = sync;
     sync();
+
   }
   function syncSelects(){
     document.querySelectorAll('select.nativehidden').forEach(function(s){ if(s.__sync) s.__sync(); });
@@ -1500,11 +1548,33 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     toast('Прайс-лист «' + plName(curList) + '» вернулся к исходному');
   });
 
+  const groupOfCountry = c => GROUPS.concat(BGROUPS).find(g => g.countries.indexOf(c) !== -1);
   document.getElementById('resetPartner').addEventListener('click', function(){
-    P.grp = {on:{},off:{}}; P.ctr = {on:{},off:{}}; P.comm = {}; P.ent = {};
-    forget(keysFor('partner', null));
+    const snap = clone({grp:P.grp, ctr:P.ctr, comm:P.comm, ent:P.ent});
+    let n = 0;
+    CHANS.forEach(function(ch){
+      Object.keys(snap.grp[ch.id]).forEach(function(g){
+        Object.keys(snap.grp[ch.id][g]).forEach(function(svc){
+          if(applyChange({kind:'pgroup', p:P.id, chan:ch.id, group:g, svc:svc}, null)) n++;
+        });
+      });
+      Object.keys(snap.ctr[ch.id]).forEach(function(c){
+        const g = groupOfCountry(c);
+        Object.keys(snap.ctr[ch.id][c]).forEach(function(svc){
+          if(applyChange({kind:'pcountry', p:P.id, chan:ch.id, group:g?g.id:'', country:c, svc:svc}, null)) n++;
+        });
+      });
+    });
+    Object.keys(snap.comm).forEach(function(g){
+      if(applyChange({kind:'pcomm', p:P.id, chan:'on', group:g, svc:'comm'}, null)) n++;
+    });
+    Object.keys(snap.ent).forEach(function(g){
+      if(applyChange({kind:'pent', p:P.id, group:g, svc:'ent'}, null)) n++;
+    });
     renderPartner(); renderAccess(); renderSegs();
-    toast('Партнёр полностью на базовом прайс-листе — 0 своих цен');
+    toast(n ? ('Свои цены убраны: ' + n + ' ' + plural(n,'правка','правки','правок') +
+               ' — не забудьте сохранить')
+            : 'У партнёра и так нет своих цен');
   });
 
   /* ================= сохранение ================= */
@@ -1532,12 +1602,38 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
     return '<p>Права на каналы продаж: ' + parts.join(', ') + '.</p>';
   }
 
+  // ключ → дескриптор ячейки
+  function dFromKey(k){
+    const p = k.split('|');
+    return {kind:p[0], p:p[1], chan:p[2]||undefined, group:p[3]||undefined,
+            country:p[4]||undefined, svc:p[5]};
+  }
+  function undoKeys(keys){
+    keys.forEach(function(k){
+      const d = dFromKey(k);
+      if(k in baseVal) setVal(d, baseVal[k]);
+      edited.delete(k); delete baseVal[k];
+    });
+  }
+
   function initSaveBar(sfx, scope, texts, suffix){
     const modeSel = document.getElementById('applyMode'+sfx);
     const dateInp = document.getElementById('applyDate'+sfx);
     const nameInp = document.getElementById('draftName'+sfx);
     const saveBtn = document.getElementById('saveBtn'+sfx);
+    const undoBtn = document.getElementById('undoBtn'+sfx);
     const cntLbl  = document.getElementById('editedCount'+sfx);
+
+    undoBtn.addEventListener('click', function(){
+      const keys = keysFor(scope, curCat);
+      if(!keys.length) return;
+      undoKeys(keys);
+      renderBase(); renderPartner(); renderAccess(); markChanEdits(); syncSelects();
+      document.getElementById('chOn').checked = P.channels.on;
+      document.getElementById('chOff').checked = P.channels.off;
+      toast('Изменения отменены (' + keys.length + ' ' +
+            plural(keys.length,'правка','правки','правок') + ')');
+    });
 
     modeSel.addEventListener('change', function(){
       dateInp.hidden = modeSel.value !== 'date';
@@ -1571,6 +1667,7 @@ td.noacc{text-align:left;padding:9px 14px;color:var(--muted);font-size:12.5px;fo
       cntLbl.textContent = txt;
       cntLbl.style.color = n ? 'var(--ok)' : 'var(--muted)';
       saveBtn.disabled = n === 0;
+      undoBtn.hidden = n === 0;
     };
   }
 
