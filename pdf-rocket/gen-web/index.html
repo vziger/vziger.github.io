@@ -221,7 +221,6 @@
       <tbody id="bulk-tbody"></tbody>
     </table>
   </div>
-  <div class="stub" style="padding:0 14px 14px">Импорт CSV/Excel — Шаг 8.</div>
 </section>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
@@ -759,7 +758,8 @@ document.addEventListener("DOMContentLoaded", function () {
     s = String(s == null ? "" : s).trim();
     var mm = "", yy = "";
     s.split(/\s+/).forEach(function(p){
-      var i = MONTHS_RU.indexOf(p);
+      var pl = p.toLowerCase(), i = -1;                        // месяц — без учёта регистра
+      for (var k = 0; k < MONTHS_RU.length; k++){ if (MONTHS_RU[k].toLowerCase() === pl){ i = k; break; } }
       if (i >= 0) mm = ("0" + (i + 1)).slice(-2);
       else if (/^\d{2,4}$/.test(p)) yy = p.slice(-2);
     });
