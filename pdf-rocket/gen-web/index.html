@@ -66,8 +66,8 @@
   #bulk-table td.cell{padding:0}
   #bulk-table td input{display:block;width:100%;min-width:110px;height:100%;border:1px solid transparent;border-radius:4px;padding:9px 6px;font:inherit;background:transparent}
   #bulk-table td input:focus{border-color:var(--accent);background:#fff;outline:none}
-  #bulk-table td input.cell-empty{background:#fdecec;border-color:#e39a9a}
-  #bulk-table td input.cell-empty:focus{border-color:var(--accent);background:#fff}
+  #bulk-table td input.cell-empty,#bulk-table td input.cell-invalid{background:#fdecec;border-color:#e39a9a}
+  #bulk-table td input.cell-empty:focus,#bulk-table td input.cell-invalid:focus{border-color:var(--accent);background:#fff}
   .bc-wrap{position:relative;display:block;width:100%;height:100%}
   .bc-wrap .bc-err{position:absolute;top:50%;right:6px;transform:translateY(-50%);display:none;width:16px;height:16px;border-radius:50%;background:#e5484d;color:#fff;font:700 12px/16px system-ui,sans-serif;text-align:center;cursor:default;user-select:none}
   .bc-wrap.invalid .bc-err{display:block}
@@ -77,13 +77,17 @@
   #bulk-table td.sel input,#bulk-table th.sel input{width:auto;min-width:0;margin:0;cursor:pointer}
   #bulk-table td.sel input:disabled{cursor:not-allowed}
   #bulk-table td.idx{text-align:center;color:var(--muted);min-width:28px}
+  #bulk-table td.prev,#bulk-table th.prev{text-align:center;width:64px;min-width:64px;padding:3px}
+  #bulk-table td.prev canvas{display:block;margin:0 auto;border:1px solid var(--line);border-radius:3px;cursor:zoom-in}
+  .prev-pop{position:fixed;z-index:1001;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:6px;pointer-events:none}
+  .prev-pop canvas{display:block;border-radius:4px}
   #bulk-table td.del{text-align:center}
   .row-del{border:none;background:transparent;color:#b91c1c;cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
   .row-del:hover{background:#fee2e2;border-radius:5px}
   .import-map{border-bottom:1px solid var(--line);padding:12px 14px;background:#f9fafb}
   .import-map-head{font-size:13px;font-weight:600;margin-bottom:10px}
   .import-map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
-  .import-map-grid .mrow label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+  .import-map-grid .mrow label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px;padding:0 13px}
   .import-map-grid .mrow select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
   .import-map-actions{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap}
   .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
@@ -136,7 +140,7 @@
         <input id="in-name" data-field-id="name" placeholder="ДЕТСКИЙ ГОРШОК 3 В 1">
         <label class="check" style="margin-top:6px"><input type="checkbox" id="name-upper" checked> Прописными (ВЕРХНИЙ регистр)</label>
       </div>
-      <div class="field"><label>Текст в круге (вариант)</label><input id="in-circle" data-field-id="circle" placeholder="ЛЁН"></div>
+      <div class="field"><label>Цвет</label><input id="in-circle" data-field-id="circle" placeholder="ЛЁН"></div>
       <div class="field"><label>Артикул</label><input id="in-artikul" data-field-id="artikul" placeholder="BPS-01006"></div>
       <div class="field"><label>Кол-во в коробке</label><input id="in-kolvo" data-field-id="kolvo" placeholder="8"></div>
       <div class="field">
@@ -204,13 +208,14 @@
         <tr>
           <th class="sel"><input type="checkbox" id="bulk-check-all" title="Выделить/снять все"></th>
           <th class="idx">№</th>
+          <th class="prev">Превью</th>
           <th>Название товара</th>
-          <th>Круг</th>
+          <th>Цвет</th>
           <th>Артикул</th>
           <th>Кол-во</th>
           <th>Дата изготовления</th>
           <th>Срок годности</th>
-          <th>Код ШК</th>
+          <th>Код ШК ITF-14</th>
           <th></th>
         </tr>
       </thead>
@@ -256,7 +261,7 @@
     },
     {
       "id": "circle",
-      "label": "Текст в круге (вариант)",
+      "label": "Цвет",
       "sample": "ЛЁН",
       "box": [439.2, 295.42, 486.8, 343.12],
       "align": "center",
@@ -412,6 +417,7 @@ document.addEventListener("DOMContentLoaded", function () {
     sel.addEventListener("change", function(){
       if (sel.value === "__upload") { file.click(); sel.value = prevKey; return; }
       currentFontKey = sel.value; prevKey = sel.value; renderText();
+      if (window.eddaRefreshBulkPreviews) window.eddaRefreshBulkPreviews();
     });
     file.addEventListener("change", function(){
       var f = file.files && file.files[0]; if (!f) return;
@@ -430,6 +436,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           sel.value = key; currentFontKey = key; prevKey = key;
           renderText();
+          if (window.eddaRefreshBulkPreviews) window.eddaRefreshBulkPreviews();
         } catch (e) {
           alert("Не удалось прочитать шрифт: " + e.message);
         } finally { file.value = ""; }
@@ -496,22 +503,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Рисуем введённый текст контурами на textCanvas (превью, не PDF).
-  function renderText() {
-    var font = currentFont();
-    if (!font) return;
-    tctx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+  // Общая отрисовка значений контурами на произвольный ctx (превью, не PDF).
+  // getVal(f) -> строка значения поля f; sPx — pt→device-px; H — высота страницы (pt); top-origin.
+  function drawValuesToCtx(ctx, getVal, sPx, H, font, capRatio) {
     var cfg = window.EDDA_FIELDS; if (!cfg) return;
-    var sPx = RENDER.scale * RENDER.dpr;        // pt -> device px
-    var H = RENDER.pageH;
-    var capRatio = fontCapRatio(font);
-
     cfg.fields.forEach(function (f) {
       if (f.type === "barcode-itf14") {
-        drawBarcodeCanvas(tctx, f, valueForField(f) || f.sample, font, capRatio, sPx, H);
+        drawBarcodeCanvas(ctx, f, getVal(f) || f.sample, font, capRatio, sPx, H);
         return;
       }
-      var text = valueForField(f);
+      var text = getVal(f);
       if (!text) return;
       var fontSizePx = (f.capHeight * sPx) / capRatio;      // кегль так, чтобы капитель = f.capHeight pt
       var baseY = (H - f.baseline) * sPx;                    // базовая линия в device px (top-origin)
@@ -527,10 +528,55 @@ document.addEventListener("DOMContentLoaded", function () {
 
       var path = font.getPath(text, x, baseY, fontSizePx);
       path.fill = cmykToRgb(f.color || { k: 1 });
-      path.draw(tctx);
+      path.draw(ctx);
     });
   }
+
+  // Рисуем введённый текст контурами на textCanvas (одиночное превью).
+  function renderText() {
+    var font = currentFont();
+    if (!font) return;
+    tctx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+    if (!window.EDDA_FIELDS) return;
+    var sPx = RENDER.scale * RENDER.dpr;        // pt -> device px
+    drawValuesToCtx(tctx, valueForField, sPx, RENDER.pageH, font, fontCapRatio(font));
+  }
   window.eddaRenderText = renderText;
+
+  // Рендер превью одной строки массового режима: фон preview.png + значения строки → canvas.
+  // values — объект {name, circle, ...}; cssW — желаемая ширина в CSS-px (высота пропорционально).
+  function renderRowPreview(values, cssW) {
+    var cfg = window.EDDA_FIELDS;
+    var W = (cfg && cfg.page && cfg.page.width) || 547.89;
+    var H = (cfg && cfg.page && cfg.page.height) || 455.22;
+    var scale = cssW / W;
+    var cssH = H * scale;
+    var dpr = window.devicePixelRatio || 1;
+    var canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(cssW * dpr));
+    canvas.height = Math.max(1, Math.round(cssH * dpr));
+    canvas.style.width = cssW + "px"; canvas.style.height = cssH + "px";
+    var ctx = canvas.getContext("2d");
+    // Фон: готовая картинка шаблона (логотип, таблица, картинка товара, иконки).
+    if (previewImg && previewImg.complete && previewImg.naturalWidth) {
+      ctx.drawImage(previewImg, 0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    // Значения строки поверх фона.
+    var font = currentFont();
+    if (font && cfg) {
+      var upperCb = document.getElementById("bulk-upper");
+      var upper = upperCb ? upperCb.checked : true;
+      var getVal = function (f) {
+        var v = (values && values[f.id] != null) ? String(values[f.id]) : "";
+        if (f.id === "name" && upper) v = v.toUpperCase();
+        return v;
+      };
+      drawValuesToCtx(ctx, getVal, scale * dpr, H, font, fontCapRatio(font));
+    }
+    return canvas;
+  }
 
   // Перерисовка текста при вводе / смене регистра.
   (window.EDDA_FIELDS && window.EDDA_FIELDS.fields || []).forEach(function (f) {
@@ -588,10 +634,10 @@ document.addEventListener("DOMContentLoaded", function () {
     var s = String(input == null ? "" : input).replace(/\D/g, "");
     if (s.length === 14) {
       var exp = gtinCheck(s.slice(0, 13));
-      if (String(exp) === s[13]) return { digits: s, valid: true, msg: "Контрольная верна ✓" };
+      if (String(exp) === s[13]) return { digits: s, valid: true, msg: "Контрольная цифра верна ✓" };
       return { digits: s, valid: false, msg: "⚠ Контрольная цифра должна быть " + exp + " — введено " + s[13] };
     }
-    return { digits: null, valid: false, msg: s.length ? ("Нужно 14 цифр (введено " + s.length + ")") : "" };
+    return { digits: null, valid: false, msg: s.length ? ("Нужно 14 цифр — введено " + s.length) : "" };
   }
   function barcodeBearerOn(f) {
     var cb = document.getElementById("barcode-bearer");
@@ -699,6 +745,35 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   function safeName(s, fb){ s=(s||"").trim().replace(/[^\wа-яё .-]/gi,"_"); return s||fb; }
 
+  // --- Имя PDF по правилу: edda_СтикерТК_<Название>_<Цвет>_p<MM.YY>_crv.pdf ---
+  var MONTHS_RU = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]; // синхр. с датой в UI
+  // Первая буква заглавная, остальные строчные.
+  function capFirst(s){ s = String(s == null ? "" : s).toLowerCase(); return s.charAt(0).toUpperCase() + s.slice(1); }
+  // Токен для имени файла: ё→е, пробелы→_, убрать лишние символы, схлопнуть __.
+  function fileToken(s){
+    s = String(s == null ? "" : s).trim().replace(/ё/g, "е").replace(/Ё/g, "Е");
+    s = s.replace(/\s+/g, "_").replace(/[^0-9A-Za-zА-Яа-я_-]+/g, "").replace(/_+/g, "_");
+    return s.replace(/^_+|_+$/g, "");
+  }
+  // "Май 2025" → "05.25" (месяц по MONTHS_RU, год — 2 последние цифры).
+  function dateMMYY(s){
+    s = String(s == null ? "" : s).trim();
+    var mm = "", yy = "";
+    s.split(/\s+/).forEach(function(p){
+      var i = MONTHS_RU.indexOf(p);
+      if (i >= 0) mm = ("0" + (i + 1)).slice(-2);
+      else if (/^\d{2,4}$/.test(p)) yy = p.slice(-2);
+    });
+    return mm + "." + yy;
+  }
+  // Значения строки/формы → имя файла. name/color — с заглавной, остальное строчными.
+  function pdfFileName(values){
+    values = values || {};
+    var name  = fileToken(capFirst(values.name || ""));
+    var color = fileToken(capFirst(values.circle || ""));
+    return ("edda_СтикерТК_" + name + "_" + color + "_p" + dateMMYY(values.data) + "_crv.pdf").replace(/_+/g, "_");
+  }
+
   (function(){
     var btn = document.getElementById("btn-generate");
     if (!btn) return;
@@ -706,7 +781,7 @@ document.addEventListener("DOMContentLoaded", function () {
       btn.disabled = true; var old = btn.textContent; btn.textContent = "Генерация…";
       try {
         var bytes = await generateSinglePdf(currentFormValues(), isUpperName());
-        downloadBlob(new Blob([bytes], {type:"application/pdf"}), safeName(inputFor("artikul") && inputFor("artikul").value, "edda-label") + ".pdf");
+        downloadBlob(new Blob([bytes], {type:"application/pdf"}), pdfFileName(currentFormValues()));
       } catch (e) { alert("Ошибка генерации: " + e.message); console.error(e); }
       finally { btn.disabled = false; btn.textContent = old; }
     });
@@ -726,45 +801,110 @@ document.addEventListener("DOMContentLoaded", function () {
     var required = ["name","artikul","kolvo","data","srok","barcode"];
     var checkAll = document.getElementById("bulk-check-all");
 
+    // --- Превью строк (ленивый рендер миниатюр) ---
+    var THUMB_W = 60; // ширина миниатюры в CSS-px (высота пропорционально этикетке)
+    function rowValues(tr){
+      var v = {};
+      Array.prototype.forEach.call(tr.querySelectorAll("input[data-col]"), function(i){ v[i.dataset.col] = i.value; });
+      return v;
+    }
+    function renderPreviewCell(prevTd){
+      var tr = prevTd.parentNode; if (!tr) return;
+      var cv = renderRowPreview(rowValues(tr), THUMB_W);
+      prevTd.textContent = ""; prevTd.appendChild(cv);
+      prevTd._rendered = true;
+    }
+    function refreshRowPreview(tr){                  // перерисовать миниатюру строки (если уже показана)
+      var p = tr.querySelector ? tr.querySelector("td.prev") : null;
+      if (p && p._rendered) renderPreviewCell(p);
+    }
+    function refreshAllPreviews(){                   // напр. после загрузки фона или смены «прописными»/шрифта
+      Array.prototype.forEach.call(tbody.querySelectorAll("td.prev"), function(p){ if (p._rendered) renderPreviewCell(p); });
+    }
+    // Ленивый рендер: рисуем миниатюру, только когда строка попадает в видимую область.
+    var prevObserver = ("IntersectionObserver" in window) ? new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if (e.isIntersecting && !e.target._rendered) renderPreviewCell(e.target); });
+    }, { rootMargin: "200px 0px" }) : null;
+    if (previewImg) previewImg.addEventListener("load", refreshAllPreviews);
+    (function(){ var u = document.getElementById("bulk-upper"); if (u) u.addEventListener("change", refreshAllPreviews); })();
+    window.eddaRefreshBulkPreviews = refreshAllPreviews; // для перерисовки при смене шрифта
+
+    // Большое превью в попапе при наведении на миниатюру (рендерится на лету, position:fixed — не обрезается).
+    var PREV_BIG_W = 400;
+    var prevPop = document.createElement("div"); prevPop.className = "prev-pop"; prevPop.hidden = true;
+    document.body.appendChild(prevPop);
+    function showPreviewPopup(prevTd){
+      var tr = prevTd.parentNode; if (!tr) return;
+      prevPop.textContent = ""; prevPop.appendChild(renderRowPreview(rowValues(tr), PREV_BIG_W));
+      prevPop.hidden = false;
+      var r = prevTd.getBoundingClientRect(), p = prevPop.getBoundingClientRect();
+      var left = r.right + 8;
+      if (left + p.width > window.innerWidth - 6) left = r.left - p.width - 8; // не влезает справа → слева
+      left = Math.max(6, left);
+      var top = Math.max(6, Math.min(r.top + r.height / 2 - p.height / 2, window.innerHeight - p.height - 6));
+      prevPop.style.left = left + "px"; prevPop.style.top = top + "px";
+    }
+    function hidePreviewPopup(){ prevPop.hidden = true; prevPop.textContent = ""; }
+
     function renumber(){
       Array.prototype.forEach.call(tbody.rows, function(tr,i){ tr.querySelector("td.idx").textContent = (i+1); });
     }
-    // Полнота строки: все обязательные поля непусты.
+    // Форматные правила полей. Возвращает текст ошибки для НЕПУСТОГО значения или null, если валидно.
+    // kolvo — целое > 0; artikul — латиница/цифры/дефис; barcode — длина ровно 14 (≠14 → ошибка;
+    // 14 с неверной контрольной валидна для генерации — «только предупреждаем», см. validateBc/иконку).
+    function fieldError(id, v){
+      v = String(v).trim();
+      if (id === "kolvo"   && !(/^\d+$/.test(v) && +v > 0)) return "Целое число больше 0";
+      if (id === "artikul" && !/^[A-Za-z0-9-]+$/.test(v))   return "Только латинские буквы, цифры и дефис";
+      if (id === "barcode"){ var n = normalizeBarcode(v); if (n.digits == null) return n.msg || "Нужно 14 цифр"; }
+      return null;
+    }
+    // Полнота строки: все обязательные поля заполнены и проходят форматные правила.
     function rowComplete(tr){
       return required.every(function(id){
         var inp = tr.querySelector('input[data-col="'+id+'"]');
-        return inp && inp.value.trim() !== "";
+        if (!inp) return false;
+        var v = inp.value.trim();
+        if (v === "") return false;
+        return !fieldError(id, v);
       });
     }
     // В строке есть хотя бы одно непустое значение.
     function rowAnyFilled(tr){
       return Array.prototype.some.call(tr.querySelectorAll("input[data-col]"), function(i){ return i.value.trim() !== ""; });
     }
-    // Валидация ОДНОЙ ячейки (при потере её фокуса): пустая обязательная → красная; ШК → иконка.
-    function validateCell(inp, tr){
+    // Подсветка одной обязательной ячейки: пусто (при непустой строке) → .cell-empty;
+    // непустое, но нарушающее форматное правило → .cell-invalid + текст ошибки в dataset.err (для тултипа).
+    function markCellValidity(inp, tr){
       var id = inp.dataset.col;
-      if (required.indexOf(id) >= 0){
-        inp.classList.toggle("cell-empty", rowAnyFilled(tr) && inp.value.trim() === "");
-      }
-      if (id === "barcode"){
+      if (required.indexOf(id) < 0) return;
+      inp.classList.remove("cell-empty", "cell-invalid"); delete inp.dataset.err;
+      var v = inp.value.trim();
+      if (v === ""){ if (rowAnyFilled(tr)) inp.classList.add("cell-empty"); return; }
+      var err = fieldError(id, v);
+      if (err){ inp.classList.add("cell-invalid"); inp.dataset.err = err; }
+    }
+    // Валидация ОДНОЙ ячейки (при потере её фокуса): подсветка + (для ШК) иконка.
+    function validateCell(inp, tr){
+      if (required.indexOf(inp.dataset.col) >= 0) markCellValidity(inp, tr);
+      if (inp.dataset.col === "barcode"){
         var w = inp.closest(".bc-wrap"); if (w) validateBc(inp, w, w.querySelector(".bc-err"));
       }
     }
-    // Сброс подсветки/иконки ТОЛЬКО у одной ячейки (при получении ею фокуса).
+    // Сброс подсветки/иконки/тултипа ТОЛЬКО у одной ячейки (при получении ею фокуса).
     function clearCell(inp){
-      inp.classList.remove("cell-empty");
-      if (inp.dataset.col === "barcode"){ var w = inp.closest(".bc-wrap"); if (w) w.classList.remove("invalid"); hideBcTip(); }
+      inp.classList.remove("cell-empty", "cell-invalid"); delete inp.dataset.err; hideBcTip();
+      if (inp.dataset.col === "barcode"){ var w = inp.closest(".bc-wrap"); if (w) w.classList.remove("invalid"); }
     }
     // Полная валидация строки (импорт/добавление/уход фокуса из строки). Пока строка в фокусе — пропускаем,
     // чтобы не перезапускать валидацию всей строки при переходах между её ячейками.
     function updateRowState(tr){
       var chk = tr.querySelector("input.rowchk"); if (!chk) return;
       if (tr.contains(document.activeElement)) return; // фокус внутри строки — не валидируем всю строку
-      // Подсветка пустых обязательных ячеек (кроме полностью пустой строки — её не мажем).
-      var anyFilled = rowAnyFilled(tr);
+      // Подсветка обязательных ячеек (пусто / невалидное kolvo).
       required.forEach(function(id){
         var inp = tr.querySelector('input[data-col="'+id+'"]');
-        if (inp) inp.classList.toggle("cell-empty", anyFilled && inp.value.trim() === "");
+        if (inp) markCellValidity(inp, tr);
       });
       // Проверка кода ШК (иконка «!»).
       var bcInp = tr.querySelector('input[data-col="barcode"]');
@@ -794,11 +934,12 @@ document.addEventListener("DOMContentLoaded", function () {
       var checked = tbody.querySelectorAll("input.rowchk:checked").length;
       countEl.textContent = checked + " из " + total + " строк отмечено для генерации";
     }
-    // Мгновенный тултип ошибки ШК (без задержки нативного title). Один общий элемент на страницу.
+    // Мгновенный тултип ошибки (без задержки нативного title). Один общий элемент на страницу.
+    // Используется для ШК (el.dataset.msg) и для ячеек с ошибкой (передаём msg явно, напр. невалидное kolvo).
     var bcTip = document.createElement("div"); bcTip.className = "bc-tip"; bcTip.hidden = true;
     document.body.appendChild(bcTip);
-    function showBcTip(el){
-      var m = el.dataset.msg; if (!m) return;
+    function showBcTip(el, msg){
+      var m = (msg != null) ? msg : el.dataset.msg; if (!m) return;
       bcTip.textContent = m; bcTip.hidden = false;
       var r = el.getBoundingClientRect(), t = bcTip.getBoundingClientRect();
       var left = Math.max(6, Math.min(r.right - t.width, window.innerWidth - t.width - 6));
@@ -824,6 +965,9 @@ document.addEventListener("DOMContentLoaded", function () {
       chk.addEventListener("change", updateCheckAll);
       selTd.appendChild(chk); tr.appendChild(selTd);
       var idx = document.createElement("td"); idx.className="idx"; tr.appendChild(idx);
+      var prevTd = document.createElement("td"); prevTd.className="prev"; tr.appendChild(prevTd);
+      prevTd.addEventListener("mouseenter", function(){ if (prevTd._rendered) showPreviewPopup(prevTd); });
+      prevTd.addEventListener("mouseleave", hidePreviewPopup);
       order.forEach(function(id){
         var td = document.createElement("td"); td.className="cell";
         var inp = document.createElement("input");
@@ -833,6 +977,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Всю строку (и чекбокс) пересчитываем лишь при уходе фокуса из строки (focusout ниже).
         inp.addEventListener("focus", function(){ clearCell(inp); });
         inp.addEventListener("blur", function(){ validateCell(inp, tr); });
+        inp.addEventListener("mouseenter", function(){ if (inp.dataset.err) showBcTip(inp, inp.dataset.err); });
+        inp.addEventListener("mouseleave", hideBcTip);
         // Enter — в ячейку той же колонки строкой ниже (нет строки → создать новую); Shift+Enter — строкой выше.
         inp.addEventListener("keydown", function(e){
           if (e.key !== "Enter") return;
@@ -862,12 +1008,13 @@ document.addEventListener("DOMContentLoaded", function () {
       var btn = document.createElement("button"); btn.className="row-del"; btn.title="Удалить строку"; btn.textContent="✕";
       btn.addEventListener("click", function(){ tr.remove(); if(!tbody.rows.length) addRow(); renumber(); updateCheckAll(); });
       del.appendChild(btn); tr.appendChild(del);
-      // Уход фокуса из строки наружу → полная валидация строки + пересчёт чекбокса/счётчика.
+      // Уход фокуса из строки наружу → полная валидация строки + пересчёт чекбокса/счётчика + обновление превью.
       tr.addEventListener("focusout", function(e){
-        if (!tr.contains(e.relatedTarget)){ updateRowState(tr); updateCheckAll(); }
+        if (!tr.contains(e.relatedTarget)){ updateRowState(tr); updateCheckAll(); refreshRowPreview(tr); }
       });
       tbody.appendChild(tr); renumber();
       updateRowState(tr); updateCheckAll();
+      if (prevObserver) prevObserver.observe(prevTd); else renderPreviewCell(prevTd); // ленивый рендер / фолбэк
       return tr;
     }
     function readRows(){
@@ -911,18 +1058,18 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         if (rows.length === 1){
           var bytes = await generateSinglePdf(rows[0], upper);
-          downloadBlob(new Blob([bytes],{type:"application/pdf"}), safeName(rows[0].artikul,"edda-label")+".pdf");
+          downloadBlob(new Blob([bytes],{type:"application/pdf"}), pdfFileName(rows[0]));
         } else if (outType === "multipage"){
           var mp = await generateMultipagePdf(rows, upper);
-          downloadBlob(new Blob([mp],{type:"application/pdf"}), "edda-labels-"+rows.length+".pdf");
+          downloadBlob(new Blob([mp],{type:"application/pdf"}), "edda_СтикерТК_массив_"+rows.length+"_crv.pdf");
         } else {
           var zip = new JSZip();
           var used = {};
           for (var i=0;i<rows.length;i++){
             var b = await generateSinglePdf(rows[i], upper);
-            var nm = safeName(rows[i].artikul, "label-"+(i+1));
-            if (used[nm]!=null){ used[nm]++; nm = nm+"_"+used[nm]; } else { used[nm]=0; }
-            zip.file(nm+".pdf", b);
+            var nm = pdfFileName(rows[i]);
+            if (used[nm]!=null){ used[nm]++; nm = nm.replace(/\.pdf$/, "_"+used[nm]+".pdf"); } else { used[nm]=0; }
+            zip.file(nm, b);
           }
           var blob = await zip.generateAsync({type:"blob"});
           downloadBlob(blob, "edda-labels-"+rows.length+".zip");
@@ -940,7 +1087,7 @@ document.addEventListener("DOMContentLoaded", function () {
       kolvo:  ["кол-во","кол во","количество","упаков","коробк","qty","quantity","count","штук"],
       data:   ["дата","изготов","производ","mfg","manufact","дата изг"],
       srok:   ["срок","годн","годен","expiry","expire","shelf","best before"],
-      barcode:["штрих","штрихкод","штрих-код","штрих код","barcode","bar code","ean","gtin","itf","код шк","код для шк","шк"]
+      barcode:["штрих","штрихкод","штрих-код","штрих код","barcode","bar code","ean","gtin","itf","код шк","код для шк","шк", "шк короба"]
     };
     var importFileInput = document.getElementById("import-file");
     var importMap = document.getElementById("importMap");
