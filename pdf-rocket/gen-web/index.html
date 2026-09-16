@@ -83,6 +83,7 @@
   #bulk-back:hover{background:transparent;filter:none;color:var(--ink);}
   .bulk-gen-group{display:inline-flex;align-items:center;gap:10px}
   .bulk-count{font-size:13px;color:var(--muted)}
+  .bulk-errors{font-size:13px;color:#c0392b}
   .bulk-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 14px;border-bottom:1px solid var(--line)}
   .bulk-toolbar .sep{width:1px;align-self:stretch;background:var(--line)}
   .bulk-wrap{overflow-x:auto;padding:8px 14px 14px}
@@ -222,6 +223,7 @@
     <span class="bulk-gen-group">
       <button class="primary" id="bulk-generate">Сгенерировать всё</button>
       <span id="bulk-count" class="bulk-count"></span>
+      <span id="bulk-errors" class="bulk-errors" hidden></span>
     </span>
   </div>
   <div id="importMap" class="import-map" hidden>
@@ -1063,6 +1065,16 @@ document.addEventListener("DOMContentLoaded", function () {
       var total = tbody.querySelectorAll("input.rowchk").length;
       var checked = tbody.querySelectorAll("input.rowchk:checked").length;
       countEl.textContent = checked + " из " + total + " строк отмечено для генерации";
+      // Подсказка о строках с ошибками: непустые строки, которые не пройдут в генерацию.
+      var errEl = document.getElementById("bulk-errors");
+      if (errEl){
+        var errors = 0;
+        Array.prototype.forEach.call(tbody.rows, function(tr){ if (rowAnyFilled(tr) && !rowComplete(tr)) errors++; });
+        if (errors > 0){
+          errEl.textContent = "· " + errors + " " + pluralRu(errors, ["строка","строки","строк"]) + " с ошибками";
+          errEl.hidden = false;
+        } else { errEl.hidden = true; }
+      }
     }
     // Мгновенный тултип ошибки (без задержки нативного title). Один общий элемент на страницу.
     // Используется для ШК (el.dataset.msg) и для ячеек с ошибкой (передаём msg явно, напр. невалидное kolvo).
