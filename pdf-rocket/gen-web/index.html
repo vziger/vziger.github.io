@@ -81,7 +81,7 @@
   #bulk-back{padding:2px 0;border:none;border-radius:0;background:transparent;color:var(--muted);
     text-decoration:underline dashed 1px;text-underline-offset:0.3em}
   #bulk-back:hover{background:transparent;filter:none;color:var(--ink);}
-  .bulk-gen-group{display:inline-flex;align-items:center;gap:10px}
+  .bulk-gen-group{display:inline-flex;align-items:center;gap:10px;padding-left:40px}
   .bulk-count{font-size:13px;color:var(--muted)}
   .bulk-errors{font-size:13px;color:#c0392b}
   .bulk-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 14px;border-bottom:1px solid var(--line)}
@@ -93,14 +93,20 @@
   #bulk-table td.cell{padding:0}
   #bulk-table td input{display:block;width:100%;min-width:110px;height:100%;border:1px solid transparent;border-radius:4px;padding:9px 6px;font:inherit;background:transparent}
   #bulk-table td input:focus{border-color:var(--accent);background:#fff;outline:none}
-  #bulk-table th:nth-child(4){min-width:250px}
-  #bulk-table th:nth-child(6){width:120px}
-  #bulk-table th:nth-child(7){width:50px}
+  /* Ширины колонок — по классам col-<id> (не по nth-child: устойчиво к порядку/добавлению колонок). */
+  #bulk-table .col-name{min-width:250px}
+  #bulk-table .col-artikul{width:120px}
+  #bulk-table .col-kolvo{width:56px}
   #bulk-table td input[data-col="name"]{min-width:250px}
   #bulk-table td input[data-col="artikul"],
   #bulk-table td input[data-col="kolvo"]{min-width:0}
   #bulk-table td input.cell-empty,#bulk-table td input.cell-invalid{background:#fdecec;border-color:#e39a9a}
   #bulk-table td input.cell-empty:focus,#bulk-table td input.cell-invalid:focus{border-color:var(--accent);background:#fff}
+  /* Иконка не загружена (нет в наборе) или пустое обязательное → красим ВСЮ ячейку. */
+  #bulk-table td.iconcell:has(.icon-input.cell-invalid),
+  #bulk-table td.iconcell:has(.icon-input.cell-empty){background:#fdecec;box-shadow:inset 0 0 0 1.5px #e39a9a;border-radius:4px}
+  #bulk-table td.iconcell:has(.icon-input.cell-invalid) .icon-input,
+  #bulk-table td.iconcell:has(.icon-input.cell-empty) .icon-input{background:transparent;border-color:transparent}
   .bc-wrap{position:relative;display:block;width:100%;height:100%}
   .bc-wrap .bc-err{position:absolute;top:50%;right:6px;transform:translateY(-50%);display:none;width:16px;height:16px;border-radius:50%;background:#e5484d;color:#fff;font:700 12px/16px system-ui,sans-serif;text-align:center;cursor:default;user-select:none}
   .bc-wrap.invalid .bc-err{display:block}
@@ -112,6 +118,13 @@
   #bulk-table td.idx{text-align:center;color:var(--muted);min-width:28px}
   #bulk-table td.prev,#bulk-table th.prev{text-align:center;width:64px;min-width:64px;padding:3px}
   #bulk-table td.prev canvas{display:block;margin:0 auto;border:1px solid var(--line);border-radius:3px;cursor:zoom-in}
+  #bulk-table td.iconcell{vertical-align:middle;text-align:center}
+  #bulk-table td.iconcell .icon-thumb{width:56px;height:44px;margin:0 auto;display:flex;align-items:center;justify-content:center;cursor:zoom-in}
+  #bulk-table td.iconcell .icon-thumb canvas,#bulk-table td.iconcell .icon-thumb svg{max-width:56px;max-height:44px;display:block}
+  #bulk-table td.iconcell .icon-ph{width:30px;height:30px;color:var(--muted);opacity:.55}
+  /* Подпись с именем файла — только когда в ячейке есть значение (под миниатюрой). */
+  #bulk-table td.iconcell .icon-input{display:none;width:60px;font-size:10px;text-align:center;padding:2px 3px;margin:2px auto 0;border-radius:4px}
+  #bulk-table td.iconcell.has-icon .icon-input{display:block}
   .prev-pop{position:fixed;z-index:1001;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:6px;pointer-events:none}
   .prev-pop canvas{display:block;border-radius:4px}
   #bulk-table td.del{text-align:center}
@@ -212,6 +225,12 @@
     <button id="bulk-import">Импорт CSV/Excel…</button>
     <button id="bulk-add">+ Строка</button>
     <input type="file" id="import-file" accept=".csv,.tsv,.txt,.xlsx,.xls" hidden>
+    <span class="sep"></span>
+    <button id="icons-import-zip">Иконки: zip…</button>
+    <button id="icons-import-dir" class="ghost">…или папка</button>
+    <input type="file" id="icons-file-dir" webkitdirectory multiple hidden>
+    <input type="file" id="icons-file-zip" accept=".zip" hidden>
+    <span id="icons-status" class="bulk-count"></span>
     <!-- TODO(рефакторинг): временно скрыто (hidden) — не удалять. Дефолты сохраняются: «прописными» вкл,
          вывод = ZIP. Вернуть/переосмыслить при рефакторинге тулбара массового режима. -->
     <label class="check" hidden><input type="checkbox" id="bulk-upper" checked> Название прописными</label>
@@ -248,10 +267,11 @@
           <th class="sel"><input type="checkbox" id="bulk-check-all" title="Выделить/снять все"></th>
           <th class="idx">№</th>
           <th class="prev">Превью</th>
-          <th>Название товара</th>
+          <th class="prev">Иконка</th>
+          <th class="col-name">Название товара</th>
           <th>Цвет</th>
-          <th>Артикул</th>
-          <th>Кол-во</th>
+          <th class="col-artikul">Артикул</th>
+          <th class="col-kolvo">Кол-во</th>
           <th>Дата изготовления</th>
           <th>Срок годности</th>
           <th>Код ШК ITF-14</th>
@@ -276,8 +296,8 @@
 
 <!-- Конфиг зон-переменных (инлайн в обоих вариантах) -->
 <script>window.EDDA_FIELDS = {
-  "template": "edda-potty",
-  "note": "Координаты в PDF-поинтах, origin слева-снизу (ось Y вверх). Измерено по геометрии кривых edda-potty.pdf.",
+  "template": "edda-stickerTK-template",
+  "note": "Координаты в PDF-поинтах, origin слева-снизу (ось Y вверх). Измерено по геометрии кривых edda-stickerTK-template.pdf.",
   "page": { "width": 547.89, "height": 455.22 },
   "guides": {
     "tableLeft": 61.0,
@@ -292,9 +312,12 @@
       "sample": "ДЕТСКИЙ ГОРШОК 3 В 1",
       "box": [61.0, 308.0, 345.0, 332.5],
       "align": "left",
-      "baseline": 313.82,
       "anchorX": 62.5,
       "capHeight": 12.6,
+      "centerY": 320.12,
+      "lineLeading": 21.3,
+      "maxLines": 2,
+      "wrap": "width",
       "color": { "c": 0, "m": 0, "y": 0, "k": 1 }
     },
     {
@@ -305,9 +328,21 @@
       "align": "center",
       "vAlign": "center",
       "circleCenter": [463.0, 319.27],
-      "baseline": 315.77,
-      "capHeight": 7.0,
+      "capHeight": 5.0,
+      "centerY": 319.27,
+      "lineLeading": 8.4,
+      "split": "words",
       "color": { "c": 0, "m": 0, "y": 0, "k": 0 }
+    },
+    {
+      "id": "icon",
+      "type": "svg-image",
+      "label": "Изображение",
+      "note": "SVG-иконка из внешнего набора (массовый режим). Правило: фон белый, контуры 100K — из SVG берём только признак краска/бумага. РАЗМЕЩЕНИЕ строится от круга (по гайду edda_СтикерТК_Гайд.pdf, зелёные пунктиры): право иконки = левый_край_круга − gapFactor*R; высота = heightFactor*R; ширина — из пропорций SVG; низ = низ_круга + liftFactor*R (оптическая компенсация — чуть выше базовой линии круга). R = радиус круга. Слева от иконки остаётся такой же отступ R до области названия.",
+      "anchor": "circle",
+      "gapFactor": 1.0,
+      "heightFactor": 1.838,
+      "liftFactor": 0.0747
     },
     {
       "id": "artikul",
@@ -316,7 +351,7 @@
       "box": [284.1, 254.32, 486.3, 284.22],
       "align": "center",
       "centerX": 385.2,
-      "baseline": 264.2,
+      "baseline": 263.2,
       "capHeight": 12.9,
       "color": { "c": 0, "m": 0, "y": 0, "k": 1 }
     },
@@ -338,7 +373,7 @@
       "box": [284.1, 168.72, 486.3, 198.72],
       "align": "center",
       "centerX": 385.2,
-      "baseline": 180.12,
+      "baseline": 179.0,
       "capHeight": 12.9,
       "color": { "c": 0, "m": 0, "y": 0, "k": 1 }
     },
@@ -591,6 +626,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var up = document.getElementById("name-upper");
       if (up && up.checked) v = v.toUpperCase();
     }
+    if (f.id === "circle") v = v.toUpperCase(); // цвет — всегда заглавными
+    if (f.id === "data" || f.id === "srok") v = ucFirst(v); // дата/срок — первая буква заглавная
     return v;
   }
 
@@ -626,6 +663,62 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // Число букв/цифр в слове (без пунктуации). Слово «короткое», если ≤2 (напр. «2», «в», «по», «шт.»).
+  function wordLen(w){ return (String(w).match(/[A-Za-zА-Яа-яЁё0-9]/g) || []).length; }
+  // Нормализация названия: после отдельного «шт» всегда ставим точку («2 шт» → «2 шт.», «2шт» → «2шт.»).
+  function nameNormalize(text){
+    return String(text).replace(/(^|[^А-Яа-яЁёA-Za-z])(шт)(?!\.)(?![А-Яа-яЁёA-Za-z])/gi, "$1$2.");
+  }
+  // Разбивка на «единицы переноса»: короткое слово (1–2 симв.) неразрывно связано со СЛЕДУЮЩИМ словом
+  // (внутри единицы пробел не рвётся). Хвостовые короткие слова цепляются к предыдущей единице.
+  function nameUnits(text){
+    var words = nameNormalize(text).split(/\s+/).filter(Boolean);
+    var units = [], pend = [];
+    for (var i = 0; i < words.length; i++) {
+      pend.push(words[i]);
+      if (wordLen(words[i]) > 2) { units.push(pend.join(" ")); pend = []; } // длинное слово закрывает единицу
+    }
+    if (pend.length) { if (units.length) units[units.length-1] += " " + pend.join(" "); else units.push(pend.join(" ")); }
+    return units;
+  }
+  // Автоперенос названия по ширине зоны (greedy по «единицам»). Последняя разрешённая строка
+  // поглощает остаток (переполнение оставляем как есть, кегль не уменьшаем).
+  function wrapByWidth(text, f, font, capRatio) {
+    var fs = f.capHeight / capRatio;                       // кегль в pt (пространство-независимо)
+    var maxW = f.box[2] - (f.anchorX != null ? f.anchorX : f.box[0]);
+    var maxLines = f.maxLines || 2;
+    var units = nameUnits(text);
+    if (!units.length) return [""];
+    var lines = [], cur = units[0];
+    for (var i = 1; i < units.length; i++) {
+      if (lines.length >= maxLines - 1) { cur += " " + units[i]; continue; } // последняя строка — поглощает
+      var t = cur + " " + units[i];
+      if (font.getAdvanceWidth(t, fs) <= maxW) cur = t;
+      else { lines.push(cur); cur = units[i]; }
+    }
+    lines.push(cur);
+    return lines;
+  }
+  // Раскладка значения поля на строки + их базовые линии (bottom-origin pt).
+  // circle: разбивка по словам (пробел / - .), разделитель не рисуется.
+  // name: автоперенос по ширине. Прочие поля: одна строка на f.baseline (обратная совместимость).
+  // Блок вертикально центрируется по f.centerY; межстрочный интервал f.lineLeading.
+  function layoutLines(text, f, font, capRatio) {
+    var lines;
+    if (f.split === "words") lines = String(text).split(/[\s/.\-]+/).filter(Boolean);
+    else if (f.wrap === "width") lines = wrapByWidth(text, f, font, capRatio);
+    else lines = [String(text)];
+    if (!lines.length) lines = [""];
+    var C = f.capHeight, n = lines.length;
+    var L = (f.lineLeading != null) ? f.lineLeading : C * 1.6;
+    var cY = (f.centerY != null) ? f.centerY
+           : (f.baseline != null ? f.baseline + C / 2 : (f.box[1] + f.box[3]) / 2);
+    var baseTop = cY - C / 2 + (n - 1) * L / 2;             // базовая линия верхней строки
+    var out = [];
+    for (var i = 0; i < n; i++) out.push({ text: lines[i], baseline: baseTop - i * L });
+    return out;
+  }
+
   // Общая отрисовка значений контурами на произвольный ctx (превью, не PDF).
   // getVal(f) -> строка значения поля f; sPx — pt→device-px; H — высота страницы (pt); top-origin.
   function drawValuesToCtx(ctx, getVal, sPx, H, font, capRatio) {
@@ -635,23 +728,29 @@ document.addEventListener("DOMContentLoaded", function () {
         drawBarcodeCanvas(ctx, f, getVal(f) || f.sample, font, capRatio, sPx, H);
         return;
       }
+      if (f.type === "svg-image") {
+        var iconName = getVal(f);
+        if (iconName && String(iconName).trim()) { try { drawIconOnSticker(ctx, f, String(iconName).trim(), sPx, H); } catch (e) {} }
+        return;
+      }
       var text = getVal(f);
       if (!text) return;
       var fontSizePx = (f.capHeight * sPx) / capRatio;      // кегль так, чтобы капитель = f.capHeight pt
-      var baseY = (H - f.baseline) * sPx;                    // базовая линия в device px (top-origin)
-      var advance = font.getAdvanceWidth(text, fontSizePx);
-
-      var x;
-      if (f.align === "left") {
-        x = (f.anchorX != null ? f.anchorX : f.box[0]) * sPx;
-      } else { // center
-        var cx = (f.centerX != null ? f.centerX : (f.circleCenter ? f.circleCenter[0] : (f.box[0]+f.box[2])/2));
-        x = cx * sPx - advance / 2;
-      }
-
-      var path = font.getPath(text, x, baseY, fontSizePx);
-      path.fill = cmykToRgb(f.color || { k: 1 });
-      path.draw(ctx);
+      var fill = cmykToRgb(f.color || { k: 1 });
+      layoutLines(text, f, font, capRatio).forEach(function (ln) {
+        if (!ln.text) return;
+        var baseY = (H - ln.baseline) * sPx;                 // базовая линия в device px (top-origin)
+        var x;
+        if (f.align === "left") {
+          x = (f.anchorX != null ? f.anchorX : f.box[0]) * sPx;
+        } else { // center
+          var cx = (f.centerX != null ? f.centerX : (f.circleCenter ? f.circleCenter[0] : (f.box[0]+f.box[2])/2));
+          x = cx * sPx - font.getAdvanceWidth(ln.text, fontSizePx) / 2;
+        }
+        var path = font.getPath(ln.text, x, baseY, fontSizePx);
+        path.fill = fill;
+        path.draw(ctx);
+      });
     });
   }
 
@@ -694,6 +793,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var getVal = function (f) {
         var v = (values && values[f.id] != null) ? String(values[f.id]) : "";
         if (f.id === "name" && upper) v = v.toUpperCase();
+        if (f.id === "circle") v = v.toUpperCase(); // цвет — всегда заглавными
+        if (f.id === "data" || f.id === "srok") v = ucFirst(v); // дата/срок — первая буква заглавная
         return v;
       };
       drawValuesToCtx(ctx, getVal, scale * dpr, H, font, fontCapRatio(font));
@@ -742,6 +843,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function resolveText(f, values, upperName) {
     var v = (values && values[f.id] != null) ? String(values[f.id]) : "";
     if (f.id === "name" && upperName) v = v.toUpperCase();
+    if (f.id === "circle") v = v.toUpperCase(); // цвет — всегда заглавными
+    if (f.id === "data" || f.id === "srok") v = ucFirst(v); // дата/срок — первая буква заглавная
     return v;
   }
   // Контрольная цифра GTIN-14 (mod-10) по первым 13 цифрам.
@@ -749,6 +852,13 @@ document.addEventListener("DOMContentLoaded", function () {
     var sum = 0;
     for (var i = 0; i < 13; i++) sum += (+d13[i]) * (((13 - i) % 2 === 1) ? 3 : 1);
     return (10 - (sum % 10)) % 10;
+  }
+  function cleanString(str) {
+    if (str == null || str === '') return '';
+    return String(str)
+      .replace(/[\u00A0\u200B\u202F\uFEFF]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
   // Нормализация ввода штрих-кода. Возвращает {digits, valid, msg}.
   // Требуется РОВНО 14 цифр; контрольная (14-я) проверяется, но НЕ дописывается (только предупреждаем).
@@ -809,9 +919,197 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // --- Набор SVG-иконок (импорт папкой/zip; массовый режим) -----------------
+  // Ключ = имя файла (нормализованное: нижний регистр, без пути). Значение = текст SVG.
+  // Модульная область — доступна и генерации, и превью.
+  var ICONS = new Map();
+  // Плейсхолдер «картинка» для ячейки иконки (пока нет реального рендера/иконки).
+  var ICON_PLACEHOLDER = '<svg class="icon-ph" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<rect x="3" y="4.5" width="18" height="15" rx="2.2" stroke="currentColor" stroke-width="1.6"/>' +
+    '<circle cx="8.4" cy="9.4" r="1.7" fill="currentColor"/>' +
+    '<path d="M4.2 17.5 L10 12 l3.6 3.2 L16.2 12 L19.8 15.6 V17.3 a1 1 0 0 1-1 1 H5.2 a1 1 0 0 1-1-1 Z" fill="currentColor"/></svg>';
+  function iconKey(name){ return String(name).split(/[\\/]/).pop().trim().toLowerCase(); }
+  // Терпимый поиск: пробуем как есть и с добавленным «.svg».
+  function iconGet(name){
+    if (!name) return null;
+    var k = iconKey(name);
+    if (ICONS.has(k)) return ICONS.get(k);
+    if (!/\.svg$/.test(k) && ICONS.has(k + ".svg")) return ICONS.get(k + ".svg");
+    return null;
+  }
+  // Собирает Map из FileList (папка или отдельные файлы) + распаковывает .zip через JSZip.
+  async function loadIconsFromFiles(fileList){
+    if (typeof _iconCache !== "undefined" && _iconCache) _iconCache.clear(); // набор меняется → сбросить разбор
+    var added = 0;
+    for (var i = 0; i < fileList.length; i++) {
+      var f = fileList[i];
+      var nm = (f.name || "");
+      if (/\.svg$/i.test(nm)) { ICONS.set(iconKey(nm), await f.text()); added++; }
+      else if (/\.zip$/i.test(nm)) {
+        var zip = await window.JSZip.loadAsync(await f.arrayBuffer());
+        var entries = Object.keys(zip.files);
+        for (var j = 0; j < entries.length; j++) {
+          var e = zip.files[entries[j]];
+          if (e.dir || !/\.svg$/i.test(e.name)) continue;
+          var base = e.name.split(/[\\/]/).pop();
+          // Пропускаем служебные записи macOS-архивов: __MACOSX/, AppleDouble ._*, скрытые точечные файлы.
+          if (/(^|\/)__MACOSX\//.test(e.name) || base.charAt(0) === ".") continue;
+          ICONS.set(iconKey(e.name), await e.async("string")); added++;
+        }
+      }
+    }
+    return added;
+  }
+
+  // --- Парсер SVG-иконки → контуры (общий для PDF и превью). ---------------
+  // Правило типографии: фон белый, контуры 100K. Из SVG берём только признак
+  // «краска/бумага» (порог яркости) → K100 или белый. Модульно (правила ещё поменяются).
+  function _svgLum(hex){
+    hex = hex.replace('#',''); if (hex.length===3) hex = hex.split('').map(function(c){return c+c;}).join('');
+    var r=parseInt(hex.slice(0,2),16)/255, g=parseInt(hex.slice(2,4),16)/255, b=parseInt(hex.slice(4,6),16)/255;
+    return 0.2126*r + 0.7152*g + 0.0722*b;
+  }
+  // null = красить нечем (none); 'ink' = 100K; 'paper' = белый (0K).
+  function _svgPaint(color){
+    if (!color) return null;
+    color = String(color).trim().toLowerCase();
+    if (color==='none' || color==='transparent') return null;
+    var lum;
+    if (color==='white') lum=1; else if (color==='black') lum=0;
+    else if (color.charAt(0)==='#') lum=_svgLum(color);
+    else { var m=color.match(/rgba?\(([^)]+)\)/); if(m){var p=m[1].split(',').map(function(s){return parseFloat(s.trim())/255;}); lum=0.2126*p[0]+0.7152*p[1]+0.0722*p[2];} else lum=0; }
+    return lum>=0.6 ? 'paper' : 'ink';
+  }
+  function _svgCss(svg){
+    var map={}, blocks=svg.match(/<style[^>]*>([\s\S]*?)<\/style>/gi)||[];
+    blocks.forEach(function(blk){
+      var body=blk.replace(/<\/?style[^>]*>/gi,''), rules=body.match(/[^{}]+\{[^{}]*\}/g)||[];
+      rules.forEach(function(rule){
+        var i=rule.indexOf('{'), sels=rule.slice(0,i).split(',').map(function(s){return s.trim();}), decl={};
+        rule.slice(i+1, rule.lastIndexOf('}')).split(';').forEach(function(d){ var c=d.indexOf(':'); if(c>0) decl[d.slice(0,c).trim().toLowerCase()]=d.slice(c+1).trim(); });
+        sels.forEach(function(sel){ map[sel]=Object.assign(map[sel]||{}, decl); });
+      });
+    });
+    return map;
+  }
+  function _svgAttrs(tag){ var a={}, re=/([\w:-]+)\s*=\s*"([^"]*)"/g, m; while((m=re.exec(tag))) a[m[1].toLowerCase()]=m[2]; return a; }
+  function _svgStyle(attrs, cssMap){
+    var st={};
+    (attrs['class']||'').split(/\s+/).filter(Boolean).forEach(function(cls){ Object.assign(st, cssMap['.'+cls]||{}); });
+    ['fill','stroke','stroke-width'].forEach(function(k){ if(attrs[k]!=null) st[k]=attrs[k]; });
+    if (attrs['style']) attrs['style'].split(';').forEach(function(d){ var c=d.indexOf(':'); if(c>0) st[d.slice(0,c).trim().toLowerCase()]=d.slice(c+1).trim(); });
+    return st;
+  }
+  function parseSvgIcon(svg){
+    var vbm=svg.match(/viewBox\s*=\s*"([^"]+)"/i);
+    if (!vbm) throw new Error('SVG без viewBox');
+    var vb=vbm[1].trim().split(/[\s,]+/).map(Number);
+    var cssMap=_svgCss(svg), warnings=[];
+    ['text','image','linearGradient','radialGradient','use','clipPath','mask','filter'].forEach(function(t){ if(new RegExp('<'+t+'[\\s>]','i').test(svg)) warnings.push(t); });
+    if (/\btransform\s*=/.test(svg)) warnings.push('transform');
+    var paths=[], re=/<path\b([^>]*?)\/?>/gi, m;
+    while((m=re.exec(svg))){
+      var attrs=_svgAttrs(m[1]); if(!attrs['d']) continue;
+      var st=_svgStyle(attrs, cssMap);
+      if (st.fill==null && st.stroke==null) st.fill='black';
+      paths.push({ d:attrs['d'], fill:st.fill, stroke:st.stroke, sw:parseFloat(st['stroke-width'])||0 });
+    }
+    return { vb:vb, paths:paths, warnings:warnings };
+  }
+  // Кэш распарсенных иконок (по имени файла). Инвалидация — при загрузке нового набора.
+  var _iconCache = new Map();
+  function getParsedIcon(name){
+    var svg=iconGet(name); if(!svg) return null;
+    var key=iconKey(name);
+    if(_iconCache.has(key)) return _iconCache.get(key);
+    var p=null; try{ p=parseSvgIcon(svg); if(p.warnings.length) console.warn('Иконка '+key+': не поддержано —', p.warnings.join(', ')); }catch(e){ console.warn('Иконка '+key+':', e.message); }
+    _iconCache.set(key,p); return p;
+  }
+  // Размещение иконки строится ОТ КРУГА (правила гайда): право = левый_край_круга − gapFactor*R,
+  // высота = heightFactor*R, ширина = высота*аспект(SVG), низ = низ_круга + liftFactor*R (оптич. компенсация).
+  // Итоговый box имеет аспект самой иконки → contain заполняет его без полей.
+  function computeIconBox(f, vb){
+    var cfg = window.EDDA_FIELDS;
+    var circ = cfg && cfg.fields && cfg.fields.filter(function(x){ return x.id==='circle'; })[0];
+    if (!circ || f.anchor !== 'circle' || !vb || !vb[3]) return f.box || null;
+    var cb = circ.box, R = (cb[2]-cb[0])/2, circleLeft = cb[0], circleBottom = cb[1];
+    var gap = (f.gapFactor!=null?f.gapFactor:1) * R;
+    var h   = (f.heightFactor!=null?f.heightFactor:1.838) * R;
+    var lift= (f.liftFactor!=null?f.liftFactor:0.0747) * R;
+    var w   = h * (vb[2]/vb[3]);
+    var x1 = circleLeft - gap, x0 = x1 - w, y0 = circleBottom + lift, y1 = y0 + h;
+    return [x0, y0, x1, y1];
+  }
+
+  // Отрисовка иконки в PDF (pdf-lib, CMYK) в вычисленную зону (contain).
+  function drawIconPdf(page, f, name, PDFLib){
+    var pi=getParsedIcon(name); if(!pi) return;
+    var vb=pi.vb, box=computeIconBox(f, vb) || f.box, boxW=box[2]-box[0], boxH=box[3]-box[1];
+    var s=Math.min(boxW/vb[2], boxH/vb[3]);
+    var ox=(boxW-vb[2]*s)/2, oy=(boxH-vb[3]*s)/2;
+    var optsX=box[0]+ox - vb[0]*s, optsY=(box[3]-oy) + vb[1]*s; // drawSvgPath флипает Y
+    var INK=PDFLib.cmyk(0,0,0,1), PAPER=PDFLib.cmyk(0,0,0,0);
+    pi.paths.forEach(function(p){
+      var fk=_svgPaint(p.fill), sk=_svgPaint(p.stroke), opt={x:optsX,y:optsY,scale:s};
+      if(fk) opt.color = (fk==='paper')?PAPER:INK;
+      if(sk && p.sw>0){ opt.borderColor=(sk==='paper')?PAPER:INK; opt.borderWidth=p.sw*s; }
+      if(!opt.color && !opt.borderColor) return;
+      page.drawSvgPath(p.d, opt);
+    });
+  }
+  // Отрисовка иконки на канве (top-origin, SVG уже y-вниз → без флипа). Бокс в device-px.
+  function drawIconCanvasBox(ctx, pi, x0, y0, wpx, hpx){
+    var vb=pi.vb, s=Math.min(wpx/vb[2], hpx/vb[3]);
+    var dw=vb[2]*s, dh=vb[3]*s;
+    var offX=x0+(wpx-dw)/2 - vb[0]*s, offY=y0+(hpx-dh)/2 - vb[1]*s;
+    ctx.save(); ctx.translate(offX, offY); ctx.scale(s, s);
+    pi.paths.forEach(function(p){
+      var fk=_svgPaint(p.fill), sk=_svgPaint(p.stroke), path=new Path2D(p.d);
+      if(fk){ ctx.fillStyle=(fk==='paper')?'#fff':'#000'; ctx.fill(path); }
+      if(sk && p.sw>0){ ctx.strokeStyle=(sk==='paper')?'#fff':'#000'; ctx.lineWidth=p.sw; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.stroke(path); }
+    });
+    ctx.restore();
+  }
+  // Иконка на превью-стикере: f.box (bottom-origin pt) → device-px.
+  function drawIconOnSticker(ctx, f, name, sPx, H){
+    var pi=getParsedIcon(name); if(!pi) return;
+    var box=computeIconBox(f, pi.vb) || f.box;
+    var x0=box[0]*sPx, wpx=(box[2]-box[0])*sPx, topY=(H-box[3])*sPx, hpx=(box[3]-box[1])*sPx;
+    drawIconCanvasBox(ctx, pi, x0, topY, wpx, hpx);
+  }
+  // Миниатюра иконки для ячейки таблицы (56×44 CSS). null — если иконки нет в наборе.
+  function renderIconThumb(name){
+    var pi=getParsedIcon(name); if(!pi) return null;
+    var dpr=window.devicePixelRatio||1, W=56, Hc=44;
+    var cv=document.createElement('canvas');
+    cv.width=Math.round(W*dpr); cv.height=Math.round(Hc*dpr);
+    cv.style.width=W+'px'; cv.style.height=Hc+'px';
+    drawIconCanvasBox(cv.getContext('2d'), pi, 0, 0, cv.width, cv.height);
+    return cv;
+  }
+  // Крупное превью самой иконки (для ховер-попапа). null — если иконки нет в наборе.
+  function renderIconBig(name, maxPx){
+    var pi=getParsedIcon(name); if(!pi) return null;
+    var vb=pi.vb, ar=vb[2]/vb[3], W, Hc;
+    if (ar>=1){ W=maxPx; Hc=Math.round(maxPx/ar); } else { Hc=maxPx; W=Math.round(maxPx*ar); }
+    var pad=14, dpr=window.devicePixelRatio||1;
+    var cv=document.createElement('canvas');
+    cv.width=Math.round((W+pad*2)*dpr); cv.height=Math.round((Hc+pad*2)*dpr);
+    cv.style.width=(W+pad*2)+'px'; cv.style.height=(Hc+pad*2)+'px';
+    var ctx=cv.getContext('2d');
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height); // белый фон (у иконки белые заливки)
+    drawIconCanvasBox(ctx, pi, pad*dpr, pad*dpr, W*dpr, Hc*dpr);
+    return cv;
+  }
+
   function drawValuesOnPage(page, font, capRatio, values, upperName) {
     var PDFLib = window.PDFLib;
     (window.EDDA_FIELDS.fields || []).forEach(function (f) {
+      if (f.type === "svg-image"){
+        var iconName = (values && values.icon != null) ? String(values.icon) : "";
+        if (iconName.trim()) { try { drawIconPdf(page, f, iconName.trim(), PDFLib); } catch (e) { console.warn("icon:", e && e.message || e); } }
+        return;
+      }
       if (f.type === "barcode-itf14") {
         var bcVal = resolveText(f, values, upperName) || f.sample;
         if (bcVal) { try { drawBarcode(page, f, bcVal, font, capRatio); } catch (e) { console.warn("barcode:", e && e.message || e); } }
@@ -820,18 +1118,21 @@ document.addEventListener("DOMContentLoaded", function () {
       var text = resolveText(f, values, upperName);
       if (!text) return;
       var fontSizePt = f.capHeight / capRatio;
-      var advance = font.getAdvanceWidth(text, fontSizePt);
-      var x;
-      if (f.align === "left") {
-        x = (f.anchorX != null ? f.anchorX : f.box[0]);
-      } else {
-        var cx = (f.centerX != null ? f.centerX : (f.circleCenter ? f.circleCenter[0] : (f.box[0]+f.box[2])/2));
-        x = cx - advance / 2;
-      }
-      // opentype: путь с началом на базовой линии (0,0); y-вниз. pdf-lib переворачивает Y.
-      var d = font.getPath(text, 0, 0, fontSizePt).toPathData(3);
       var col = f.color || { k: 1 };
-      page.drawSvgPath(d, { x: x, y: f.baseline, color: PDFLib.cmyk(col.c||0, col.m||0, col.y||0, col.k||0) });
+      var color = PDFLib.cmyk(col.c||0, col.m||0, col.y||0, col.k||0);
+      layoutLines(text, f, font, capRatio).forEach(function (ln) {
+        if (!ln.text) return;
+        var x;
+        if (f.align === "left") {
+          x = (f.anchorX != null ? f.anchorX : f.box[0]);
+        } else {
+          var cx = (f.centerX != null ? f.centerX : (f.circleCenter ? f.circleCenter[0] : (f.box[0]+f.box[2])/2));
+          x = cx - font.getAdvanceWidth(ln.text, fontSizePt) / 2;
+        }
+        // opentype: путь с началом на базовой линии (0,0); y-вниз. pdf-lib переворачивает Y.
+        var d = font.getPath(ln.text, 0, 0, fontSizePt).toPathData(3);
+        page.drawSvgPath(d, { x: x, y: ln.baseline, color: color });
+      });
     });
   }
 
@@ -880,10 +1181,12 @@ document.addEventListener("DOMContentLoaded", function () {
   var MONTHS_RU = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]; // синхр. с датой в UI
   // Первая буква заглавная, остальные строчные.
   function capFirst(s){ s = String(s == null ? "" : s).toLowerCase(); return s.charAt(0).toUpperCase() + s.slice(1); }
-  // Токен для имени файла: ё→е, пробелы→_, убрать лишние символы, схлопнуть __.
+  // Только первая буква заглавная, остальные символы как есть (для отрисовки даты/срока).
+  function ucFirst(s){ s = String(s == null ? "" : s); return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  // Токен для имени файла: пробелы→_, убрать лишние символы, схлопнуть __. Букву ё/Ё сохраняем.
   function fileToken(s){
-    s = String(s == null ? "" : s).trim().replace(/ё/g, "е").replace(/Ё/g, "Е");
-    s = s.replace(/\s+/g, "_").replace(/[^0-9A-Za-zА-Яа-я_-]+/g, "").replace(/_+/g, "_");
+    s = String(s == null ? "" : s).trim();
+    s = s.replace(/\s+/g, "_").replace(/[^0-9A-Za-zА-Яа-яёЁ_-]+/g, "").replace(/_+/g, "_");
     return s.replace(/^_+|_+$/g, "");
   }
   // "Май 2025" → "05.25" (месяц по MONTHS_RU, год — 2 последние цифры).
@@ -925,12 +1228,13 @@ document.addEventListener("DOMContentLoaded", function () {
     var bulkView = document.getElementById("bulkView");
     var tbody = document.getElementById("bulk-tbody");
     if (!layout || !bulkView || !tbody) return;
-    var order = ["name","circle","artikul","kolvo","data","srok","barcode"];
+    // icon — первым: первая order-ячейка идёт сразу за «Превью» (нужное место колонки «Иконка»).
+    var order = ["icon","name","circle","artikul","kolvo","data","srok","barcode"];
     var placeholders = {name:"ДЕТСКИЙ ГОРШОК 3 В 1",circle:"ЛЁН",artikul:"BPS-01006",kolvo:"8",data:"Октябрь 2024",srok:"Не ограничен",barcode:"14673753490645"};
-    var mapLabels = {barcode:"Код ШК ITF-14"}; // подпись селекта в сопоставлении
+    var mapLabels = {barcode:"Код ШК ITF-14",icon:"Иконка (имя SVG)"}; // подпись селекта в сопоставлении
 
-    // Обязательные поля для включения строки в генерацию (Круг — необязателен).
-    var required = ["name","artikul","kolvo","data","srok","barcode"];
+    // Обязательные поля для включения строки в генерацию (Цвет — необязателен).
+    var required = ["icon","name","artikul","kolvo","data","srok","barcode"];
     var checkAll = document.getElementById("bulk-check-all");
 
     // --- Превью строк (ленивый рендер миниатюр) ---
@@ -961,6 +1265,19 @@ document.addEventListener("DOMContentLoaded", function () {
     (function(){ var u = document.getElementById("bulk-upper"); if (u) u.addEventListener("change", refreshAllPreviews); })();
     window.eddaRefreshBulkPreviews = refreshAllPreviews; // для перерисовки при смене шрифта
 
+    // Миниатюра в ячейке «Иконка»: реальная иконка из набора или плейсхолдер «картинка».
+    function updateIconThumb(td){
+      if (!td) return;
+      var inp = td.querySelector('input[data-col="icon"]'), thumb = td.querySelector('.icon-thumb');
+      if (!inp || !thumb) return;
+      var val = inp.value.trim();
+      var cv = val ? renderIconThumb(val) : null;
+      thumb.innerHTML = "";
+      if (cv) thumb.appendChild(cv); else thumb.innerHTML = ICON_PLACEHOLDER;
+      td.classList.toggle("has-icon", val !== ""); // подпись показываем только при наличии значения
+    }
+    function refreshIconCells(){ Array.prototype.forEach.call(tbody.querySelectorAll("td.iconcell"), updateIconThumb); }
+
     // Большое превью в попапе при наведении на миниатюру (рендерится на лету, position:fixed — не обрезается).
     var PREV_BIG_W = 400;
     var prevPop = document.createElement("div"); prevPop.className = "prev-pop"; prevPop.hidden = true;
@@ -977,6 +1294,19 @@ document.addEventListener("DOMContentLoaded", function () {
       prevPop.style.left = left + "px"; prevPop.style.top = top + "px";
     }
     function hidePreviewPopup(){ prevPop.hidden = true; prevPop.textContent = ""; }
+    // Ховер-превью самой иконки (крупно), позиционируется как большое превью строки.
+    function showIconPopup(td){
+      var inp = td.querySelector('input[data-col="icon"]'); if (!inp) return;
+      var cv = inp.value.trim() ? renderIconBig(inp.value.trim(), 220) : null;
+      if (!cv) return; // иконки нет в наборе — попап не показываем
+      prevPop.textContent = ""; prevPop.appendChild(cv); prevPop.hidden = false;
+      var r = td.getBoundingClientRect(), p = prevPop.getBoundingClientRect();
+      var left = r.right + 8;
+      if (left + p.width > window.innerWidth - 6) left = r.left - p.width - 8;
+      left = Math.max(6, left);
+      var top = Math.max(6, Math.min(r.top + r.height / 2 - p.height / 2, window.innerHeight - p.height - 6));
+      prevPop.style.left = left + "px"; prevPop.style.top = top + "px";
+    }
 
     function renumber(){
       Array.prototype.forEach.call(tbody.rows, function(tr,i){ tr.querySelector("td.idx").textContent = (i+1); });
@@ -986,9 +1316,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // 14 с неверной контрольной валидна для генерации — «только предупреждаем», см. validateBc/иконку).
     function fieldError(id, v){
       v = String(v).trim();
+      if (id === "icon"){ if (!iconGet(v)) return ICONS.size ? ("Иконка «"+v+"» не найдена в наборе") : "Иконки не загружены — импортируйте набор SVG"; return null; }
+      if (id === "name"){var s = cleanString(v); const regexName = /^[а-яА-ЯёЁa-zA-Z0-9 .,\u00AB\u00BB-]+$/; if (!regexName.test(v)) return "Разрешённые символы: русские и английские буквы, цифры, пробел, точка, запятая, дефис, кавычки «»";}
       if (id === "kolvo"   && !(/^\d+$/.test(v) && +v > 0)) return "Целое число больше 0";
       if (id === "artikul" && !/^[A-Za-z0-9-]+$/.test(v))   return "Только латинские буквы, цифры и дефис";
-      if (id === "barcode"){ var n = normalizeBarcode(v); if (n.digits == null) return n.msg || "Нужно 14 цифр"; }
+      // if (id === "barcode"){ var n = normalizeBarcode(v); if (n.digits == null) return n.msg || "Нужно 14 цифр"; }
+      if(id==="barcode"){if(!/^\d+$/.test(v)){return"В ШК допустимы только цифры";}var n=normalizeBarcode(v);if(n.digits==null){return n.msg||"Нужно 14 цифр";}if(!n.valid){return n.msg;}}
       return null;
     }
     // Полнота строки: все обязательные поля заполнены и проходят форматные правила.
@@ -1111,7 +1444,7 @@ document.addEventListener("DOMContentLoaded", function () {
       prevTd.addEventListener("mouseenter", function(){ if (prevTd._rendered) showPreviewPopup(prevTd); });
       prevTd.addEventListener("mouseleave", hidePreviewPopup);
       order.forEach(function(id){
-        var td = document.createElement("td"); td.className="cell";
+        var td = document.createElement("td"); td.className="cell col-"+id;
         var inp = document.createElement("input");
         inp.dataset.col = id; inp.placeholder = placeholders[id] || "";
         if (values[id] != null) inp.value = values[id];
@@ -1134,7 +1467,18 @@ document.addEventListener("DOMContentLoaded", function () {
           var next = target.querySelector('input[data-col="'+col+'"]');
           if (next){ next.focus(); next.select(); }
         });
-        if (id === "barcode"){
+        if (id === "icon"){
+          td.className = "prev iconcell";                 // размер как у ячейки «Превью»
+          var thumb = document.createElement("div"); thumb.className = "icon-thumb"; // миниатюра — заполнит S5
+          thumb.innerHTML = ICON_PLACEHOLDER;             // плейсхолдер «картинка» (заменяется реальной иконкой, если найдена)
+          inp.classList.add("icon-input");
+          td.appendChild(thumb); td.appendChild(inp);
+          inp.addEventListener("blur", function(){ updateIconThumb(td); });
+          // Ховер по ячейке иконки → крупное превью самой SVG (не всего стикера).
+          td.addEventListener("mouseenter", function(){ showIconPopup(td); });
+          td.addEventListener("mouseleave", hidePreviewPopup);
+          if (values[id] != null && String(values[id]).trim()) updateIconThumb(td); // начальный рендер (импорт)
+        } else if (id === "barcode"){
           var wrap = document.createElement("div"); wrap.className = "bc-wrap";
           var err = document.createElement("span"); err.className = "bc-err"; err.textContent = "!";
           wrap.appendChild(inp); wrap.appendChild(err); td.appendChild(wrap);
@@ -1224,11 +1568,12 @@ document.addEventListener("DOMContentLoaded", function () {
     var labels = {}; (window.EDDA_FIELDS.fields||[]).forEach(function(f){ labels[f.id]=f.label; });
     var synonyms = {
       name:   ["назван","наименован","товар","product","name","title"],
-      circle: ["круг","вариант","цвет","color","colour","variant"],
+      circle: ["цвет","color","colour","variant"],
       artikul:["артикул","sku","код","article","art"],
       kolvo:  ["кол-во","кол во","количество","qty","quantity","count","штук","квант"],
       data:   ["дата","изготов","производ","mfg","manufact","дата изг"],
       srok:   ["срок","годн","годен","expiry","expire","shelf","best before"],
+      icon:   ["изображен","иконка","картинк","рисун","svg","image","icon","pic"],
       barcode:["itf"]
       // barcode:["шк короба","штрих","штрихкод","штрих-код","штрих код","barcode","bar code","ean","gtin","itf","код шк","код для шк","шк"]
     };
@@ -1344,6 +1689,32 @@ document.addEventListener("DOMContentLoaded", function () {
       } catch(e){ alert("Не удалось прочитать файл: "+e.message); console.error(e); }
       finally { importFileInput.value=""; }
     });
+
+    // --- Импорт SVG-иконок (папка / zip) ---
+    var iconsDirInput = document.getElementById("icons-file-dir");
+    var iconsZipInput = document.getElementById("icons-file-zip");
+    var iconsStatus = document.getElementById("icons-status");
+    function updateIconsStatus(){
+      iconsStatus.textContent = ICONS.size ? ("иконок загружено: " + ICONS.size) : "";
+    }
+    async function handleIconsInput(input){
+      var files = input.files; if (!files || !files.length) return;
+      try {
+        var added = await loadIconsFromFiles(files);
+        updateIconsStatus();
+        if (!added) alert("SVG-файлы не найдены в выбранном источнике.");
+        // Набор изменился → перепроверить строки (иконки могли найтись/пропасть) и превью.
+        Array.prototype.forEach.call(tbody.rows, function(tr){ updateRowState(tr); });
+        updateCheckAll();
+        refreshIconCells();
+        if (typeof window.eddaRefreshBulkPreviews === "function") window.eddaRefreshBulkPreviews();
+      } catch(e){ alert("Не удалось загрузить иконки: " + e.message); console.error(e); }
+      finally { input.value = ""; }
+    }
+    document.getElementById("icons-import-dir").addEventListener("click", function(){ iconsDirInput.click(); });
+    document.getElementById("icons-import-zip").addEventListener("click", function(){ iconsZipInput.click(); });
+    iconsDirInput.addEventListener("change", function(){ handleIconsInput(iconsDirInput); });
+    iconsZipInput.addEventListener("change", function(){ handleIconsInput(iconsZipInput); });
     // Переключатель режима импорта: «Заменить таблицу» / «Добавить в конец» → синхроним скрытый #import-replace.
     (function(){
       var seg = document.getElementById("import-mode"), flag = document.getElementById("import-replace");
