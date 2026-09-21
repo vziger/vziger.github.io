@@ -53,10 +53,8 @@
   .dd.open .dd-btn{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.18);background:#fff}
   .dd.open .dd-btn .dd-chev{transform:rotate(180deg)}
   .dd[aria-disabled="true"] .dd-btn{background:#f7f8fa;color:#9aa1ab;cursor:not-allowed}
-  .dd-list{position:absolute;left:0;top:calc(100% + 5px);z-index:1003;min-width:100%;width:max-content;max-width:360px;
+  .dd-list{position:fixed;z-index:1003;width:max-content;max-width:360px;
     background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 12px 34px rgba(0,0,0,.16);padding:6px;max-height:436px;overflow:auto}
-  .dd-list.up{top:auto;bottom:calc(100% + 5px)}
-  .dd-list.right{left:auto;right:0}
   .dd-opt{display:flex;align-items:center;padding:9px 12px 9px 32px;border-radius:8px;cursor:pointer;position:relative;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
   .dd-opt:hover,.dd-opt.hl{background:#f1f3f7}
@@ -127,6 +125,16 @@
   #bulk-table td.iconcell.has-icon .icon-input{display:block}
   .prev-pop{position:fixed;z-index:1001;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:6px;pointer-events:none}
   .prev-pop canvas{display:block;border-radius:4px}
+  #bulk-table td.col-data{padding:0;width:1%;white-space:nowrap}
+  #bulk-table .cell-date{display:flex;align-items:center}
+  #bulk-table .cell-date .dd{min-width:0}
+  #bulk-table .cell-date .dd:first-child{flex:none;width:120px}
+  #bulk-table .cell-date .dd.year-dd{flex:none;width:82px}
+  #bulk-table .cell-date .dd:first-child .dd-btn{border-radius:8px 0 0 8px}
+  #bulk-table .cell-date .dd.year-dd .dd-btn{border-left:0;border-radius:0 8px 8px 0}
+  #bulk-table tr.grp td{background:#eef1f5;border-top:2px solid var(--line)}
+  #bulk-table tr.grp .grp-name{font-weight:600;color:var(--fg,#1a1a1a);white-space:normal}
+  #bulk-table tr.grp .grp-count{color:var(--muted);font-weight:400;font-size:12px}
   #bulk-table td.del{text-align:center}
   .row-del{border:none;background:transparent;color:#b91c1c;cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
   .row-del:hover{background:#fee2e2;border-radius:5px}
@@ -135,6 +143,13 @@
   .import-map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
   .import-map-grid .mrow label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px;padding:0 13px}
   .import-map-grid .mrow select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+  .ima-date-lbl{font-size:12px;color:var(--muted)}
+  .import-map-actions .date-row{display:flex;align-items:center}
+  .import-map-actions .date-row .dd{width:150px}
+  .import-map-actions .date-row .dd.year-dd{width:96px}
+  /* месяц+год — единый кнопочный блок без зазора */
+  .import-map-actions .date-row .dd:first-child .dd-btn{border-radius:8px 0 0 8px}
+  .import-map-actions .date-row .dd.year-dd .dd-btn{border-left:0;border-radius:0 8px 8px 0}
   .import-map-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px;flex-wrap:wrap}
   .ima-actions{display:flex;align-items:center;gap:10px}
   button.ghost{background:transparent;border-color:transparent;color:var(--muted)}
@@ -185,11 +200,11 @@
 
       <div class="field">
         <label>Название товара</label>
-        <input id="in-name" data-field-id="name" placeholder="ДЕТСКИЙ ГОРШОК 3 В 1">
+        <input id="in-name" data-field-id="name" placeholder="пример: ДЕТСКИЙ ГОРШОК 3 В 1">
         <label class="check" style="margin-top:6px"><input type="checkbox" id="name-upper" checked> Прописными (ВЕРХНИЙ регистр)</label>
       </div>
-      <div class="field"><label>Цвет</label><input id="in-circle" data-field-id="circle" placeholder="ЛЁН"></div>
-      <div class="field"><label>Артикул</label><input id="in-artikul" data-field-id="artikul" placeholder="BPS-01006"></div>
+      <div class="field"><label>Цвет</label><input id="in-circle" data-field-id="circle" placeholder="пример: ЛЁН"></div>
+      <div class="field"><label>Артикул</label><input id="in-artikul" data-field-id="artikul" placeholder="пример: BPS-01006"></div>
       <div class="field"><label>Кол-во в коробке</label><input id="in-kolvo" data-field-id="kolvo" placeholder="8"></div>
       <div class="field">
         <label>Дата изготовления</label>
@@ -199,10 +214,10 @@
         </div>
         <input type="hidden" id="in-data" data-field-id="data">
       </div>
-      <div class="field"><label>Срок годности</label><input id="in-srok" data-field-id="srok" placeholder="Не ограничен"></div>
+      <div class="field"><label>Срок годности</label><input id="in-srok" data-field-id="srok" placeholder="пример: Не ограничен"></div>
       <div class="field">
         <label>Штрих-код (ITF-14, 14 цифр)</label>
-        <input id="in-barcode" data-field-id="barcode" inputmode="numeric" maxlength="14" placeholder="14673753490645">
+        <input id="in-barcode" data-field-id="barcode" inputmode="numeric" maxlength="14" placeholder="пример: 14673753490645">
         <label class="check" style="margin-top:6px"><input type="checkbox" id="barcode-bearer" checked> Опорные полосы</label>
         <div id="barcode-msg" class="stub" style="margin-top:4px"></div>
       </div>
@@ -219,7 +234,7 @@
 <section id="bulkView" class="card">
   <div class="bulk-head">
     <h2 style="padding-left:24px;">Каждая строка = стикер</h2>
-    <button id="bulk-back">← Одиночный режим</button>
+    <!-- <button id="bulk-back">← Одиночный режим</button> -->
   </div>
   <div class="bulk-toolbar">
     <button id="bulk-import">Импорт CSV/Excel…</button>
@@ -227,7 +242,7 @@
     <input type="file" id="import-file" accept=".csv,.tsv,.txt,.xlsx,.xls" hidden>
     <span class="sep"></span>
     <button id="icons-import-zip">Иконки: zip…</button>
-    <button id="icons-import-dir" class="ghost">…или папка</button>
+    <!-- <button id="icons-import-dir" class="ghost">…или папка</button> -->
     <input type="file" id="icons-file-dir" webkitdirectory multiple hidden>
     <input type="file" id="icons-file-zip" accept=".zip" hidden>
     <span id="icons-status" class="bulk-count"></span>
@@ -255,6 +270,8 @@
       </div>
       <input type="checkbox" id="import-replace" checked hidden>
       <div class="ima-actions">
+        <span class="ima-date-lbl">Дата изготовления:</span>
+        <div class="date-row" id="import-date"></div>
         <button class="ghost" id="import-cancel">Отменить</button>
         <button class="primary" id="import-apply">Импортировать</button>
       </div>
@@ -500,19 +517,27 @@ document.addEventListener("DOMContentLoaded", function () {
       Array.prototype.forEach.call(list.children, function(el, k){ el.classList.toggle("hl", k === i); });
       if (list.children[i]) list.children[i].scrollIntoView({ block: "nearest" });
     }
+    // Список — position:fixed (не обрезается overflow-контейнерами, напр. прокруткой таблицы массового режима);
+    // координаты считаем от кнопки. Ширина ≥ ширины кнопки; авто-разворот вверх/прижатие к правому краю окна.
     function position(){
-      list.classList.remove("up", "right");
       var r = dd.getBoundingClientRect();
-      if (r.bottom + list.offsetHeight + 8 > window.innerHeight && r.top - list.offsetHeight > 8) list.classList.add("up");
-      // если меню вылезает за правый край окна — прижать к правому краю кнопки (не раздвигать страницу)
-      if (r.left + list.offsetWidth > window.innerWidth - 8) list.classList.add("right");
+      list.style.minWidth = r.width + "px";
+      var lh = list.offsetHeight, lw = list.offsetWidth;
+      var up = (r.bottom + lh + 8 > window.innerHeight) && (r.top - lh > 8);
+      var top = up ? (r.top - lh - 5) : (r.bottom + 5);
+      var left = r.left;
+      if (left + lw > window.innerWidth - 8) left = Math.max(8, r.right - lw); // не вылезать за правый край окна
+      list.style.top = top + "px"; list.style.left = left + "px";
     }
+    function reposition(){ if (!list.hidden) position(); }
     function open(){
       if (sel.disabled) return;
       rebuild(); list.hidden = false; dd.classList.add("open"); position(); setHl(sel.selectedIndex);
       document.addEventListener("mousedown", onDocDown, true);
+      window.addEventListener("scroll", reposition, true); window.addEventListener("resize", reposition);
     }
-    function close(){ list.hidden = true; dd.classList.remove("open"); document.removeEventListener("mousedown", onDocDown, true); }
+    function close(){ list.hidden = true; dd.classList.remove("open"); document.removeEventListener("mousedown", onDocDown, true);
+      window.removeEventListener("scroll", reposition, true); window.removeEventListener("resize", reposition); }
     function choose(i){
       if (i < 0 || i >= sel.options.length) return;
       if (sel.selectedIndex !== i){ sel.selectedIndex = i; sel.dispatchEvent(new Event("change", { bubbles: true })); }
@@ -1230,11 +1255,14 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!layout || !bulkView || !tbody) return;
     // icon — первым: первая order-ячейка идёт сразу за «Превью» (нужное место колонки «Иконка»).
     var order = ["icon","name","circle","artikul","kolvo","data","srok","barcode"];
-    var placeholders = {name:"ДЕТСКИЙ ГОРШОК 3 В 1",circle:"ЛЁН",artikul:"BPS-01006",kolvo:"8",data:"Октябрь 2024",srok:"Не ограничен",barcode:"14673753490645"};
+    var placeholders = {name:"Название товара",circle:"Цвет",artikul:"AAA-000000",kolvo:"0",data:"Октябрь 2026",srok:"Срок",barcode:"00000000000000"};
     var mapLabels = {barcode:"Код ШК ITF-14",icon:"Иконка (имя SVG)"}; // подпись селекта в сопоставлении
 
     // Обязательные поля для включения строки в генерацию (Цвет — необязателен).
     var required = ["icon","name","artikul","kolvo","data","srok","barcode"];
+    // Поля, участвующие в СОПОСТАВЛЕНИИ ИМПОРТА (и подстановке значений из файла). Дату изготовления
+    // (`data`) не импортируем — по решению пользователя; при этом колонка `data` в таблице остаётся (order).
+    var importOrder = order.filter(function(id){ return id !== "data"; });
     var checkAll = document.getElementById("bulk-check-all");
 
     // --- Превью строк (ленивый рендер миниатюр) ---
@@ -1309,7 +1337,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renumber(){
-      Array.prototype.forEach.call(tbody.rows, function(tr,i){ tr.querySelector("td.idx").textContent = (i+1); });
+      var n=0;
+      Array.prototype.forEach.call(tbody.rows, function(tr){
+        if (tr.classList.contains("grp")) return;      // строка-заголовок группы не нумеруется
+        var idx = tr.querySelector("td.idx"); if (idx) idx.textContent = (++n);
+      });
     }
     // Форматные правила полей. Возвращает текст ошибки для НЕПУСТОГО значения или null, если валидно.
     // kolvo — целое > 0; artikul — латиница/цифры/дефис; barcode — длина ровно 14 (≠14 → ошибка;
@@ -1390,6 +1422,7 @@ document.addEventListener("DOMContentLoaded", function () {
       checkAll.disabled = enabled === 0;
       checkAll.checked = enabled > 0 && checked === enabled;
       checkAll.indeterminate = checked > 0 && checked < enabled;
+      updateAllGroupHeads();
       updateCount();
     }
     // Счётчик «X из Y строк отмечено для генерации» (X — отмеченные, Y — все строки).
@@ -1409,6 +1442,51 @@ document.addEventListener("DOMContentLoaded", function () {
         } else { errEl.hidden = true; }
       }
     }
+    // --- Группировка строк по названию (строка-заголовок группы + групповой чекбокс) ---
+    // Ключ группы: нормализованное название (trim, схлопнутые пробелы, регистронезависимо).
+    function groupKey(name){ return String(name==null?"":name).trim().replace(/\s+/g," ").toLowerCase(); }
+    // Строки-данные группы: идущие следом строки с классом in-grp (до заголовка/строки без метки/конца).
+    // Метка in-grp ставится только членам группы при импорте — поэтому строки без названия и добавленные
+    // вручную после импорта в группу НЕ засчитываются.
+    function groupRows(headTr){
+      var out=[], t=headTr.nextElementSibling;
+      while(t && t.classList.contains("in-grp")){ out.push(t); t=t.nextElementSibling; }
+      return out;
+    }
+    // Пересчёт трёхпозиционного чекбокса заголовка по его строкам-данным (учитываем только полные/валидные).
+    function updateGroupHead(headTr){
+      var chk = headTr.querySelector("input.grpchk"); if(!chk) return;
+      var rows = groupRows(headTr), enabled=0, checked=0;
+      rows.forEach(function(tr){ var c=tr.querySelector("input.rowchk"); if(c && !c.disabled){ enabled++; if(c.checked) checked++; } });
+      chk.disabled = enabled===0;
+      chk.checked = enabled>0 && checked===enabled;
+      chk.indeterminate = checked>0 && checked<enabled;
+      var cnt = headTr.querySelector(".grp-count"); if(cnt) cnt.textContent = "("+rows.length+")";
+    }
+    function updateAllGroupHeads(){ Array.prototype.forEach.call(tbody.querySelectorAll("tr.grp"), updateGroupHead); }
+    // Заголовок группы: чекбокс (колонка выбора) + название жирным со счётчиком «(N)».
+    function addGroupHead(name){
+      var tr=document.createElement("tr"); tr.className="grp";
+      var selTd=document.createElement("td"); selTd.className="sel";
+      var chk=document.createElement("input"); chk.type="checkbox"; chk.className="grpchk"; chk.title="Отметить/снять всю группу";
+      chk.addEventListener("change", function(){
+        var on=chk.checked;
+        groupRows(tr).forEach(function(r){ var c=r.querySelector("input.rowchk"); if(c && !c.disabled) c.checked=on; });
+        updateCheckAll();
+      });
+      selTd.appendChild(chk); tr.appendChild(selTd);
+      var td=document.createElement("td"); td.className="grp-name"; td.colSpan=11;
+      var nm=document.createElement("span"); nm.className="grp-title"; nm.textContent=name;
+      var cnt=document.createElement("span"); cnt.className="grp-count";
+      td.appendChild(nm); td.appendChild(document.createTextNode(" ")); td.appendChild(cnt);
+      tr.appendChild(td); tbody.appendChild(tr);
+      return tr;
+    }
+    // Убрать заголовки групп без строк-данных (после удаления последней строки группы).
+    function pruneEmptyGroups(){
+      Array.prototype.forEach.call(tbody.querySelectorAll("tr.grp"), function(h){ if(groupRows(h).length===0) h.remove(); });
+    }
+
     // Мгновенный тултип ошибки (без задержки нативного title). Один общий элемент на страницу.
     // Используется для ШК (el.dataset.msg) и для ячеек с ошибкой (передаём msg явно, напр. невалидное kolvo).
     var bcTip = document.createElement("div"); bcTip.className = "bc-tip"; bcTip.hidden = true;
@@ -1431,6 +1509,32 @@ document.addEventListener("DOMContentLoaded", function () {
       if (r.valid){ wrap.classList.remove("invalid"); delete err.dataset.msg; hideBcTip(); }
       else { wrap.classList.add("invalid"); err.dataset.msg = r.msg || "Некорректный штрих-код"; }
     }
+    // Ячейка «Дата изготовления» в строке таблицы: месяц(select)+год(select) единым блоком (как в импорте),
+    // пишут собранное «Месяц Год» в СКРЫТЫЙ input[data-col="data"] (тот же паттерн, что скрытый in-data в одиночном
+    // режиме) → readRows/rowComplete/превью/имя PDF работают без изменений. Дефолт — пустые плейсхолдеры
+    // «Месяц»/«Год» (дата обязательна: пока не выбрано и то и другое, поле пустое → строка неполная).
+    function makeDateCell(initial){
+      var td=document.createElement("td"); td.className="cell col-data";
+      var hid=document.createElement("input"); hid.type="hidden"; hid.dataset.col="data";
+      var box=document.createElement("div"); box.className="cell-date";
+      // Разбор начального «Месяц Год» (из импорта): последний токен — год, остальное — месяц.
+      var im="", iy=""; if (initial){ var p=String(initial).trim().split(/\s+/); if (p.length>=2){ iy=p.pop(); im=p.join(" "); } }
+      var msel=document.createElement("select"); msel.setAttribute("aria-label","Месяц");
+      var mo0=document.createElement("option"); mo0.value=""; mo0.textContent="Месяц"; if(!im) mo0.selected=true; msel.appendChild(mo0);
+      MONTHS_RU.forEach(function(name){ var o=document.createElement("option"); o.value=name; o.textContent=name; if(name===im) o.selected=true; msel.appendChild(o); });
+      var ysel=document.createElement("select"); ysel.setAttribute("aria-label","Год");
+      var yo0=document.createElement("option"); yo0.value=""; yo0.textContent="Год"; if(!iy) yo0.selected=true; ysel.appendChild(yo0);
+      var cy=new Date().getFullYear();
+      for(var yy=cy-1; yy<=cy+5; yy++){ var yo=document.createElement("option"); yo.value=String(yy); yo.textContent=String(yy); if(String(yy)===iy) yo.selected=true; ysel.appendChild(yo); }
+      function upd(){ hid.value = (msel.value && ysel.value) ? (msel.value+" "+ysel.value) : ""; }
+      upd(); // записать начальное значение (пересчёт чекбокса/превью — по focusout строки, как у прочих ячеек)
+      msel.addEventListener("change", upd); ysel.addEventListener("change", upd);
+      box.appendChild(msel); box.appendChild(ysel);
+      td.appendChild(hid); td.appendChild(box);
+      enhanceSelect(msel); enhanceSelect(ysel);
+      if (ysel.__dd) ysel.__dd.classList.add("year-dd");
+      return td;
+    }
     function addRow(values){
       values = values || {};
       var tr = document.createElement("tr");
@@ -1444,6 +1548,7 @@ document.addEventListener("DOMContentLoaded", function () {
       prevTd.addEventListener("mouseenter", function(){ if (prevTd._rendered) showPreviewPopup(prevTd); });
       prevTd.addEventListener("mouseleave", hidePreviewPopup);
       order.forEach(function(id){
+        if (id === "data"){ tr.appendChild(makeDateCell(values.data)); return; } // дата — месяц+год селектами
         var td = document.createElement("td"); td.className="cell col-"+id;
         var inp = document.createElement("input");
         inp.dataset.col = id; inp.placeholder = placeholders[id] || "";
@@ -1492,7 +1597,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       var del = document.createElement("td"); del.className="del";
       var btn = document.createElement("button"); btn.className="row-del"; btn.title="Удалить строку"; btn.textContent="✕";
-      btn.addEventListener("click", function(){ tr.remove(); if(!tbody.rows.length) addRow(); renumber(); updateCheckAll(); });
+      btn.addEventListener("click", function(){ tr.remove(); pruneEmptyGroups(); if(!tbody.querySelector("tr:not(.grp)")) addRow(); renumber(); updateCheckAll(); });
       del.appendChild(btn); tr.appendChild(del);
       // Уход фокуса из строки наружу → полная валидация строки + пересчёт чекбокса/счётчика + обновление превью.
       tr.addEventListener("focusout", function(e){
@@ -1530,9 +1635,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!tbody.rows.length){ addRow(currentFormValues()); } // первую строку заполняем из одиночной формы
       layout.hidden = true; bulkView.hidden = false;
     });
-    document.getElementById("bulk-back").addEventListener("click", function(){
-      bulkView.hidden = true; layout.hidden = false;
-    });
+    // document.getElementById("bulk-back").addEventListener("click", function(){
+    //   bulkView.hidden = true; layout.hidden = false;
+    // });
     document.getElementById("bulk-add").addEventListener("click", function(){ addRow(); });
 
     document.getElementById("bulk-generate").addEventListener("click", async function(){
@@ -1629,7 +1734,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function norm(s){ return String(s||"").toLowerCase().replace(/ё/g,"е").trim(); }
     function autoMatch(headers){
       var map={};
-      order.forEach(function(fid){
+      importOrder.forEach(function(fid){
         var idx=-1;
         for(var h=0;h<headers.length;h++){
           var hn=norm(headers[h]);
@@ -1645,7 +1750,7 @@ document.addEventListener("DOMContentLoaded", function () {
       parsed = { headers: headers, rows: dataRows };
       var auto = autoMatch(headers);
       importGrid.innerHTML="";
-      order.forEach(function(fid){
+      importOrder.forEach(function(fid){
         var wrap=document.createElement("div"); wrap.className="mrow";
         var lab=document.createElement("label"); lab.textContent=mapLabels[fid]||labels[fid]||fid; wrap.appendChild(lab);
         var sel=document.createElement("select"); sel.dataset.field=fid;
@@ -1658,6 +1763,20 @@ document.addEventListener("DOMContentLoaded", function () {
         wrap.appendChild(sel); importGrid.appendChild(wrap);
         enhanceSelect(sel); // кастомный дропдаун
       });
+      // Дата изготовления — месяц+год в строке действий (не колонкой файла); подставится всем строкам (applyImport).
+      var dbox=document.getElementById("import-date");
+      if (dbox){
+        dbox.innerHTML="";
+        var now=new Date();
+        var msel=document.createElement("select"); msel.id="import-date-month"; msel.setAttribute("aria-label","Месяц");
+        MONTHS_RU.forEach(function(name,i){ var o=document.createElement("option"); o.value=name; o.textContent=name; if(i===now.getMonth()) o.selected=true; msel.appendChild(o); });
+        var ysel=document.createElement("select"); ysel.id="import-date-year"; ysel.setAttribute("aria-label","Год");
+        var cy=now.getFullYear();
+        for (var yy=cy-1; yy<=cy+5; yy++){ var yo=document.createElement("option"); yo.value=String(yy); yo.textContent=String(yy); if(yy===cy) yo.selected=true; ysel.appendChild(yo); }
+        dbox.appendChild(msel); dbox.appendChild(ysel);
+        enhanceSelect(msel); enhanceSelect(ysel);
+        if (ysel.__dd) ysel.__dd.classList.add("year-dd");
+      }
       importInfo.textContent="· найдено строк данных: "+dataRows.length+", колонок: "+headers.length;
       document.getElementById("import-apply").textContent =
         "Импортировать " + dataRows.length + " " + pluralRu(dataRows.length, ["строку","строки","строк"]);
@@ -1669,13 +1788,34 @@ document.addEventListener("DOMContentLoaded", function () {
       var colFor={}; Array.prototype.forEach.call(sels,function(s){ colFor[s.dataset.field]=parseInt(s.value,10); });
       var replace = document.getElementById("import-replace").checked;
       if(replace) tbody.innerHTML="";
-      parsed.rows.forEach(function(r){
+      // Стартовая/пустые строки-данные мешают группировке — убираем полностью пустые (в обоих режимах).
+      Array.prototype.forEach.call(tbody.querySelectorAll("tr:not(.grp)"), function(tr){ if(!rowAnyFilled(tr)) tr.remove(); });
+      pruneEmptyGroups();
+      // Значения строк из файла.
+      var items = parsed.rows.map(function(r){
         var v={};
-        order.forEach(function(fid){ var ci=colFor[fid]; v[fid]= (ci>=0 && r[ci]!=null)? String(r[ci]) : ""; });
-        addRow(v);
+        importOrder.forEach(function(fid){ var ci=colFor[fid]; v[fid]= (ci>=0 && r[ci]!=null)? String(r[ci]) : ""; });
+        return v; // `data` заполняется ниже общим значением месяц+год из блока сопоставления
       });
-      if(!tbody.rows.length) addRow();
+      // Дата изготовления — общая для всех строк: месяц+год из контролов блока сопоставления («Месяц Год»).
+      var dm=document.getElementById("import-date-month"), dy=document.getElementById("import-date-year");
+      var dateVal = dm ? ((dy && String(dy.value||"").trim()) ? (dm.value+" "+String(dy.value).trim()) : dm.value) : "";
+      items.forEach(function(v){ v.data = dateVal; });
+      // Группировка по названию: порядок групп — по первому появлению, внутри — как в файле.
+      // Строки без названия — в конец, без заголовка.
+      var groupsOrder=[], groups={}, noName=[];
+      items.forEach(function(v){
+        var k = groupKey(v.name);
+        if(!k){ noName.push(v); return; }
+        if(!groups[k]){ groups[k]={ name:String(v.name).trim(), rows:[] }; groupsOrder.push(k); }
+        groups[k].rows.push(v);
+      });
+      groupsOrder.forEach(function(k){ var g=groups[k]; addGroupHead(g.name); g.rows.forEach(function(v){ addRow(v).classList.add("in-grp"); }); });
+      noName.forEach(addRow);
+      if(!tbody.querySelector("tr:not(.grp)")) addRow();
+      pruneEmptyGroups();
       renumber();
+      updateCheckAll();
       importMap.hidden=true; parsed=null;
     }
 
@@ -1711,7 +1851,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } catch(e){ alert("Не удалось загрузить иконки: " + e.message); console.error(e); }
       finally { input.value = ""; }
     }
-    document.getElementById("icons-import-dir").addEventListener("click", function(){ iconsDirInput.click(); });
+    // document.getElementById("icons-import-dir").addEventListener("click", function(){ iconsDirInput.click(); });
     document.getElementById("icons-import-zip").addEventListener("click", function(){ iconsZipInput.click(); });
     iconsDirInput.addEventListener("change", function(){ handleIconsInput(iconsDirInput); });
     iconsZipInput.addEventListener("change", function(){ handleIconsInput(iconsZipInput); });
@@ -1745,6 +1885,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     cfg.fields.forEach(function (f) {
       var b = f.box; // [x0,y0,x1,y1] в PDF-поинтах (bottom-left)
+      // svg-image и прочие поля без статичной зоны: рамка не рисуется (координаты считаются отдельно).
+      if (!b || b.length < 4) return;
       var left = b[0] * scale;
       var top = (pageH - b[3]) * scale;      // верх = высота страницы − верхняя грань
       var w = (b[2] - b[0]) * scale;
