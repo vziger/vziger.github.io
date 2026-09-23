@@ -143,6 +143,12 @@
   #bulk-table tr.grp td + td{border-left-style:hidden} /* hidden (не none/transparent) — в border-collapse гасит общую границу */
   #bulk-table tr.grp td.grp-date{padding:0}
   #bulk-table tr.grp .dd.dd-mixed .dd-label{color:var(--muted);} /* «—» — у строк группы значения расходятся */
+  /* заголовок группы: кликабельны чекбокс, промежуток и текст (label for); промежуток — padding-left у label */
+  #bulk-table td.sel,#bulk-table th.sel{cursor:pointer;user-select:none} /* вся ячейка с чекбоксом кликабельна */
+  #bulk-table td.sel:has(input:disabled),#bulk-table th.sel:has(input:disabled){cursor:default}
+  #bulk-table tr.grp td.grp-name{padding-left:0}
+  #bulk-table tr.grp .grp-label{display:inline-block;padding:4px 6px;cursor:pointer;user-select:none}
+  #bulk-table tr.grp:has(.grpchk:disabled) .grp-label{cursor:default}
   #bulk-table tr.grp .grp-name{font-weight:600;color:var(--fg,#1a1a1a);white-space:normal}
   #bulk-table tr.grp[data-kind="manual"] .grp-title,#bulk-table tr.grp[data-kind="noname"] .grp-title{color:var(--muted)} /* служебные группы */
   #bulk-table tr.grp .grp-count{color:var(--muted);font-weight:400;font-size:12px}
@@ -1282,6 +1288,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // (`data`) не импортируем — по решению пользователя; при этом колонка `data` в таблице остаётся (order).
     var importOrder = order.filter(function(id){ return id !== "data"; });
     var checkAll = document.getElementById("bulk-check-all");
+    // Ячейка с чекбоксом кликабельна целиком (строки, заголовки групп, «выбрать все» в шапке): клик мимо квадратика
+    // → click() по чекбоксу (он сам шлёт change — вся логика как при клике по чекбоксу). Один делегат на таблицу.
+    document.getElementById("bulk-table").addEventListener("click", function(e){
+      var cell = e.target.closest("td.sel, th.sel"); if (!cell) return;
+      var c = cell.querySelector('input[type="checkbox"]');
+      if (c && e.target !== c && !c.disabled) c.click();
+    });
 
     // --- Превью строк (ленивый рендер миниатюр) ---
     var THUMB_W = 60; // ширина миниатюры в CSS-px (высота пропорционально стикеру)
@@ -1504,6 +1517,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // (в т.ч. пустое → плейсхолдер); значения расходятся → «—» (тултип «Разные значения…»). Без события change — чтобы не запустить
     // обратную запись в строки (applyGroupDate).
     var GRP_MIXED = "__mixed";
+    var grpSeq = 0; // счётчик для уникальных id групповых чекбоксов (label for)
     function syncGroupDate(headTr, rows, hsel, part){
       if (!hsel) return;
       var vals = rows.map(function(r){ var s=r.querySelector('td.col-data select[aria-label="'+part+'"]'); return s ? s.value : ""; });
@@ -1526,13 +1540,17 @@ document.addEventListener("DOMContentLoaded", function () {
         updateCheckAll();
       });
       selTd.appendChild(chk); tr.appendChild(selTd);
+      // Область клика = чекбокс + промежуток + текст: название/счётчик — <label for> чекбокса (отступ слева — внутри
+      // label); клик по всей ячейке чекбокса — общий обработчик таблицы (см. «ячейка с чекбоксом»).
+      chk.id = "grpchk-" + (++grpSeq);
       // Раскладка по колонкам (визуально — одна строка, без вертикальных границ): название — от «№» до колонки
       // перед датой; контрол месяц+год — ровно в колонке «Дата изготовления»; хвост — остальные колонки + «✕».
       var di=order.indexOf("data");
       var td=document.createElement("td"); td.className="grp-name"; td.colSpan=2+di; // №, Превью + колонки order до даты
+      var lbl=document.createElement("label"); lbl.className="grp-label"; lbl.htmlFor=chk.id;
       var nm=document.createElement("span"); nm.className="grp-title"; nm.textContent=name;
       var cnt=document.createElement("span"); cnt.className="grp-count";
-      td.appendChild(nm); td.appendChild(document.createTextNode(" ")); td.appendChild(cnt);
+      lbl.appendChild(nm); lbl.appendChild(document.createTextNode(" ")); lbl.appendChild(cnt); td.appendChild(lbl);
       tr.appendChild(td);
       var dateTd=document.createElement("td"); dateTd.className="grp-date col-data";
       var my=makeMonthYear("", ""); dateTd.appendChild(my.box); tr.appendChild(dateTd);
