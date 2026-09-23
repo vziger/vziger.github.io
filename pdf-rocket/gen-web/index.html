@@ -55,11 +55,14 @@
   .dd[aria-disabled="true"] .dd-btn{background:#f7f8fa;color:#9aa1ab;cursor:not-allowed}
   .dd-list{position:fixed;z-index:1003;width:max-content;max-width:360px;
     background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 12px 34px rgba(0,0,0,.16);padding:6px;max-height:436px;overflow:auto}
-  .dd-opt{display:flex;align-items:center;padding:9px 12px 9px 32px;border-radius:8px;cursor:pointer;position:relative;
+  .dd-opt{display:flex;align-items:center;padding:9px 32px 9px 12px;border-radius:8px;cursor:pointer;position:relative;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+  /* месяцы: все 12 без вертикального скролла (предел — только высота окна) */
+  .dd:has(> select[aria-label="Месяц"]) .dd-list{max-height:calc(100vh - 16px)}
+  .dd.dd-ph .dd-label{color:var(--secondary-text)} /* значение не выбрано — как placeholder у инпутов */
   .dd-opt:hover,.dd-opt.hl{background:#f1f3f7}
   .dd-opt.sel{background:var(--accent-weak)}
-  .dd-opt.sel::before{content:"";position:absolute;left:10px;top:50%;width:13px;height:13px;transform:translateY(-50%);
+  .dd-opt.sel::before{content:"";position:absolute;right:10px;top:50%; /* галочка выбранного — справа */width:13px;height:13px;transform:translateY(-50%);
     background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M13 4.5 6.5 11.5 3 8' fill='none' stroke='%2316a34a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
   .row{display:flex;gap:10px}
   .row .field{flex:1}
@@ -132,8 +135,16 @@
   #bulk-table .cell-date .dd.year-dd{flex:none;width:82px}
   #bulk-table .cell-date .dd:first-child .dd-btn{border-radius:8px 0 0 8px}
   #bulk-table .cell-date .dd.year-dd .dd-btn{border-left:0;border-radius:0 8px 8px 0}
+  /* пустой обязательный контрол даты (месяц/год отдельно) — красный при потере фокуса строки */
+  #bulk-table .cell-date .dd.dd-empty .dd-btn{background:#fdecec;border-color:#e39a9a}
+  #bulk-table .cell-date .dd.dd-empty.year-dd .dd-btn{border-left:0}
   #bulk-table tr.grp td{background:#eef1f5;border-top:2px solid var(--line)}
+  /* заголовок группы разбит на ячейки (контрол даты над колонкой даты), но визуально — одна строка */
+  #bulk-table tr.grp td + td{border-left-style:hidden} /* hidden (не none/transparent) — в border-collapse гасит общую границу */
+  #bulk-table tr.grp td.grp-date{padding:0}
+  #bulk-table tr.grp .dd.dd-mixed .dd-label{color:var(--muted);} /* «—» — у строк группы значения расходятся */
   #bulk-table tr.grp .grp-name{font-weight:600;color:var(--fg,#1a1a1a);white-space:normal}
+  #bulk-table tr.grp[data-kind="manual"] .grp-title,#bulk-table tr.grp[data-kind="noname"] .grp-title{color:var(--muted)} /* служебные группы */
   #bulk-table tr.grp .grp-count{color:var(--muted);font-weight:400;font-size:12px}
   #bulk-table td.del{text-align:center}
   .row-del{border:none;background:transparent;color:#b91c1c;cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
@@ -501,12 +512,14 @@ document.addEventListener("DOMContentLoaded", function () {
     sel.style.display = "none"; sel.tabIndex = -1;
     sel.__dd = dd; var hlIndex = -1;
 
-    function syncLabel(){ var o = sel.options[sel.selectedIndex]; label.textContent = o ? o.textContent : ""; dd.setAttribute("aria-disabled", sel.disabled ? "true" : "false"); }
+    function syncLabel(){ var o = sel.options[sel.selectedIndex]; label.textContent = o ? o.textContent : ""; dd.setAttribute("aria-disabled", sel.disabled ? "true" : "false");
+      dd.classList.toggle("dd-ph", !!o && o.hidden && o.value === ""); } // на кнопке плейсхолдер («Месяц»/«Год») → цвет плейсхолдера
     function rebuild(){
       list.innerHTML = "";
       Array.prototype.forEach.call(sel.options, function(o, i){
         var it = document.createElement("div"); it.className = "dd-opt" + (i === sel.selectedIndex ? " sel" : "");
         it.textContent = o.textContent; it.dataset.i = i; it.setAttribute("role", "option");
+        if (o.hidden) it.hidden = true; // служебная опция (напр. «Разные» в заголовке группы) — только для показа, не выбирается
         it.addEventListener("mousedown", function(e){ e.preventDefault(); choose(i); });
         it.addEventListener("mousemove", function(){ setHl(i); });
         list.appendChild(it);
@@ -540,6 +553,7 @@ document.addEventListener("DOMContentLoaded", function () {
       window.removeEventListener("scroll", reposition, true); window.removeEventListener("resize", reposition); }
     function choose(i){
       if (i < 0 || i >= sel.options.length) return;
+      if (sel.options[i].hidden){ close(); btn.focus(); return; } // служебную опцию выбрать нельзя
       if (sel.selectedIndex !== i){ sel.selectedIndex = i; sel.dispatchEvent(new Event("change", { bubbles: true })); }
       syncLabel(); close(); btn.focus();
     }
@@ -550,7 +564,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (e.key === "ArrowDown" || e.key === "ArrowUp"){
         e.preventDefault();
         if (list.hidden){ open(); return; }
-        setHl(Math.max(0, Math.min(sel.options.length - 1, hlIndex + (e.key === "ArrowDown" ? 1 : -1))));
+        var step = e.key === "ArrowDown" ? 1 : -1, j = hlIndex + step;
+        while (j >= 0 && j < sel.options.length && sel.options[j].hidden) j += step; // скрытые опции пропускаем
+        if (j >= 0 && j < sel.options.length) setHl(j);
       } else if (e.key === "Enter" || e.key === " "){
         e.preventDefault(); if (list.hidden) open(); else choose(hlIndex);
       } else if (e.key === "Escape"){ if (!list.hidden){ e.preventDefault(); close(); } }
@@ -953,7 +969,9 @@ document.addEventListener("DOMContentLoaded", function () {
     '<rect x="3" y="4.5" width="18" height="15" rx="2.2" stroke="currentColor" stroke-width="1.6"/>' +
     '<circle cx="8.4" cy="9.4" r="1.7" fill="currentColor"/>' +
     '<path d="M4.2 17.5 L10 12 l3.6 3.2 L16.2 12 L19.8 15.6 V17.3 a1 1 0 0 1-1 1 H5.2 a1 1 0 0 1-1-1 Z" fill="currentColor"/></svg>';
-  function iconKey(name){ return String(name).split(/[\\/]/).pop().trim().toLowerCase(); }
+  // NFC: macOS пишет имена файлов (в zip/папке) в NFD — «й»=«и»+краткая, «ё»=«е»+диерезис; в таблице они
+  // слитные (NFC). Без нормализации визуально одинаковые имена не совпадают. Для уже-NFC строк — no-op.
+  function iconKey(name){ return String(name).normalize("NFC").split(/[\\/]/).pop().trim().toLowerCase(); }
   // Терпимый поиск: пробуем как есть и с добавленным «.svg».
   function iconGet(name){
     if (!name) return null;
@@ -1377,6 +1395,16 @@ document.addEventListener("DOMContentLoaded", function () {
       if (required.indexOf(id) < 0) return;
       inp.classList.remove("cell-empty", "cell-invalid"); delete inp.dataset.err;
       var v = inp.value.trim();
+      if (id === "data"){ // дата — скрытый инпут; красим ОТДЕЛЬНО месяц/год (тот, что не выбран)
+        var cell = inp.closest("td");
+        if (cell){
+          var show = rowAnyFilled(tr);
+          var msel = cell.querySelector('select[aria-label="Месяц"]'), ysel = cell.querySelector('select[aria-label="Год"]');
+          if (msel && msel.__dd) msel.__dd.classList.toggle("dd-empty", show && !msel.value);
+          if (ysel && ysel.__dd) ysel.__dd.classList.toggle("dd-empty", show && !ysel.value);
+        }
+        return;
+      }
       if (v === ""){ if (rowAnyFilled(tr)) inp.classList.add("cell-empty"); return; }
       var err = fieldError(id, v);
       if (err){ inp.classList.add("cell-invalid"); inp.dataset.err = err; }
@@ -1453,6 +1481,13 @@ document.addEventListener("DOMContentLoaded", function () {
       while(t && t.classList.contains("in-grp")){ out.push(t); t=t.nextElementSibling; }
       return out;
     }
+    // Заголовок группы строки-данных (идём вверх по строкам in-grp до tr.grp); строка вне группы → null.
+    function groupHeadOf(tr){
+      if (!tr || !tr.classList || !tr.classList.contains("in-grp")) return null;
+      var t = tr.previousElementSibling;
+      while (t && t.classList.contains("in-grp")) t = t.previousElementSibling;
+      return (t && t.classList.contains("grp")) ? t : null;
+    }
     // Пересчёт трёхпозиционного чекбокса заголовка по его строкам-данным (учитываем только полные/валидные).
     function updateGroupHead(headTr){
       var chk = headTr.querySelector("input.grpchk"); if(!chk) return;
@@ -1462,11 +1497,27 @@ document.addEventListener("DOMContentLoaded", function () {
       chk.checked = enabled>0 && checked===enabled;
       chk.indeterminate = checked>0 && checked<enabled;
       var cnt = headTr.querySelector(".grp-count"); if(cnt) cnt.textContent = "("+rows.length+")";
+      syncGroupDate(headTr, rows, headTr._grpMonth, "Месяц");
+      syncGroupDate(headTr, rows, headTr._grpYear, "Год");
+    }
+    // Строки → заголовок (месяц и год по отдельности): у всех строк одно значение → оно же в заголовке
+    // (в т.ч. пустое → плейсхолдер); значения расходятся → «—» (тултип «Разные значения…»). Без события change — чтобы не запустить
+    // обратную запись в строки (applyGroupDate).
+    var GRP_MIXED = "__mixed";
+    function syncGroupDate(headTr, rows, hsel, part){
+      if (!hsel) return;
+      var vals = rows.map(function(r){ var s=r.querySelector('td.col-data select[aria-label="'+part+'"]'); return s ? s.value : ""; });
+      var v = vals.length && vals.every(function(x){ return x===vals[0]; }) ? vals[0] : GRP_MIXED;
+      if (hsel.value !== v){ hsel.value = v; if (hsel.__ddSync) hsel.__ddSync(); }
+      if (hsel.__dd) hsel.__dd.classList.toggle("dd-mixed", v === GRP_MIXED);
     }
     function updateAllGroupHeads(){ Array.prototype.forEach.call(tbody.querySelectorAll("tr.grp"), updateGroupHead); }
     // Заголовок группы: чекбокс (колонка выбора) + название жирным со счётчиком «(N)».
-    function addGroupHead(name){
-      var tr=document.createElement("tr"); tr.className="grp";
+    // kind — тип группы: "import" (товар из файла, по умолчанию) | "noname" («Без названия») | "manual»
+    // («Добавлено вручную»); служебные группы узнаём по типу, НЕ по названию (товар из файла может называться так же).
+    // before — строка, перед которой вставить заголовок (нет → в конец таблицы).
+    function addGroupHead(name, kind, before){
+      var tr=document.createElement("tr"); tr.className="grp"; tr.dataset.kind = kind || "import";
       var selTd=document.createElement("td"); selTd.className="sel";
       var chk=document.createElement("input"); chk.type="checkbox"; chk.className="grpchk"; chk.title="Отметить/снять всю группу";
       chk.addEventListener("change", function(){
@@ -1475,16 +1526,61 @@ document.addEventListener("DOMContentLoaded", function () {
         updateCheckAll();
       });
       selTd.appendChild(chk); tr.appendChild(selTd);
-      var td=document.createElement("td"); td.className="grp-name"; td.colSpan=11;
+      // Раскладка по колонкам (визуально — одна строка, без вертикальных границ): название — от «№» до колонки
+      // перед датой; контрол месяц+год — ровно в колонке «Дата изготовления»; хвост — остальные колонки + «✕».
+      var di=order.indexOf("data");
+      var td=document.createElement("td"); td.className="grp-name"; td.colSpan=2+di; // №, Превью + колонки order до даты
       var nm=document.createElement("span"); nm.className="grp-title"; nm.textContent=name;
       var cnt=document.createElement("span"); cnt.className="grp-count";
       td.appendChild(nm); td.appendChild(document.createTextNode(" ")); td.appendChild(cnt);
-      tr.appendChild(td); tbody.appendChild(tr);
+      tr.appendChild(td);
+      var dateTd=document.createElement("td"); dateTd.className="grp-date col-data";
+      var my=makeMonthYear("", ""); dateTd.appendChild(my.box); tr.appendChild(dateTd);
+      // Служебная скрытая опция «—» — показывается, когда у строк группы значения расходятся (выбрать её нельзя);
+      // по ховеру — мгновенный тултип с пояснением.
+      [my.msel, my.ysel].forEach(function(s){
+        var o=document.createElement("option"); o.value=GRP_MIXED; o.textContent="—"; o.hidden=true; s.appendChild(o);
+        s.__dd.addEventListener("mouseenter", function(){ if (s.value===GRP_MIXED) showBcTip(s.__dd, "Разные значения в строках группы"); });
+        s.__dd.addEventListener("mouseleave", hideBcTip);
+      });
+      tr._grpMonth=my.msel; tr._grpYear=my.ysel;
+      // Связка заголовок → строки: месяц и год — НЕЗАВИСИМО (смена месяца не трогает год строк и наоборот),
+      // применяется ко ВСЕМ строкам группы (в т.ч. неполным/неотмеченным).
+      my.msel.addEventListener("change", function(){ applyGroupDate(tr, "Месяц", my.msel.value); });
+      my.ysel.addEventListener("change", function(){ applyGroupDate(tr, "Год", my.ysel.value); });
+      var tail=document.createElement("td"); tail.className="grp-tail"; tail.colSpan=order.length-di; // колонки после даты + «✕»
+      tr.appendChild(tail);
+      tbody.insertBefore(tr, before || null);
       return tr;
     }
+    // Заголовок группы «Добавлено вручную» (она всегда одна) или null.
+    function manualHead(){ return tbody.querySelector('tr.grp[data-kind="manual"]'); }
+    // Есть ли в таблице группы, кроме ручной (импортированные / «Без названия»).
+    function hasRealGroups(){ return !!tbody.querySelector('tr.grp:not([data-kind="manual"])'); }
+    // Соседняя строка-данные вниз (dir=1) / вверх (dir=-1), заголовки групп пропускаются; нет → null.
+    function nextDataRow(tr, dir){
+      var t = dir < 0 ? tr.previousElementSibling : tr.nextElementSibling;
+      while (t && t.classList.contains("grp")) t = dir < 0 ? t.previousElementSibling : t.nextElementSibling;
+      return t;
+    }
+    // Значение из заголовка группы → в select месяца/года (part = aria-label) каждой строки группы. change строки
+    // пересобирает её скрытый input[data-col="data"] (upd в makeDateCell) и подпись дропдауна; затем полный пересчёт
+    // строки (подсветка/чекбокс) и превью — фокус в заголовке, поэтому guard updateRowState строку не пропустит.
+    function applyGroupDate(headTr, part, value){
+      groupRows(headTr).forEach(function(r){
+        var s = r.querySelector('td.col-data select[aria-label="'+part+'"]');
+        if (!s || s.value === value) return;
+        s.value = value; s.dispatchEvent(new Event("change", { bubbles: true }));
+        updateRowState(r); refreshRowPreview(r);
+      });
+      updateCheckAll();
+    }
     // Убрать заголовки групп без строк-данных (после удаления последней строки группы).
+    // Если кроме «Добавлено вручную» групп не осталось — снимаем и её заголовок: таблица снова плоская.
     function pruneEmptyGroups(){
       Array.prototype.forEach.call(tbody.querySelectorAll("tr.grp"), function(h){ if(groupRows(h).length===0) h.remove(); });
+      var mh = manualHead();
+      if (mh && !hasRealGroups()){ groupRows(mh).forEach(function(r){ r.classList.remove("in-grp"); }); mh.remove(); }
     }
 
     // Мгновенный тултип ошибки (без задержки нативного title). Один общий элемент на страницу.
@@ -1513,29 +1609,40 @@ document.addEventListener("DOMContentLoaded", function () {
     // пишут собранное «Месяц Год» в СКРЫТЫЙ input[data-col="data"] (тот же паттерн, что скрытый in-data в одиночном
     // режиме) → readRows/rowComplete/превью/имя PDF работают без изменений. Дефолт — пустые плейсхолдеры
     // «Месяц»/«Год» (дата обязательна: пока не выбрано и то и другое, поле пустое → строка неполная).
+    // Общий блок месяц(select)+год(select) единым кнопочным блоком — для ячейки строки и заголовка группы.
+    // im/iy — начальные значения ("" → плейсхолдеры «Месяц»/«Год»). Год — текущий−1 … +5.
+    function makeMonthYear(im, iy){
+      var box=document.createElement("div"); box.className="cell-date";
+      var msel=document.createElement("select"); msel.setAttribute("aria-label","Месяц");
+      // «Месяц»/«Год» — плейсхолдеры: скрытые опции (видны на кнопке при пустом значении, в списке их нет, выбрать нельзя).
+      var mo0=document.createElement("option"); mo0.value=""; mo0.textContent="Месяц"; mo0.hidden=true; if(!im) mo0.selected=true; msel.appendChild(mo0);
+      MONTHS_RU.forEach(function(name){ var o=document.createElement("option"); o.value=name; o.textContent=name; if(name===im) o.selected=true; msel.appendChild(o); });
+      var ysel=document.createElement("select"); ysel.setAttribute("aria-label","Год");
+      var yo0=document.createElement("option"); yo0.value=""; yo0.textContent="Год"; yo0.hidden=true; if(!iy) yo0.selected=true; ysel.appendChild(yo0);
+      var cy=new Date().getFullYear();
+      for(var yy=cy-1; yy<=cy+5; yy++){ var yo=document.createElement("option"); yo.value=String(yy); yo.textContent=String(yy); if(String(yy)===iy) yo.selected=true; ysel.appendChild(yo); }
+      box.appendChild(msel); box.appendChild(ysel);
+      enhanceSelect(msel); enhanceSelect(ysel);
+      if (ysel.__dd) ysel.__dd.classList.add("year-dd");
+      return { box: box, msel: msel, ysel: ysel };
+    }
     function makeDateCell(initial){
       var td=document.createElement("td"); td.className="cell col-data";
       var hid=document.createElement("input"); hid.type="hidden"; hid.dataset.col="data";
-      var box=document.createElement("div"); box.className="cell-date";
       // Разбор начального «Месяц Год» (из импорта): последний токен — год, остальное — месяц.
       var im="", iy=""; if (initial){ var p=String(initial).trim().split(/\s+/); if (p.length>=2){ iy=p.pop(); im=p.join(" "); } }
-      var msel=document.createElement("select"); msel.setAttribute("aria-label","Месяц");
-      var mo0=document.createElement("option"); mo0.value=""; mo0.textContent="Месяц"; if(!im) mo0.selected=true; msel.appendChild(mo0);
-      MONTHS_RU.forEach(function(name){ var o=document.createElement("option"); o.value=name; o.textContent=name; if(name===im) o.selected=true; msel.appendChild(o); });
-      var ysel=document.createElement("select"); ysel.setAttribute("aria-label","Год");
-      var yo0=document.createElement("option"); yo0.value=""; yo0.textContent="Год"; if(!iy) yo0.selected=true; ysel.appendChild(yo0);
-      var cy=new Date().getFullYear();
-      for(var yy=cy-1; yy<=cy+5; yy++){ var yo=document.createElement("option"); yo.value=String(yy); yo.textContent=String(yy); if(String(yy)===iy) yo.selected=true; ysel.appendChild(yo); }
+      var my=makeMonthYear(im, iy), msel=my.msel, ysel=my.ysel;
       function upd(){ hid.value = (msel.value && ysel.value) ? (msel.value+" "+ysel.value) : ""; }
       upd(); // записать начальное значение (пересчёт чекбокса/превью — по focusout строки, как у прочих ячеек)
-      msel.addEventListener("change", upd); ysel.addEventListener("change", upd);
-      box.appendChild(msel); box.appendChild(ysel);
-      td.appendChild(hid); td.appendChild(box);
-      enhanceSelect(msel); enhanceSelect(ysel);
-      if (ysel.__dd) ysel.__dd.classList.add("year-dd");
+      // Смена месяца/года в строке → СРАЗУ пересчитать дату в заголовке её группы («—» при расхождении),
+      // не дожидаясь ухода фокуса из строки.
+      function onChange(){ upd(); var h = groupHeadOf(td.parentNode); if (h) updateGroupHead(h); }
+      msel.addEventListener("change", onChange); ysel.addEventListener("change", onChange);
+      td.appendChild(hid); td.appendChild(my.box);
       return td;
     }
-    function addRow(values){
+    // before — строка, перед которой вставить новую (нет → в конец таблицы).
+    function addRow(values, before){
       values = values || {};
       var tr = document.createElement("tr");
       var selTd = document.createElement("td"); selTd.className="sel";
@@ -1559,15 +1666,16 @@ document.addEventListener("DOMContentLoaded", function () {
         inp.addEventListener("blur", function(){ validateCell(inp, tr); });
         inp.addEventListener("mouseenter", function(){ if (inp.dataset.err) showBcTip(inp, inp.dataset.err); });
         inp.addEventListener("mouseleave", hideBcTip);
-        // Enter — в ячейку той же колонки строкой ниже (нет строки → создать новую); Shift+Enter — строкой выше.
+        // Enter — в ячейку той же колонки строкой ниже (нет строки → создать новую, ручную); Shift+Enter — строкой выше.
+        // Заголовки групп пропускаются: с последней строки группы — в первую строку следующей.
         inp.addEventListener("keydown", function(e){
           if (e.key !== "Enter") return;
           e.preventDefault();
           var col = inp.dataset.col;
-          var target = e.shiftKey ? tr.previousElementSibling : tr.nextElementSibling;
+          var target = nextDataRow(tr, e.shiftKey ? -1 : 1); // заголовки групп перепрыгиваем
           if (!target){
             if (e.shiftKey) return; // выше строки нет — остаёмся
-            target = addRow();      // ниже строки нет — создаём новую
+            target = addManualRow(); // ниже строки нет — создаём новую (ручную)
           }
           var next = target.querySelector('input[data-col="'+col+'"]');
           if (next){ next.focus(); next.select(); }
@@ -1603,10 +1711,44 @@ document.addEventListener("DOMContentLoaded", function () {
       tr.addEventListener("focusout", function(e){
         if (!tr.contains(e.relatedTarget)){ updateRowState(tr); updateCheckAll(); refreshRowPreview(tr); }
       });
-      tbody.appendChild(tr); renumber();
+      tbody.insertBefore(tr, before || null); renumber();
       updateRowState(tr); updateCheckAll();
       if (prevObserver) prevObserver.observe(prevTd); else renderPreviewCell(prevTd); // ленивый рендер / фолбэк
       return tr;
+    }
+    // Ручная строка («+ Строка», Enter в последней строке). Куда кладём:
+    //  • группа «Добавлено вручную» есть → в её конец (даже если она в середине таблицы — порядок групп хронологический);
+    //  • её нет, но есть другие группы → создаём её в конце таблицы;
+    //  • групп нет → плоская таблица, как раньше.
+    // В группе новая строка берёт дату из заголовка (месяц/год по отдельности; «—»/пусто → не трогаем).
+    function addManualRow(values){
+      var mh = manualHead();
+      if (!mh && !hasRealGroups()) return addRow(values);
+      if (!mh) mh = addGroupHead(MANUAL_GROUP_NAME, "manual");
+      var rows = groupRows(mh), after = rows.length ? rows[rows.length-1] : mh;
+      // Дату заголовка читаем ДО вставки: change селекта строки пересчитывает заголовок (год стал бы «—»).
+      var hv = [[mh._grpMonth && mh._grpMonth.value, "Месяц"], [mh._grpYear && mh._grpYear.value, "Год"]];
+      var tr = addRow(values, after.nextElementSibling);
+      tr.classList.add("in-grp");
+      hv.forEach(function(p){
+        var v = p[0]; if (!v || v === GRP_MIXED) return;
+        var s = tr.querySelector('td.col-data select[aria-label="'+p[1]+'"]');
+        if (s && !s.value){ s.value = v; s.dispatchEvent(new Event("change", { bubbles: true })); }
+      });
+      renumber(); updateRowState(tr); updateCheckAll();
+      return tr;
+    }
+    var MANUAL_GROUP_NAME = "Добавлено вручную";
+    // Строки вне групп → под заголовок «Добавлено вручную» (перед первой из них; строки подтягиваются следом).
+    // Нужно при импорте «Добавить в конец», когда до него таблица была плоской (только ручные строки).
+    function wrapFlatIntoManual(){
+      var flat = Array.prototype.filter.call(tbody.querySelectorAll("tr:not(.grp)"), function(r){ return !r.classList.contains("in-grp"); });
+      if (!flat.length) return;
+      var mh = manualHead(), ref;
+      if (mh){ var rs = groupRows(mh); ref = (rs.length ? rs[rs.length-1] : mh).nextElementSibling; }
+      else { mh = addGroupHead(MANUAL_GROUP_NAME, "manual", flat[0]); ref = mh.nextElementSibling; }
+      flat.forEach(function(r){ r.classList.add("in-grp"); if (r !== ref) tbody.insertBefore(r, ref); else ref = r.nextElementSibling; });
+      renumber(); updateCheckAll();
     }
     function readRows(){
       var rows=[];
@@ -1638,7 +1780,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // document.getElementById("bulk-back").addEventListener("click", function(){
     //   bulkView.hidden = true; layout.hidden = false;
     // });
-    document.getElementById("bulk-add").addEventListener("click", function(){ addRow(); });
+    // «+ Строка» → ручная строка; прокрутить к ней и поставить фокус в «Название» (строка может быть в середине таблицы).
+    document.getElementById("bulk-add").addEventListener("click", function(){
+      var tr = addManualRow();
+      var inp = tr.querySelector('input[data-col="name"]');
+      tr.scrollIntoView({ block: "nearest" }); if (inp) inp.focus();
+    });
 
     document.getElementById("bulk-generate").addEventListener("click", async function(){
       var rows = readRows();
@@ -1802,7 +1949,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var dateVal = dm ? ((dy && String(dy.value||"").trim()) ? (dm.value+" "+String(dy.value).trim()) : dm.value) : "";
       items.forEach(function(v){ v.data = dateVal; });
       // Группировка по названию: порядок групп — по первому появлению, внутри — как в файле.
-      // Строки без названия — в конец, без заголовка.
+      // Строки без названия — отдельной группой «Без названия» (ниже).
       var groupsOrder=[], groups={}, noName=[];
       items.forEach(function(v){
         var k = groupKey(v.name);
@@ -1810,8 +1957,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if(!groups[k]){ groups[k]={ name:String(v.name).trim(), rows:[] }; groupsOrder.push(k); }
         groups[k].rows.push(v);
       });
+      // «Добавить в конец» к плоской таблице (только ручные строки): сначала собираем их в «Добавлено вручную»
+      // (группа встаёт первой — хронологически), затем добавляем группы импорта.
+      if (groupsOrder.length || noName.length) wrapFlatIntoManual();
       groupsOrder.forEach(function(k){ var g=groups[k]; addGroupHead(g.name); g.rows.forEach(function(v){ addRow(v).classList.add("in-grp"); }); });
-      noName.forEach(addRow);
+      // Строки без названия — своей группой «Без названия» (тип noname) после групп этого импорта.
+      if (noName.length){ addGroupHead("Без названия", "noname"); noName.forEach(function(v){ addRow(v).classList.add("in-grp"); }); }
       if(!tbody.querySelector("tr:not(.grp)")) addRow();
       pruneEmptyGroups();
       renumber();
