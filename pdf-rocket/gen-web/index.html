@@ -8,6 +8,9 @@
   :root{
     --bg:#f4f5f7; --panel:#ffffff; --ink:#1c1f24; --muted:#6b7280; --secondary-text:#aaaaaa;
     --line:#e3e6ea; --accent:#2563eb; --accent-weak:#dbe4ff;
+    /* Пустое место под таблицей массового режима — чтобы низ таблицы можно было прокрутить к уровню глаз.
+       50vh = половина высоты окна. Меняйте число: 30vh / 70vh (доля экрана) или фиксированно, напр. 400px. */
+    --bottom-space: 65vh;
   }
   *{box-sizing:border-box}
   [hidden]{display:none!important}
@@ -77,7 +80,7 @@
   button:disabled{opacity:.5;cursor:not-allowed}
   .stub{font-size:11px;color:#9aa1ab;font-style:italic}
   /* массовый режим */
-  #bulkView{margin:16px}
+  #bulkView{margin:16px 16px var(--bottom-space)} /* снизу — отступ-«подвал», см. --bottom-space в :root */
   .bulk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-right:14px}
   .bulk-head h2{border-bottom:none;padding-right:8px}
   #bulk-back{padding:2px 0;border:none;border-radius:0;background:transparent;color:var(--muted);
