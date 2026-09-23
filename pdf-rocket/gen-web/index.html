@@ -409,11 +409,13 @@
       "id": "icon",
       "type": "svg-image",
       "label": "Изображение",
-      "note": "SVG-иконка из внешнего набора (массовый режим). Правило: фон белый, контуры 100K — из SVG берём только признак краска/бумага. РАЗМЕЩЕНИЕ строится от круга (по гайду edda_СтикерТК_Гайд.pdf, зелёные пунктиры): право иконки = левый_край_круга − gapFactor*R; высота = heightFactor*R; ширина — из пропорций SVG; низ = низ_круга + liftFactor*R (оптическая компенсация — чуть выше базовой линии круга). R = радиус круга. Слева от иконки остаётся такой же отступ R до области названия.",
+      "note": "SVG-иконка из внешнего набора (массовый режим). Правило: фон белый, контуры 100K — из SVG берём только признак краска/бумага. РАЗМЕЩЕНИЕ строится от круга (по гайду edda_СтикерТК_Гайд.pdf, зелёные пунктиры): право иконки = левый_край_круга − gapFactor*R; высота = heightFactor*R; ширина — из пропорций SVG; низ = низ_круга + liftFactor*R (оптическая компенсация — чуть выше базовой линии круга). R = радиус круга. Слева от иконки остаётся такой же отступ R до области названия. ВЫСОКИЕ иконки (h/w >= tallThreshold) НЕ ужимаются по высоте в круг: высота = tallTopY − низ (вписываются в большую зону до низа логотипа); право/низ те же. Шаблон без круга: иконка сдвигается вправо на 3R (noCircleShift), высокие ведут себя так же (логотип в обоих шаблонах на одном месте).",
       "anchor": "circle",
       "gapFactor": 1.0,
       "heightFactor": 1.838,
-      "liftFactor": 0.0747
+      "liftFactor": 0.0747,
+      "tallThreshold": 1.5,
+      "tallTopY": 359.0
     },
     {
       "id": "artikul",
@@ -1206,10 +1208,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!circ || f.anchor !== 'circle' || !vb || !vb[3]) return f.box || null;
     var cb = circ.box, R = (cb[2]-cb[0])/2, circleLeft = cb[0], circleBottom = cb[1];
     var gap = (f.gapFactor!=null?f.gapFactor:1) * R;
-    var h   = (f.heightFactor!=null?f.heightFactor:1.838) * R;
     var lift= (f.liftFactor!=null?f.liftFactor:0.0747) * R;
-    var w   = h * (vb[2]/vb[3]);
-    var x1 = circleLeft - gap + (shift || 0), x0 = x1 - w, y0 = circleBottom + lift, y1 = y0 + h;
+    var aspect = vb[2]/vb[3], hOverW = vb[3]/vb[2];
+    var y0 = circleBottom + lift;
+    var thr = (f.tallThreshold!=null?f.tallThreshold:1.5);
+    var h;
+    if (hOverW >= thr && f.tallTopY!=null) h = f.tallTopY - y0;          // высокая: до низа логотипа (большая зона)
+    else                                   h = (f.heightFactor!=null?f.heightFactor:1.838) * R; // обычная: полоса круга
+    var w = h * aspect;
+    var x1 = circleLeft - gap + (shift || 0), x0 = x1 - w, y1 = y0 + h;   // право/низ те же (shift — для «без круга»)
     return [x0, y0, x1, y1];
   }
 
@@ -2046,7 +2053,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // --- Импорт CSV/Excel (Шаг 8) ---
     var labels = {}; (window.EDDA_FIELDS.fields||[]).forEach(function(f){ labels[f.id]=f.label; });
     var synonyms = {
-      name:   ["назван","наименован","товар","product","name","title"],
+      name:   ["назван","товар","product","name","title"],
       circle: ["цвет","color","colour","variant"],
       artikul:["артикул","sku","код","article","art"],
       kolvo:  ["кол-во","кол во","количество","qty","quantity","count","штук","квант"],
