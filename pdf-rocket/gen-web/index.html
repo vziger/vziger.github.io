@@ -89,7 +89,7 @@
   .bulk-gen-group{display:inline-flex;align-items:center;gap:10px;margin-left:auto} /* прижата вправо, как .bulk-foot */
   .bulk-count{font-size:13px;color:var(--muted)}
   .bulk-errors{font-size:13px;color:#c0392b}
-  .bulk-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .bulk-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:20px 14px 12px;border-bottom:0px solid var(--line)}
   .bulk-toolbar .sep{width:1px;align-self:stretch;background:var(--line)}
   .bulk-wrap{overflow-x:auto;padding:8px 14px 14px}
   table#bulk-table{border-collapse:collapse;width:100%;font-size:13px}
@@ -107,6 +107,12 @@
   #bulk-table td input[data-col="kolvo"]{min-width:0}
   #bulk-table td input.cell-empty,#bulk-table td input.cell-invalid{background:#fdecec;border-color:#e39a9a}
   #bulk-table td input.cell-empty:focus,#bulk-table td input.cell-invalid:focus{border-color:var(--accent);background:#fff}
+  /* Мягкая подсказка (не ошибка): пустой «Цвет» в непустой строке → «проверьте на всякий случай». */
+  input.input-soft{background:#fff7e0;border-color:#e8c56a}
+  input.input-soft:focus{background:#fff}
+  .soft-hint{margin-top:4px;font-size:12px;line-height:1.35;color:#8a6412}
+  #bulk-table td input.cell-soft{background:#fff7e0;border-color:#e8c56a}
+  #bulk-table td input.cell-soft:focus{border-color:var(--accent);background:#fff}
   /* Иконка не загружена (нет в наборе) или пустое обязательное → красим ВСЮ ячейку. */
   #bulk-table td.iconcell:has(.icon-input.cell-invalid),
   #bulk-table td.iconcell:has(.icon-input.cell-empty){background:#fdecec;box-shadow:inset 0 0 0 1.5px #e39a9a;border-radius:4px}
@@ -180,7 +186,7 @@
   .grp-undo-bar button:hover{background:rgba(255,255,255,.14)}
   .grp-undo-bar .undo-restore{font-weight:600;color:#8fe3b0}
   .grp-undo-bar .undo-close{color:#c3c8d2;font-size:16px;line-height:1}
-  .import-map{border-bottom:1px solid var(--line);padding:32px 14px;background:#f9fafb}
+  .import-map{border-bottom:1px solid var(--line);padding:32px 14px;background:#eff1f5}
   .import-map-head{font-size:13px;font-weight:600;margin-bottom:10px;padding-left:13px}
   .import-map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
   .import-map-grid .mrow label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px;padding:0 13px}
@@ -246,7 +252,8 @@
         <input id="in-name" data-field-id="name" placeholder="пример: ДЕТСКИЙ ГОРШОК 3 В 1">
         <label class="check" style="margin-top:6px"><input type="checkbox" id="name-upper" checked> Прописными (ВЕРХНИЙ регистр)</label>
       </div>
-      <div class="field"><label>Цвет</label><input id="in-circle" data-field-id="circle" placeholder="пример: ЛЁН"></div>
+      <div class="field"><label>Цвет</label><input id="in-circle" data-field-id="circle" placeholder="пример: ЛЁН">
+        <div class="soft-hint" id="circle-hint" hidden></div></div>
       <div class="field"><label>Артикул</label><input id="in-artikul" data-field-id="artikul" placeholder="пример: BPS-01006"></div>
       <div class="field"><label>Кол-во в коробке</label><input id="in-kolvo" data-field-id="kolvo" placeholder="8"></div>
       <div class="field">
@@ -280,10 +287,10 @@
     <!-- <button id="bulk-back">← Одиночный режим</button> -->
   </div>
   <div class="bulk-toolbar">
-    <button id="bulk-import">Импорт CSV/Excel…</button>
-    <button id="bulk-add">+ Строка</button>
+    <button id="bulk-add" style="margin-right:10px">+ Строка</button>
+    <!-- <span class="sep"></span> -->
+    <button id="bulk-import">Таблица: CSV/Excel…</button>
     <input type="file" id="import-file" accept=".csv,.tsv,.txt,.xlsx,.xls" hidden>
-    <span class="sep"></span>
     <button id="icons-import-zip">Иконки: zip…</button>
     <!-- <button id="icons-import-dir" class="ghost">…или папка</button> -->
     <input type="file" id="icons-file-dir" webkitdirectory multiple hidden>
@@ -541,6 +548,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Есть ли что рисовать в круге: те же разделители, что в layoutLines (split "words").
   function circleTextPresent(v) { return /[^\s/.\-]/.test(v == null ? "" : String(v)); }
   function hasCircle(values) { return circleTextPresent(values && values.circle); }
+  // Мягкая подсказка при пустом «Цвет» (поле не обязательное, но пусто бывает редко).
+  var CIRCLE_HINT = "Цвет не указан — стикер будет без круга. Проверьте на всякий случай";
   // Сдвиг вправо (pt) иконки и правой границы названия, когда круга нет: освободившееся место
   // «отступ + круг» = gapFactor*R + 2R (= 3R при gapFactor 1). Считается из fields.json, не хардкод.
   function noCircleShift() {
@@ -869,7 +878,18 @@ document.addEventListener("DOMContentLoaded", function () {
     tctx.clearRect(0, 0, textCanvas.width, textCanvas.height);
     if (!window.EDDA_FIELDS) return;
     var inC = inputFor("circle");                 // пустой «Цвет» → фон без круга
-    if (previewImgNoCircle) previewImgNoCircle.hidden = circleTextPresent(inC ? inC.value : "");
+    var circOk = circleTextPresent(inC ? inC.value : "");
+    if (previewImgNoCircle) previewImgNoCircle.hidden = circOk;
+    // Мягкая подсказка: «Цвет» пуст, а хоть одно другое поле заполнено (пустую форму не подсвечиваем).
+    var hint = document.getElementById("circle-hint");
+    if (hint && inC){
+      // дату (скрытый in-data, всегда с дефолтом) не считаем — иначе подсказка горела бы на пустой форме
+      var others = Array.prototype.some.call((inC.closest(".card") || document).querySelectorAll("input[data-field-id]"),
+        function(el){ return el !== inC && el.type !== "hidden" && el.value.trim() !== ""; });
+      var soft = !circOk && others;
+      hint.textContent = CIRCLE_HINT; hint.hidden = !soft;
+      inC.classList.toggle("input-soft", soft);
+    }
     var sPx = RENDER.scale * RENDER.dpr;        // pt -> device px
     drawValuesToCtx(tctx, valueForField, sPx, RENDER.pageH, font, fontCapRatio(font));
   }
@@ -1050,6 +1070,32 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!/\.svg$/.test(k) && ICONS.has(k + ".svg")) return ICONS.get(k + ".svg");
     return null;
   }
+  // --- Сопоставление иконки по НАЗВАНИЮ товара (точное, после нормализации) ---
+  // Ключ: NFC, нижний регистр, ё→е, пробелы схлопнуты, без «.svg» и без точек/пробелов по краям
+  // («…2 шт.» = файл «…2 шт.svg»). Дефис значим: «Погремушка кольцо» ≠ «Погремушка-кольцо».
+  function iconNameKey(s){
+    return String(s == null ? "" : s).normalize("NFC").split(/[\\/]/).pop().toLowerCase()
+      .replace(/ё/g, "е").replace(/\.svg$/, "").replace(/\s+/g, " ").replace(/^[\s.]+|[\s.]+$/g, "");
+  }
+  // Индекс нормализованное имя → ключ ICONS. Неоднозначные ключи (несколько файлов) → null: по названию
+  // не сопоставляем, строка уходит на запасной вариант (колонка). Перестраивается из ICONS целиком.
+  var ICONS_BY_NAME = new Map();
+  function rebuildIconNameIndex(){
+    ICONS_BY_NAME.clear();
+    ICONS.forEach(function(_, k){
+      var nk = iconNameKey(k); if (!nk) return;
+      if (ICONS_BY_NAME.has(nk)) {
+        var prev = ICONS_BY_NAME.get(nk);
+        if (prev !== null) console.warn("Иконки: несколько файлов под одно название «" + nk + "» — сопоставление по названию отключено:", prev, k);
+        ICONS_BY_NAME.set(nk, null);
+      } else ICONS_BY_NAME.set(nk, k);
+    });
+  }
+  // Ключ ICONS для названия товара или null (нет/неоднозначно).
+  function iconByName(name){
+    var nk = iconNameKey(name); if (!nk) return null;
+    return ICONS_BY_NAME.get(nk) || null;
+  }
   // Собирает Map из FileList (папка или отдельные файлы) + распаковывает .zip через JSZip.
   async function loadIconsFromFiles(fileList){
     if (typeof _iconCache !== "undefined" && _iconCache) _iconCache.clear(); // набор меняется → сбросить разбор
@@ -1071,6 +1117,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
     }
+    rebuildIconNameIndex();
     return added;
   }
 
@@ -1432,7 +1479,29 @@ document.addEventListener("DOMContentLoaded", function () {
     function rowValues(tr){
       var v = {};
       Array.prototype.forEach.call(tr.querySelectorAll("input[data-col]"), function(i){ v[i.dataset.col] = i.value; });
+      v.icon = rowIcon(tr); // иконка, которая реально рисуется (не сырое значение ячейки)
       return v;
+    }
+    // Какая иконка рисуется в строке (имя/ключ для iconGet или ""):
+    //  1) ячейку «Иконка» правил пользователь (data-manual) → она;
+    //  2) иначе — по названию товара (iconByName, точное после нормализации);
+    //  3) иначе — значение ячейки (из Excel; колонки может не быть → пусто).
+    // Отображение ячейки не меняется — инпут показывает своё значение.
+    function rowIcon(tr){
+      var ii = tr.querySelector('input[data-col="icon"]'), ni = tr.querySelector('input[data-col="name"]');
+      var v = ii ? ii.value.trim() : "";
+      if (v && ii.dataset.manual) return v;
+      return (ni && iconByName(ni.value)) || v;
+    }
+    // Ошибка иконки строки (текст) или null. Учитывает и название, и ячейку — см. rowIcon.
+    function iconError(tr){
+      if (!ICONS.size) return "Иконки не загружены — импортируйте набор SVG";
+      var eff = rowIcon(tr); if (eff && iconGet(eff)) return null;
+      var ii = tr.querySelector('input[data-col="icon"]'), ni = tr.querySelector('input[data-col="name"]');
+      var v = ii ? ii.value.trim() : "", n = ni ? ni.value.trim() : "";
+      if (v && ii.dataset.manual) return "Иконка «"+v+"» не найдена в наборе";
+      if (v) return n ? ("Нет иконки по названию «"+n+"», и «"+v+"» не найдена в наборе") : ("Иконка «"+v+"» не найдена в наборе");
+      return n ? ("Иконка для «"+n+"» не найдена в наборе") : "Нет иконки: укажите название товара или имя SVG";
     }
     function renderPreviewCell(prevTd){
       var tr = prevTd.parentNode; if (!tr) return;
@@ -1461,8 +1530,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!td) return;
       var inp = td.querySelector('input[data-col="icon"]'), thumb = td.querySelector('.icon-thumb');
       if (!inp || !thumb) return;
-      var val = inp.value.trim();
-      var cv = val ? renderIconThumb(val) : null;
+      var val = inp.value.trim(), eff = td.parentNode ? rowIcon(td.parentNode) : val; // миниатюра — рисуемая иконка
+      var cv = eff ? renderIconThumb(eff) : null;
       thumb.innerHTML = "";
       if (cv) thumb.appendChild(cv); else thumb.innerHTML = ICON_PLACEHOLDER;
       td.classList.toggle("has-icon", val !== ""); // подпись показываем только при наличии значения
@@ -1487,8 +1556,9 @@ document.addEventListener("DOMContentLoaded", function () {
     function hidePreviewPopup(){ prevPop.hidden = true; prevPop.textContent = ""; }
     // Ховер-превью самой иконки (крупно), позиционируется как большое превью строки.
     function showIconPopup(td){
-      var inp = td.querySelector('input[data-col="icon"]'); if (!inp) return;
-      var cv = inp.value.trim() ? renderIconBig(inp.value.trim(), 220) : null;
+      if (!td.parentNode) return;
+      var eff = rowIcon(td.parentNode);
+      var cv = eff ? renderIconBig(eff, 220) : null;
       if (!cv) return; // иконки нет в наборе — попап не показываем
       prevPop.textContent = ""; prevPop.appendChild(cv); prevPop.hidden = false;
       var r = td.getBoundingClientRect(), p = prevPop.getBoundingClientRect();
@@ -1511,7 +1581,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // 14 с неверной контрольной валидна для генерации — «только предупреждаем», см. validateBc/иконку).
     function fieldError(id, v){
       v = String(v).trim();
-      if (id === "icon"){ if (!iconGet(v)) return ICONS.size ? ("Иконка «"+v+"» не найдена в наборе") : "Иконки не загружены — импортируйте набор SVG"; return null; }
+      // icon — не здесь: зависит от названия строки, проверяется iconError(tr).
       if (id === "name"){var s = cleanString(v); const regexName = /^[а-яА-ЯёЁa-zA-Z0-9 .,\u00AB\u00BB-]+$/; if (!regexName.test(v)) return "Разрешённые символы: русские и английские буквы, цифры, пробел, точка, запятая, дефис, кавычки «»";}
       if (id === "kolvo"   && !(/^\d+$/.test(v) && +v > 0)) return "Целое число больше 0";
       if (id === "artikul" && !/^[A-Za-z0-9-]+$/.test(v))   return "Только латинские буквы, цифры и дефис";
@@ -1522,6 +1592,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Полнота строки: все обязательные поля заполнены и проходят форматные правила.
     function rowComplete(tr){
       return required.every(function(id){
+        if (id === "icon") return !iconError(tr); // пустая ячейка допустима, если иконка нашлась по названию
         var inp = tr.querySelector('input[data-col="'+id+'"]');
         if (!inp) return false;
         var v = inp.value.trim();
@@ -1537,6 +1608,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // непустое, но нарушающее форматное правило → .cell-invalid + текст ошибки в dataset.err (для тултипа).
     function markCellValidity(inp, tr){
       var id = inp.dataset.col;
+      if (id === "circle"){ // не обязательное: пустой «Цвет» в непустой строке → мягкая подсказка, строку не блокирует
+        inp.classList.remove("cell-soft"); delete inp.dataset.err;
+        if (!circleTextPresent(inp.value) && rowAnyFilled(tr)){ inp.classList.add("cell-soft"); inp.dataset.err = CIRCLE_HINT; }
+        return;
+      }
       if (required.indexOf(id) < 0) return;
       inp.classList.remove("cell-empty", "cell-invalid"); delete inp.dataset.err;
       var v = inp.value.trim();
@@ -1550,20 +1626,26 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return;
       }
+      if (id === "icon"){ // по строке: название → ячейка (rowIcon); подсветка только в непустой строке
+        if (!rowAnyFilled(tr)) return;
+        var ie = iconError(tr);
+        if (ie){ inp.classList.add(v === "" ? "cell-empty" : "cell-invalid"); inp.dataset.err = ie; }
+        return;
+      }
       if (v === ""){ if (rowAnyFilled(tr)) inp.classList.add("cell-empty"); return; }
       var err = fieldError(id, v);
       if (err){ inp.classList.add("cell-invalid"); inp.dataset.err = err; }
     }
     // Валидация ОДНОЙ ячейки (при потере её фокуса): подсветка + (для ШК) иконка.
     function validateCell(inp, tr){
-      if (required.indexOf(inp.dataset.col) >= 0) markCellValidity(inp, tr);
+      if (required.indexOf(inp.dataset.col) >= 0 || inp.dataset.col === "circle") markCellValidity(inp, tr);
       if (inp.dataset.col === "barcode"){
         var w = inp.closest(".bc-wrap"); if (w) validateBc(inp, w, w.querySelector(".bc-err"));
       }
     }
     // Сброс подсветки/иконки/тултипа ТОЛЬКО у одной ячейки (при получении ею фокуса).
     function clearCell(inp){
-      inp.classList.remove("cell-empty", "cell-invalid"); delete inp.dataset.err; hideBcTip();
+      inp.classList.remove("cell-empty", "cell-invalid", "cell-soft"); delete inp.dataset.err; hideBcTip();
       if (inp.dataset.col === "barcode"){ var w = inp.closest(".bc-wrap"); if (w) w.classList.remove("invalid"); }
     }
     // Полная валидация строки (импорт/добавление/уход фокуса из строки). Пока строка в фокусе — пропускаем,
@@ -1572,7 +1654,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var chk = tr.querySelector("input.rowchk"); if (!chk) return;
       if (tr.contains(document.activeElement)) return; // фокус внутри строки — не валидируем всю строку
       // Подсветка обязательных ячеек (пусто / невалидное kolvo).
-      required.forEach(function(id){
+      required.concat("circle").forEach(function(id){ // + «Цвет»: мягкая подсказка, не ошибка
         var inp = tr.querySelector('input[data-col="'+id+'"]');
         if (inp) markCellValidity(inp, tr);
       });
@@ -1711,7 +1793,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var cb=document.createElement("button"); cb.type="button"; cb.className="undo-close"; cb.title="Закрыть"; cb.textContent="✕";
       rb.addEventListener("click", function(){ restoreGroup(tr); });
       cb.addEventListener("click", function(){ dropUndo(tr); });
-      var acts=document.createElement("span"); acts.className="undo-acts"; acts.appendChild(rb); acts.appendChild(cb);
+      var acts=document.createElement("span"); acts.className="undo-acts"; acts.appendChild(cb); acts.appendChild(rb);
       var ghost=acts.cloneNode(true); ghost.className="undo-acts undo-ghost"; ghost.setAttribute("aria-hidden","true"); // противовес кнопкам
       Array.prototype.forEach.call(ghost.querySelectorAll("button"), function(b){ b.tabIndex=-1; });
       bar.appendChild(ghost); bar.appendChild(msg); bar.appendChild(acts); undoTd.appendChild(bar); tr.appendChild(undoTd);
@@ -1811,11 +1893,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // Используется для ШК (el.dataset.msg) и для ячеек с ошибкой (передаём msg явно, напр. невалидное kolvo).
     var bcTip = document.createElement("div"); bcTip.className = "bc-tip"; bcTip.hidden = true;
     document.body.appendChild(bcTip);
-    function showBcTip(el, msg){
+    // По умолчанию левый край тултипа = левый край элемента; alignRight — по правому (иконка «!» ШК у правого края ячейки).
+    function showBcTip(el, msg, alignRight){
       var m = (msg != null) ? msg : el.dataset.msg; if (!m) return;
       bcTip.textContent = m; bcTip.hidden = false;
       var r = el.getBoundingClientRect(), t = bcTip.getBoundingClientRect();
-      var left = Math.max(6, Math.min(r.right - t.width, window.innerWidth - t.width - 6));
+      var left = Math.max(6, Math.min(alignRight ? r.right - t.width : r.left, window.innerWidth - t.width - 6));
       var top = r.top - t.height - 6; if (top < 6) top = r.bottom + 6; // не влезает сверху → снизу
       bcTip.style.left = left + "px"; bcTip.style.top = top + "px";
     }
@@ -1911,15 +1994,16 @@ document.addEventListener("DOMContentLoaded", function () {
           inp.classList.add("icon-input");
           td.appendChild(thumb); td.appendChild(inp);
           inp.addEventListener("blur", function(){ updateIconThumb(td); });
+          // Правка пользователем → ручное значение важнее названия; очистил → снова по названию/Excel.
+          inp.addEventListener("input", function(){ if (inp.value.trim()) inp.dataset.manual = "1"; else delete inp.dataset.manual; });
           // Ховер по ячейке иконки → крупное превью самой SVG (не всего стикера).
           td.addEventListener("mouseenter", function(){ showIconPopup(td); });
           td.addEventListener("mouseleave", hidePreviewPopup);
-          if (values[id] != null && String(values[id]).trim()) updateIconThumb(td); // начальный рендер (импорт)
         } else if (id === "barcode"){
           var wrap = document.createElement("div"); wrap.className = "bc-wrap";
           var err = document.createElement("span"); err.className = "bc-err"; err.textContent = "!";
           wrap.appendChild(inp); wrap.appendChild(err); td.appendChild(wrap);
-          err.addEventListener("mouseenter", function(){ showBcTip(err); });
+          err.addEventListener("mouseenter", function(){ showBcTip(err, null, true); });
           err.addEventListener("mouseleave", hideBcTip);
           // focus/blur кода ШК — общие (clearCell/validateCell выше); начальную проверку делает updateRowState.
         } else {
@@ -1931,9 +2015,10 @@ document.addEventListener("DOMContentLoaded", function () {
       var btn = document.createElement("button"); btn.className="row-del"; btn.title="Удалить строку"; btn.textContent="✕";
       btn.addEventListener("click", function(){ tr.remove(); pruneEmptyGroups(); if(!tbody.querySelector("tr:not(.grp)")) addRow(); renumber(); updateCheckAll(); });
       del.appendChild(btn); tr.appendChild(del);
+      updateIconThumb(tr.querySelector("td.iconcell")); // начальный рендер — когда строка собрана (иконка может быть по названию)
       // Уход фокуса из строки наружу → полная валидация строки + пересчёт чекбокса/счётчика + обновление превью.
       tr.addEventListener("focusout", function(e){
-        if (!tr.contains(e.relatedTarget)){ updateRowState(tr); updateCheckAll(); refreshRowPreview(tr); }
+        if (!tr.contains(e.relatedTarget)){ updateRowState(tr); updateCheckAll(); refreshRowPreview(tr); updateIconThumb(tr.querySelector("td.iconcell")); } // название могло поменять иконку
       });
       tbody.insertBefore(tr, before || null); renumber();
       updateRowState(tr); updateCheckAll();
@@ -1983,6 +2068,7 @@ document.addEventListener("DOMContentLoaded", function () {
         Array.prototype.forEach.call(tr.querySelectorAll("input[data-col]"), function(inp){
           v[inp.dataset.col]=inp.value; if(inp.value.trim()) has=true;
         });
+        if ("icon" in v) v.icon = rowIcon(tr); // рисуемая иконка (название → ячейка)
         if (has) rows.push(v);
       });
       return rows;
@@ -2050,7 +2136,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     genBtns.forEach(function(b){ b.addEventListener("click", onBulkGenerate); });
 
-    // --- Импорт CSV/Excel (Шаг 8) ---
+    // --- Импорт CSV/Excel ---
     var labels = {}; (window.EDDA_FIELDS.fields||[]).forEach(function(f){ labels[f.id]=f.label; });
     var synonyms = {
       name:   ["назван","товар","product","name","title"],
