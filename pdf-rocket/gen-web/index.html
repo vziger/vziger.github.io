@@ -109,7 +109,7 @@
   /* Мягкая подсказка (не ошибка): пустой «Цвет» в непустой строке → «проверьте на всякий случай». */
   input.input-soft{background:#fff7e0;border-color:#e8c56a}
   input.input-soft:focus{background:#fff}
-  .soft-hint{margin-top:4px;font-size:12px;line-height:1.35;color:#8a6412}
+  .soft-hint{margin-top:4px;font-size:12px;line-height:1.35;color:#8a6412;white-space:pre-line}
   #bulk-table td input.cell-soft{background:#fff7e0;border-color:#e8c56a}
   #bulk-table td input.cell-soft:focus{border-color:var(--accent);background:#fff}
   /* Иконка не загружена (нет в наборе) или пустое обязательное → красим ВСЮ ячейку. */
@@ -121,7 +121,7 @@
   .bc-wrap .bc-err{position:absolute;top:50%;right:6px;transform:translateY(-50%);display:none;width:16px;height:16px;border-radius:50%;background:#e5484d;color:#fff;font:700 12px/16px system-ui,sans-serif;text-align:center;cursor:default;user-select:none}
   .bc-wrap.invalid .bc-err{display:block}
   .bc-wrap.invalid input{padding-right:26px}
-  .bc-tip{position:fixed;z-index:1000;max-width:280px;background:#1f2430;color:#fff;font:12px/1.35 system-ui,sans-serif;padding:6px 8px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none}
+  .bc-tip{position:fixed;z-index:1000;max-width:280px;white-space:pre-line;background:#1f2430;color:#fff;font:12px/1.35 system-ui,sans-serif;padding:6px 8px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none}
   #bulk-table td.sel,#bulk-table th.sel{text-align:center;width:34px;min-width:34px}
   #bulk-table td.sel input,#bulk-table th.sel input{display:block;width:auto;min-width:0;margin:0 auto;cursor:pointer}
   #bulk-table td.sel input:disabled{cursor:not-allowed}
@@ -553,7 +553,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function circleTextPresent(v) { return /[^\s/.\-]/.test(v == null ? "" : String(v)); }
   function hasCircle(values) { return circleTextPresent(values && values.circle); }
   // Мягкая подсказка при пустом «Цвет» (поле не обязательное, но пусто бывает редко).
-  var CIRCLE_HINT = "Цвет не указан — стикер будет без круга. Проверьте на всякий случай";
+  var CIRCLE_HINT = "Цвет не указан — стикер будет без круга.\nПроверьте на всякий случай"; // \n — «Проверьте…» всегда с новой строки (pre-line у .bc-tip/.soft-hint)
   // Сдвиг вправо (pt) иконки и правой границы названия, когда круга нет: освободившееся место
   // «отступ + круг» = gapFactor*R + 2R (= 3R при gapFactor 1). Считается из fields.json, не хардкод.
   function noCircleShift() {
@@ -1636,40 +1636,45 @@ document.addEventListener("DOMContentLoaded", function () {
         if (ie){ inp.classList.add(v === "" ? "cell-empty" : "cell-invalid"); inp.dataset.err = ie; }
         return;
       }
-      if (id === "barcode") inp.classList.remove("cell-soft");
+      if (DUP_COLS[id]) inp.classList.remove("cell-soft");
       if (v === ""){ if (rowAnyFilled(tr)) inp.classList.add("cell-empty"); return; }
       var err = fieldError(id, v);
       if (err){ inp.classList.add("cell-invalid"); inp.dataset.err = err; }
-      if (id === "barcode") markBcDup(inp, tr);
+      if (DUP_COLS[id]) markDup(inp, tr);
     }
-    // Повтор кода ШК в других строках таблицы → мягкая подсказка .cell-soft (как пустой «Цвет»): генерацию не
-    // блокирует, в счётчик ошибок не входит. Только для валидного кода (ошибка формата важнее); ячейку в фокусе не трогаем.
-    // map — {код: [строки]} от bcDupMap (для пересчёта всей таблицы за один проход); нет → считаем здесь.
-    function bcDupMap(){
+    // Повтор значения в других строках таблицы (ШК, артикул — у каждой строки должен быть свой) → мягкая подсказка
+    // .cell-soft (как пустой «Цвет»): генерацию не блокирует, в счётчик ошибок не входит. Только для валидного значения
+    // (ошибка формата важнее); ячейку в фокусе не трогаем. Сравнение — без учёта регистра и пробелов по краям.
+    var DUP_COLS = { barcode: "ШК", artikul: "Артикул" }; // колонка → подпись в подсказке
+    function dupKey(v){ return String(v).trim().toUpperCase(); }
+    // {значение: [строки]} по колонке col — для пересчёта всей таблицы за один проход.
+    function dupMap(col){
       var m = {};
       Array.prototype.forEach.call(tbody.rows, function(r){
-        var i = r.querySelector('input[data-col="barcode"]'), v = i ? i.value.trim() : "";
-        if (v) (m[v] = m[v] || []).push(r);
+        var i = r.querySelector('input[data-col="'+col+'"]'), k = i ? dupKey(i.value) : "";
+        if (k) (m[k] = m[k] || []).push(r);
       });
       return m;
     }
-    function markBcDup(inp, tr, map){
+    function markDup(inp, tr, map){
       if (inp === document.activeElement) return;
-      var isDup = inp.classList.contains("cell-soft");
-      if (isDup){ inp.classList.remove("cell-soft"); delete inp.dataset.err; }
-      var v = inp.value.trim();
-      if (!v || inp.classList.contains("cell-empty") || inp.classList.contains("cell-invalid")) return;
-      var others = ((map || bcDupMap())[v] || []).filter(function(r){ return r !== tr; });
+      var col = inp.dataset.col;
+      if (inp.classList.contains("cell-soft")){ inp.classList.remove("cell-soft"); delete inp.dataset.err; }
+      var k = dupKey(inp.value);
+      if (!k || inp.classList.contains("cell-empty") || inp.classList.contains("cell-invalid")) return;
+      var others = ((map || dupMap(col))[k] || []).filter(function(r){ return r !== tr; });
       if (!others.length) return;
       var nums = others.map(function(r){ var x = r.querySelector("td.idx"); return x ? x.textContent : "?"; });
       inp.classList.add("cell-soft");
-      inp.dataset.err = "ШК повторяется в " + (nums.length > 1 ? "строках " : "строке ") + nums.join(", ") + ". Проверьте на всякий случай";
+      inp.dataset.err = DUP_COLS[col] + " повторяется в " + (nums.length > 1 ? "строках " : "строке ") + nums.join(", ") + ".\nПроверьте на всякий случай";
     }
-    // Пересчёт подсказки о повторе ШК во всей таблице (после ухода фокуса из строки, дубля, удаления, импорта).
-    function refreshBcDupes(){
-      var m = bcDupMap();
-      Array.prototype.forEach.call(tbody.rows, function(r){
-        var i = r.querySelector('input[data-col="barcode"]'); if (i) markBcDup(i, r, m);
+    // Пересчёт подсказок о повторах во всей таблице (после ухода фокуса из строки, дубля, удаления, импорта).
+    function refreshDupes(){
+      Object.keys(DUP_COLS).forEach(function(col){
+        var m = dupMap(col);
+        Array.prototype.forEach.call(tbody.rows, function(r){
+          var i = r.querySelector('input[data-col="'+col+'"]'); if (i) markDup(i, r, m);
+        });
       });
     }
     // Валидация ОДНОЙ ячейки (при потере её фокуса): подсветка + (для ШК) иконка.
@@ -1713,7 +1718,7 @@ document.addEventListener("DOMContentLoaded", function () {
       checkAll.disabled = enabled === 0;
       checkAll.checked = enabled > 0 && checked === enabled;
       checkAll.indeterminate = checked > 0 && checked < enabled;
-      refreshBcDupes(); // повтор ШК зависит от ВСЕХ строк — пересчёт вместе со сводным состоянием таблицы
+      refreshDupes(); // повтор ШК/артикула зависит от ВСЕХ строк — пересчёт вместе со сводным состоянием таблицы
       updateAllGroupHeads();
       updateCount();
     }
@@ -2144,7 +2149,7 @@ document.addEventListener("DOMContentLoaded", function () {
       tr.remove(); pruneEmptyGroups(); if(!tbody.querySelector("tr:not(.grp)")) addRow(); renumber(); updateCheckAll();
     }
     // Дубль строки (⧉): копия всех полей — сразу под исходной, в той же группе. Копируется всё, включая код ШК
-    // (повтор ШК подсвечивается мягкой подсказкой, см. markBcDup) и ручную иконку (data-manual).
+    // (повтор ШК/артикула подсвечивается мягкой подсказкой, см. markDup) и ручную иконку (data-manual).
     function duplicateRow(src){
       hideBcTip(); hidePreviewPopup();
       var v = {};
