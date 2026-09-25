@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="build" content="101 · 25.09.2026 12:14">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
@@ -16,6 +17,7 @@
   header{padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
   header h1{font-size:16px;margin:0;font-weight:650}
   header .sub{color:var(--muted);font-size:12px}
+  .build-info{padding:8px 20px;text-align:right;color:var(--secondary-text);font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
   .layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;padding:16px;align-items:start}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:10px}
   .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0;padding:12px 14px;border-bottom:1px solid var(--line)}
@@ -362,6 +364,10 @@
     </div>
   </div>
 </section>
+
+<!-- Номер и время сборки — подставляет build.py -->
+<footer class="build-info">сборка 101 · 25.09.2026 12:14</footer>
+<script>console.info("edda sticker generator — сборка 101 · 25.09.2026 12:14");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -1540,6 +1546,15 @@ document.addEventListener("DOMContentLoaded", function () {
       if (cv) thumb.appendChild(cv); else thumb.innerHTML = ICON_PLACEHOLDER;
       td.classList.toggle("has-icon", val !== ""); // подпись показываем только при наличии значения
     }
+    // Ввод названия → иконка по названию сразу (не ждём ухода фокуса из строки): миниатюра пересчитывается, а красная
+    // подсветка ячейки «Иконка» снимается, как только иконка нашлась. Новую подсветку здесь не ставим — её ставит
+    // полная проверка строки при уходе фокуса (как у остальных ячеек).
+    function syncIconByName(tr){
+      var td = tr.querySelector("td.iconcell"); if (!td) return;
+      updateIconThumb(td);
+      var ii = td.querySelector('input[data-col="icon"]');
+      if (ii && !iconError(tr)){ ii.classList.remove("cell-empty", "cell-invalid"); delete ii.dataset.err; }
+    }
     function refreshIconCells(){ Array.prototype.forEach.call(tbody.querySelectorAll("td.iconcell"), updateIconThumb); }
 
     // Большое превью в попапе при наведении на миниатюру (рендерится на лету, position:fixed — не обрезается).
@@ -1579,6 +1594,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (tr.classList.contains("grp")) return;      // строка-заголовок группы не нумеруется
         var idx = tr.querySelector("td.idx"); if (idx) idx.textContent = (++n);
       });
+      refreshDupes(); // состав/порядок строк изменился → пары повторов и номера строк в подсказках тоже
     }
     // Форматные правила полей. Возвращает текст ошибки для НЕПУСТОГО значения или null, если валидно.
     // kolvo — целое > 0; artikul — латиница/цифры/дефис; barcode — длина ровно 14 (≠14 → ошибка;
@@ -1618,6 +1634,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       if (required.indexOf(id) < 0) return;
+      // Повтор (cell-soft у ШК/артикула) здесь не пересчитываем — только markDup/refreshDupes; текст подсказки сохраняем.
+      var dupMsg = DUP_COLS[id] && inp.classList.contains("cell-soft") ? inp.dataset.err : null;
       inp.classList.remove("cell-empty", "cell-invalid"); delete inp.dataset.err;
       var v = inp.value.trim();
       if (id === "data"){ // дата — скрытый инпут; красим ОТДЕЛЬНО месяц/год (тот, что не выбран)
@@ -1636,11 +1654,10 @@ document.addEventListener("DOMContentLoaded", function () {
         if (ie){ inp.classList.add(v === "" ? "cell-empty" : "cell-invalid"); inp.dataset.err = ie; }
         return;
       }
-      if (DUP_COLS[id]) inp.classList.remove("cell-soft");
-      if (v === ""){ if (rowAnyFilled(tr)) inp.classList.add("cell-empty"); return; }
+      if (v === ""){ inp.classList.remove("cell-soft"); if (rowAnyFilled(tr)) inp.classList.add("cell-empty"); return; }
       var err = fieldError(id, v);
-      if (err){ inp.classList.add("cell-invalid"); inp.dataset.err = err; }
-      if (DUP_COLS[id]) markDup(inp, tr);
+      if (err){ inp.classList.add("cell-invalid"); inp.dataset.err = err; inp.classList.remove("cell-soft"); } // ошибка важнее повтора
+      else if (dupMsg) inp.dataset.err = dupMsg;
     }
     // Повтор значения в других строках таблицы (ШК, артикул — у каждой строки должен быть свой) → мягкая подсказка
     // .cell-soft (как пустой «Цвет»): генерацию не блокирует, в счётчик ошибок не входит. Только для валидного значения
@@ -1668,9 +1685,12 @@ document.addEventListener("DOMContentLoaded", function () {
       inp.classList.add("cell-soft");
       inp.dataset.err = DUP_COLS[col] + " повторяется в " + (nums.length > 1 ? "строках " : "строке ") + nums.join(", ") + ".\nПроверьте на всякий случай";
     }
-    // Пересчёт подсказок о повторах во всей таблице (после ухода фокуса из строки, дубля, удаления, импорта).
-    function refreshDupes(){
-      Object.keys(DUP_COLS).forEach(function(col){
+    // Когда пересчитываем повторы (по всем строкам таблицы — повтор касается и второй строки):
+    //  • col задан — одна колонка: ушли из её ячейки, и значение изменилось (validateCell);
+    //  • без col — все колонки DUP_COLS: изменился состав/порядок строк (renumber — дубль, удаление, импорт, …).
+    // Уход из других полей и из ШК/артикула без изменений повторы не трогает.
+    function refreshDupes(col){
+      (col ? [col] : Object.keys(DUP_COLS)).forEach(function(col){
         var m = dupMap(col);
         Array.prototype.forEach.call(tbody.rows, function(r){
           var i = r.querySelector('input[data-col="'+col+'"]'); if (i) markDup(i, r, m);
@@ -1683,9 +1703,20 @@ document.addEventListener("DOMContentLoaded", function () {
       if (inp.dataset.col === "barcode"){
         var w = inp.closest(".bc-wrap"); if (w) validateBc(inp, w, w.querySelector(".bc-err"));
       }
+      // ШК/артикул: значение изменилось → перепроверить повторы этой колонки; нет → вернуть подсказку, снятую на фокусе.
+      var col = inp.dataset.col;
+      if (DUP_COLS[col]){
+        var prev = inp._dupPrev; delete inp._dupPrev;
+        if (!prev || prev.key !== dupKey(inp.value)) refreshDupes(col);
+        else if (prev.err && !inp.classList.contains("cell-invalid") && !inp.classList.contains("cell-empty")){
+          inp.classList.add("cell-soft"); inp.dataset.err = prev.err;
+        }
+      }
     }
     // Сброс подсветки/иконки/тултипа ТОЛЬКО у одной ячейки (при получении ею фокуса).
+    // ШК/артикул: запоминаем значение и подсказку о повторе — на blur сравним (validateCell).
     function clearCell(inp){
+      if (DUP_COLS[inp.dataset.col]) inp._dupPrev = { key: dupKey(inp.value), err: inp.classList.contains("cell-soft") ? inp.dataset.err : null };
       inp.classList.remove("cell-empty", "cell-invalid", "cell-soft"); delete inp.dataset.err; hideBcTip();
       if (inp.dataset.col === "barcode"){ var w = inp.closest(".bc-wrap"); if (w) w.classList.remove("invalid"); }
     }
@@ -1702,6 +1733,12 @@ document.addEventListener("DOMContentLoaded", function () {
       // Проверка кода ШК (иконка «!»).
       var bcInp = tr.querySelector('input[data-col="barcode"]');
       if (bcInp){ var w = bcInp.closest(".bc-wrap"); if (w) validateBc(bcInp, w, w.querySelector(".bc-err")); }
+      updateRowCheck(tr);
+    }
+    // Только чекбокс строки по полноте (без подсветки ячеек) — можно звать и пока фокус в строке:
+    // при переходе между контролами строки и при выборе месяца/года (затем updateCheckAll → счётчики).
+    function updateRowCheck(tr){
+      var chk = tr.querySelector("input.rowchk"); if (!chk) return;
       if (rowComplete(tr)){
         if (chk.disabled){ chk.disabled = false; chk.checked = true; }
       } else {
@@ -1718,7 +1755,6 @@ document.addEventListener("DOMContentLoaded", function () {
       checkAll.disabled = enabled === 0;
       checkAll.checked = enabled > 0 && checked === enabled;
       checkAll.indeterminate = checked > 0 && checked < enabled;
-      refreshDupes(); // повтор ШК/артикула зависит от ВСЕХ строк — пересчёт вместе со сводным состоянием таблицы
       updateAllGroupHeads();
       updateCount();
     }
@@ -2031,8 +2067,15 @@ document.addEventListener("DOMContentLoaded", function () {
       function upd(){ hid.value = (msel.value && ysel.value) ? (msel.value+" "+ysel.value) : ""; }
       upd(); // записать начальное значение (пересчёт чекбокса/превью — по focusout строки, как у прочих ячеек)
       // Смена месяца/года в строке → СРАЗУ пересчитать дату в заголовке её группы («—» при расхождении),
-      // не дожидаясь ухода фокуса из строки.
-      function onChange(){ upd(); var h = groupHeadOf(td.parentNode); if (h) updateGroupHead(h); }
+      // не дожидаясь ухода фокуса из строки. Выбранный месяц/год (по отдельности) сразу снимает свою красную
+      // подсветку dd-empty: полная проверка строки ждёт ухода фокуса, а он после выбора остаётся в строке.
+      function onChange(e){
+        upd();
+        var s = e && e.target; if (s && s.value && s.__dd) s.__dd.classList.remove("dd-empty");
+        // Чекбокс строки и счётчики — тоже сразу (фокус после выбора остаётся на дропдауне); updateCheckAll
+        // заодно пересчитывает заголовки групп (дата группы).
+        if (td.parentNode){ updateRowCheck(td.parentNode); updateCheckAll(); }
+      }
       msel.addEventListener("change", onChange); ysel.addEventListener("change", onChange);
       td.appendChild(hid); td.appendChild(my.box);
       return td;
@@ -2076,6 +2119,7 @@ document.addEventListener("DOMContentLoaded", function () {
           var next = target.querySelector('input[data-col="'+col+'"]');
           if (next){ next.focus(); next.select(); }
         });
+        if (id === "name") inp.addEventListener("input", function(){ syncIconByName(tr); });
         if (id === "icon"){
           td.className = "prev iconcell";                 // размер как у ячейки «Превью»
           var thumb = document.createElement("div"); thumb.className = "icon-thumb"; // миниатюра — заполнит S5
@@ -2115,6 +2159,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Уход фокуса из строки наружу → полная валидация строки + пересчёт чекбокса/счётчика + обновление превью.
       tr.addEventListener("focusout", function(e){
         if (!tr.contains(e.relatedTarget)){ updateRowState(tr); updateCheckAll(); refreshRowPreview(tr); updateIconThumb(tr.querySelector("td.iconcell")); } // название могло поменять иконку
+        else { updateRowCheck(tr); updateCheckAll(); } // переход между контролами строки → чекбокс и счётчики сразу
       });
       tbody.insertBefore(tr, before || null); renumber();
       updateRowState(tr); updateCheckAll();
