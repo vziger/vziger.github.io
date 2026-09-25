@@ -3,21 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="101 · 25.09.2026 12:14">
+<meta name="build" content="116 · 25.09.2026 18:24">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
     --bg:#f4f5f7; --panel:#ffffff; --ink:#1c1f24; --muted:#6b7280; --secondary-text:#aaaaaa;
     --line:#e3e6ea; --accent:#2563eb; --accent-weak:#dbe4ff;
-    --bottom-space: 65vh;
+    --bottom-space: 60vh;
   }
   *{box-sizing:border-box}
   [hidden]{display:none!important}
-  body{margin:0;font:14px/1.45 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  body{margin:0;font:14px/1.45 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);
+    min-height:100vh;display:flex;flex-direction:column} /* колонка на весь экран → подвал .build-info прижат к низу */
   header{padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
   header h1{font-size:16px;margin:0;font-weight:650}
   header .sub{color:var(--muted);font-size:12px}
-  .build-info{padding:8px 20px;text-align:right;color:var(--secondary-text);font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .build-info{margin-top:auto;padding:8px 20px;text-align:right;color:var(--secondary-text);font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
   .layout{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;padding:16px;align-items:start}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:10px}
   .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0;padding:12px 14px;border-bottom:1px solid var(--line)}
@@ -80,7 +81,10 @@
   button:disabled{opacity:.5;cursor:not-allowed}
   .stub{font-size:13px;color:#9aa1ab;font-style:italic}
   /* массовый режим */
-  #bulkView{margin:16px 16px var(--bottom-space)} /* снизу — отступ-«подвал», см. --bottom-space в :root */
+  #bulkView{margin:16px}
+  /* Отступ-«подвал» снизу (--bottom-space в :root) — только если строк-данных ≥ 10 (заголовки групп не считаются).
+     Порог N — число в nth-child(10 …): CSS-переменную туда подставить нельзя, менять вручную. */
+  #bulkView:has(#bulk-tbody > tr:nth-child(10 of :not(.grp))){margin-bottom:var(--bottom-space)}
   .bulk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-right:14px}
   .bulk-head h2{border-bottom:none;padding-right:8px}
   #bulk-back{padding:2px 0;border:none;border-radius:0;background:transparent;color:var(--muted);
@@ -103,9 +107,11 @@
   #bulk-table .col-name{min-width:250px}
   #bulk-table .col-artikul{width:120px}
   #bulk-table .col-kolvo{width:56px}
+  #bulk-table .col-srok{width:120px}
   #bulk-table td input[data-col="name"]{min-width:250px}
   #bulk-table td input[data-col="artikul"],
-  #bulk-table td input[data-col="kolvo"]{min-width:0}
+  #bulk-table td input[data-col="kolvo"],
+  #bulk-table td input[data-col="srok"]{min-width:0}
   #bulk-table td input.cell-empty,#bulk-table td input.cell-invalid{background:#fdecec;border-color:#e39a9a}
   #bulk-table td input.cell-empty:focus,#bulk-table td input.cell-invalid:focus{border-color:var(--accent);background:#fff}
   /* Мягкая подсказка (не ошибка): пустой «Цвет» в непустой строке → «проверьте на всякий случай». */
@@ -127,12 +133,18 @@
   #bulk-table td.sel,#bulk-table th.sel{text-align:center;width:34px;min-width:34px}
   #bulk-table td.sel input,#bulk-table th.sel input{display:block;width:auto;min-width:0;margin:0 auto;cursor:pointer}
   #bulk-table td.sel input:disabled{cursor:not-allowed}
+  /* отмеченная строка — светло-голубой фон (заголовки групп не красим) */
+  #bulk-table tbody tr:not(.grp):has(input.rowchk:checked) > td{background:#dfeafe}
+  /* ховер строки: неотмеченная — нейтральный серый, отмеченная — голубой на тон темнее выделения */
+  #bulk-table tbody tr:not(.grp):hover > td{background:#f2f3f5}
+  #bulk-table tbody tr:not(.grp):has(input.rowchk:checked):hover > td{background:#cddcfb}
   #bulk-table td.idx{text-align:center;color:var(--muted);min-width:28px}
   #bulk-table td.prev,#bulk-table th.prev{text-align:center;width:64px;min-width:64px;padding:3px}
   #bulk-table td.prev canvas{display:block;margin:0 auto;border:1px solid var(--line);border-radius:3px;cursor:zoom-in}
   #bulk-table td.iconcell{vertical-align:middle;text-align:center}
   #bulk-table td.iconcell .icon-thumb{width:56px;height:44px;margin:0 auto;display:flex;align-items:center;justify-content:center;cursor:zoom-in}
   #bulk-table td.iconcell .icon-thumb canvas,#bulk-table td.iconcell .icon-thumb svg{max-width:56px;max-height:44px;display:block}
+  #bulk-table td.iconcell .icon-thumb canvas{background:#fff} /* непрозрачная, как превью: подсветка строки не просвечивает */
   #bulk-table td.iconcell .icon-ph{width:30px;height:30px;color:var(--muted);opacity:.55}
   /* Подпись с именем файла — только когда в ячейке есть значение (под миниатюрой). */
   #bulk-table td.iconcell .icon-input{display:none;width:60px;font-size:10px;text-align:center;padding:2px 3px;margin:2px auto 0;border-radius:4px}
@@ -162,7 +174,7 @@
   #bulk-table tr.grp:has(.grpchk:disabled) .grp-label{cursor:default}
   #bulk-table tr.grp .grp-name{font-weight:600;color:var(--fg,#1a1a1a);white-space:normal}
   #bulk-table tr.grp[data-kind="manual"] .grp-title,#bulk-table tr.grp[data-kind="noname"] .grp-title{color:var(--muted)} /* служебные группы */
-  #bulk-table tr.grp .grp-count{color:var(--muted);font-weight:400;font-size:12px}
+  #bulk-table tr.grp .grp-count{color:var(--muted);font-weight:400;font-size:12px;font-variant-numeric:tabular-nums} /* «(N/M)» перед названием; цифры одной ширины */
   #bulk-table td.del{text-align:center;white-space:nowrap}
   /* действия строки/группы: ⧉ «Дублировать» + «⋯» (меню с «Удалить») */
   .row-act{border:none;background:transparent;color:var(--muted);cursor:pointer;line-height:0;border-radius:5px;vertical-align:middle;padding:8px 9px}
@@ -238,7 +250,7 @@
     <div class="status" id="status">Загрузка шаблона…</div>
   </section>
 
-  <!-- Правая колонка: форма-пустышка (Шаг 1 — заглушки) -->
+  <!-- Правая колонка: форма-пустышка -->
   <aside class="card">
     <h2>Параметры стикера</h2>
     <div class="form">
@@ -347,9 +359,10 @@
           <th class="col-artikul">Артикул</th>
           <th class="col-kolvo">Кол-во</th>
           <th>Дата изготовления</th>
-          <th>Срок годности</th>
+          <th class="col-srok">Срок годности</th>
           <th>Код ШК ITF-14</th>
           <th></th>
+          <th class="sel sel-mirror"><input type="checkbox" class="chk-mirror" title="Выделить/снять все"></th> <!-- зеркало колонки выбора (пока только разметка) -->
         </tr>
       </thead>
       <tbody id="bulk-tbody"></tbody>
@@ -366,8 +379,8 @@
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 101 · 25.09.2026 12:14</footer>
-<script>console.info("edda sticker generator — сборка 101 · 25.09.2026 12:14");</script>
+<footer class="build-info">сборка 116 · 25.09.2026 18:24</footer>
+<script>console.info("edda sticker generator — сборка 116 · 25.09.2026 18:24");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -517,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //   pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(workerBlob);
   // } catch (e) { setStatus("Ошибка инициализации воркера: " + e.message, true); return; }
 
-  // --- Связка форма ↔ зоны (Шаг 3) ---
+  // --- Связка форма ↔ зоны ---
   function inputFor(id){ return document.getElementById("in-" + id); }
   function boxFor(id){ return fieldLayer.querySelector('.field-box[data-field-id="' + id + '"]'); }
 
@@ -979,7 +992,7 @@ document.addEventListener("DOMContentLoaded", function () {
     upd();
   })();
 
-  // --- Генерация PDF в кривых (Шаги 6–7) ---
+  // --- Генерация PDF в кривых ---
   // Рисуем значения контурами через pdf-lib drawSvgPath, цвет CMYK. Текст НЕ встраивается как шрифт.
   function resolveText(f, values, upperName) {
     var v = (values && values[f.id] != null) ? String(values[f.id]) : "";
@@ -1459,7 +1472,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   })();
 
-  // --- Массовый режим (Шаг 7) ---
+  // --- Массовый режим ---
   (function initBulk(){
     var layout = document.querySelector(".layout");
     var bulkView = document.getElementById("bulkView");
@@ -1476,6 +1489,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // (`data`) не импортируем — по решению пользователя; при этом колонка `data` в таблице остаётся (order).
     var importOrder = order.filter(function(id){ return id !== "data"; });
     var checkAll = document.getElementById("bulk-check-all");
+    // Ключ: показывать колонку-зеркало чекбоксов в конце таблицы (фича на пробу, пока только разметка).
+    // false → колонки нет нигде (шапка, строки, заголовки групп).
+    var SEL_MIRROR = false;
+    if (!SEL_MIRROR){ var mth = document.querySelector("#bulk-table th.sel-mirror"); if (mth) mth.remove(); }
     // Ячейка с чекбоксом кликабельна целиком (строки, заголовки групп, «выбрать все» в шапке): клик мимо квадратика
     // → click() по чекбоксу (он сам шлёт change — вся логика как при клике по чекбоксу). Один делегат на таблицу.
     document.getElementById("bulk-table").addEventListener("click", function(e){
@@ -1799,7 +1816,7 @@ document.addEventListener("DOMContentLoaded", function () {
       chk.disabled = enabled===0;
       chk.checked = enabled>0 && checked===enabled;
       chk.indeterminate = checked>0 && checked<enabled;
-      var cnt = headTr.querySelector(".grp-count"); if(cnt) cnt.textContent = "("+rows.length+")";
+      var cnt = headTr.querySelector(".grp-count"); if(cnt) cnt.textContent = "("+checked+"/"+rows.length+")"; // отмечено / всего строк в блоке
       syncGroupDate(headTr, rows, headTr._grpMonth, "Месяц");
       syncGroupDate(headTr, rows, headTr._grpYear, "Год");
     }
@@ -1841,7 +1858,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var lbl=document.createElement("label"); lbl.className="grp-label"; lbl.htmlFor=chk.id;
       var nm=document.createElement("span"); nm.className="grp-title"; nm.textContent=name;
       var cnt=document.createElement("span"); cnt.className="grp-count";
-      lbl.appendChild(nm); lbl.appendChild(document.createTextNode(" ")); lbl.appendChild(cnt); td.appendChild(lbl);
+      lbl.appendChild(cnt); lbl.appendChild(document.createTextNode(" ")); lbl.appendChild(nm); td.appendChild(lbl);
       tr.appendChild(td);
       var dateTd=document.createElement("td"); dateTd.className="grp-date col-data";
       var my=makeMonthYear("", ""); dateTd.appendChild(my.box); tr.appendChild(dateTd);
@@ -1863,8 +1880,12 @@ document.addEventListener("DOMContentLoaded", function () {
       // var btn=document.createElement("button"); btn.className="row-del"; btn.title="Удалить блок"; btn.textContent="✕";
       // btn.addEventListener("click", function(){ deleteGroup(tr); });
       // del.appendChild(btn);
+      // Невидимая заглушка размером с ⧉ строки — чтобы «⋯» заголовка стояла ровно над «⋯» строк.
+      var ph = document.createElement("span"); ph.className = "row-act dup"; ph.style.visibility = "hidden"; ph.style.display = "inline-block";
+      ph.setAttribute("aria-hidden", "true"); ph.innerHTML = ICON_DUP; del.appendChild(ph);
       del.appendChild(makeMenuBtn([{ label: "Удалить блок", danger: true, fn: function(){ deleteGroup(tr); } }]));
       tr.appendChild(del);
+      if (SEL_MIRROR) tr.appendChild(makeMirrorSel()); // зеркало колонки выбора (пока только разметка)
       // Плашка удалённого блока (видна только с классом grp-deleted) — одна ячейка во всю ширину таблицы.
       var undoTd=document.createElement("td"); undoTd.className="grp-undo"; undoTd.colSpan=order.length+4; // выбор, №, Превью, order, «✕»
       var bar=document.createElement("div"); bar.className="grp-undo-bar"; bar.setAttribute("role","status");
@@ -1977,6 +1998,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function showBcTip(el, msg, alignRight){
       var m = (msg != null) ? msg : el.dataset.msg; if (!m) return;
       bcTip.textContent = m; bcTip.hidden = false;
+      bcTip.style.left = "0px"; // мерить ширину не со старой позиции: у правого края окна тултип сжимается и переносит текст
       var r = el.getBoundingClientRect(), t = bcTip.getBoundingClientRect();
       var left = Math.max(6, Math.min(alignRight ? r.right - t.width : r.left, window.innerWidth - t.width - 6));
       var top = r.top - t.height - 6; if (top < 6) top = r.bottom + 6; // не влезает сверху → снизу
@@ -1992,10 +2014,16 @@ document.addEventListener("DOMContentLoaded", function () {
     var actMenu = document.createElement("div"); actMenu.className = "act-menu"; actMenu.hidden = true; actMenu.setAttribute("role", "menu");
     document.body.appendChild(actMenu);
     var actMenuBtn = null; // кнопка «⋯», чьё меню открыто
+    // Подсказка на кнопке — тот же мгновенный тёмный тултип, что у ячеек (showBcTip), а не нативный title.
+    // Пока открыто меню этой кнопки — не показываем (перекрыл бы пункты).
+    function btnTip(el, text){
+      el.addEventListener("mouseenter", function(){ if (actMenuBtn !== el) showBcTip(el, text); });
+      el.addEventListener("mouseleave", hideBcTip);
+    }
     // items: [{label, danger, fn}]
     function makeMenuBtn(items){
       var b = document.createElement("button"); b.type = "button"; b.className = "row-act more";
-      b.title = "Ещё"; b.setAttribute("aria-label", "Ещё действия"); b.setAttribute("aria-haspopup", "menu"); b.innerHTML = ICON_MORE;
+      b.setAttribute("aria-label", "Ещё действия"); b.setAttribute("aria-haspopup", "menu"); b.innerHTML = ICON_MORE; btnTip(b, "Ещё");
       b.addEventListener("click", function(){ if (actMenuBtn === b) closeActMenu(); else openActMenu(b, items); });
       return b;
     }
@@ -2080,6 +2108,13 @@ document.addEventListener("DOMContentLoaded", function () {
       td.appendChild(hid); td.appendChild(my.box);
       return td;
     }
+    // Ячейка-зеркало колонки выбора (в конце строки). ПОКА ТОЛЬКО РАЗМЕТКА: не синхронизирована с левым чекбоксом,
+    // класс chk-mirror (не rowchk/grpchk) — в readRows/счётчики не попадает.
+    function makeMirrorSel(){
+      var td = document.createElement("td"); td.className = "sel sel-mirror";
+      var c = document.createElement("input"); c.type = "checkbox"; c.className = "chk-mirror";
+      td.appendChild(c); return td;
+    }
     // before — строка, перед которой вставить новую (нет → в конец таблицы).
     function addRow(values, before){
       values = values || {};
@@ -2150,11 +2185,12 @@ document.addEventListener("DOMContentLoaded", function () {
       // btn.addEventListener("click", function(){ deleteRow(tr); });
       // del.appendChild(btn);
       var dupBtn = document.createElement("button"); dupBtn.type="button"; dupBtn.className="row-act dup";
-      dupBtn.title="Дублировать строку"; dupBtn.setAttribute("aria-label", "Дублировать строку"); dupBtn.innerHTML = ICON_DUP;
+      dupBtn.setAttribute("aria-label", "Дублировать строку"); dupBtn.innerHTML = ICON_DUP; btnTip(dupBtn, "Дублировать строку");
       dupBtn.addEventListener("click", function(){ duplicateRow(tr); });
       del.appendChild(dupBtn);
       del.appendChild(makeMenuBtn([{ label: "Удалить строку", danger: true, fn: function(){ deleteRow(tr); } }]));
       tr.appendChild(del);
+      if (SEL_MIRROR) tr.appendChild(makeMirrorSel()); // зеркало колонки выбора в конце строки (пока только разметка)
       updateIconThumb(tr.querySelector("td.iconcell")); // начальный рендер — когда строка собрана (иконка может быть по названию)
       // Уход фокуса из строки наружу → полная валидация строки + пересчёт чекбокса/счётчика + обновление превью.
       tr.addEventListener("focusout", function(e){
