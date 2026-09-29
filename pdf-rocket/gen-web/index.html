@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="129 · 29.09.2026 14:10">
+<meta name="build" content="131 · 29.09.2026 14:35">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
@@ -409,8 +409,8 @@
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 129 · 29.09.2026 14:10</footer>
-<script>console.info("edda sticker generator — сборка 129 · 29.09.2026 14:10");</script>
+<footer class="build-info">сборка 131 · 29.09.2026 14:35</footer>
+<script>console.info("edda sticker generator — сборка 131 · 29.09.2026 14:35");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -871,9 +871,19 @@ document.addEventListener("DOMContentLoaded", function () {
   // circle: разбивка по словам (пробел / - .), разделитель не рисуется.
   // name: автоперенос по ширине. Прочие поля: одна строка на f.baseline (обратная совместимость).
   // Блок вертикально центрируется по f.centerY; межстрочный интервал f.lineLeading.
+  // «Цвет» в круге: слово на строку (разделитель не рисуется); «Мультиколор» — в две строки «Мульти-» / «колор».
+  function circleWords(text) {
+    var out = [];
+    String(text).split(/[\s/.\-]+/).filter(Boolean).forEach(function (w) {
+      if (/^мультиколор$/i.test(w)) out.push(w.slice(0, 6) + "-", w.slice(6));
+      else out.push(w);
+    });
+    return out;
+  }
+
   function layoutLines(text, f, font, capRatio, extraW) {
     var lines;
-    if (f.split === "words") lines = String(text).split(/[\s/.\-]+/).filter(Boolean);
+    if (f.split === "words") lines = circleWords(text);
     else if (f.wrap === "width") lines = wrapByWidth(text, f, font, capRatio, extraW);
     else lines = [String(text)];
     if (!lines.length) lines = [""];
@@ -1934,6 +1944,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // --- Группировка строк по названию (строка-заголовок группы + групповой чекбокс) ---
     // Ключ группы: нормализованное название (trim, схлопнутые пробелы, регистронезависимо).
     function groupKey(name){ return String(name==null?"":name).trim().replace(/\s+/g," ").toLowerCase(); }
+    // Импорт: бренд «edda» в названии товара не нужен (он и так на этикетке) — удаляем отдельное слово
+    // (без регистра; внутри других слов не трогаем), схлопываем пробелы, убираем пробел перед «,» / «.».
+    function stripBrand(name){
+      return String(name==null?"":name)
+        .replace(/(?<![\p{L}\p{N}])edda(?![\p{L}\p{N}])/giu, "")
+        .replace(/\s+/g, " ").replace(/ ([,.])/g, "$1").trim();
+    }
     // Строки-данные группы: идущие следом строки с классом in-grp (до заголовка/строки без метки/конца).
     // Метка in-grp ставится только членам группы при импорте — поэтому строки без названия и добавленные
     // вручную после импорта в группу НЕ засчитываются.
@@ -2705,6 +2722,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var items = parsed.rows.map(function(r){
         var v={};
         importOrder.forEach(function(fid){ var ci=colFor[fid]; v[fid]= (ci>=0 && r[ci]!=null)? String(r[ci]) : ""; });
+        v.name = stripBrand(v.name);
         return v; // `data` заполняется ниже общим значением месяц+год из блока сопоставления
       });
       // Дата изготовления — общая для всех строк: месяц+год из контролов блока сопоставления («Месяц Год»).
