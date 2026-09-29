@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="116 · 25.09.2026 18:24">
+<meta name="build" content="129 · 29.09.2026 14:10">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
@@ -87,6 +87,22 @@
   #bulkView:has(#bulk-tbody > tr:nth-child(10 of :not(.grp))){margin-bottom:var(--bottom-space)}
   .bulk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-right:14px}
   .bulk-head h2{border-bottom:none;padding-right:8px}
+  /* Поиск по названию (справа в строке заголовка). Иконка-лупа — фон инпута; крестик очистки — нативный type=search. */
+  #bulk-search{width:240px;padding:7px 10px 7px 30px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;
+    background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa1ab' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 10px 50%}
+  #bulk-search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.18)}
+  /* Фильтр: несовпавшие строки/заголовки групп скрыты (данные остаются в DOM, отметки сохраняются). */
+  #bulk-table tbody tr.is-filtered{display:none}
+  /* «Сгенерировать всё» при активном поиске заблокирована; тултип — на обёртке (disabled-кнопка не получает мышь). */
+  .gen-wrap{display:inline-flex}
+  .gen-wrap button:disabled{pointer-events:none}
+  .bulk-empty{padding:18px 8px;text-align:center;color:var(--muted);font-size:13px}
+  /* Подсветка найденного: в заголовке группы — <mark>; в инпуте «Название» — подложка-зеркало .hl-mirror под
+     прозрачным инпутом (внутри <input> разметку не вставить). На фокусе инпут белый — подложка не видна. */
+  mark.hl{background:#ffe58a;color:inherit;padding:0;border-radius:2px}
+  #bulk-table td.col-name{position:relative}
+  #bulk-table td.col-name input{position:relative}
+  .hl-mirror{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);padding:0 7px;font:inherit;white-space:pre;overflow:hidden;color:transparent;pointer-events:none}
   #bulk-back{padding:2px 0;border:none;border-radius:0;background:transparent;color:var(--muted);
     text-decoration:underline dashed 1px;text-underline-offset:0.3em}
   #bulk-back:hover{background:transparent;filter:none;color:var(--ink);}
@@ -142,7 +158,7 @@
   #bulk-table td.prev,#bulk-table th.prev{text-align:center;width:64px;min-width:64px;padding:3px}
   #bulk-table td.prev canvas{display:block;margin:0 auto;border:1px solid var(--line);border-radius:3px;cursor:zoom-in}
   #bulk-table td.iconcell{vertical-align:middle;text-align:center}
-  #bulk-table td.iconcell .icon-thumb{width:56px;height:44px;margin:0 auto;display:flex;align-items:center;justify-content:center;cursor:zoom-in}
+  #bulk-table td.iconcell .icon-thumb{width:56px;height:44px;margin:0 auto;display:flex;align-items:center;justify-content:center;cursor:pointer}
   #bulk-table td.iconcell .icon-thumb canvas,#bulk-table td.iconcell .icon-thumb svg{max-width:56px;max-height:44px;display:block}
   #bulk-table td.iconcell .icon-thumb canvas{background:#fff} /* непрозрачная, как превью: подсветка строки не просвечивает */
   #bulk-table td.iconcell .icon-ph{width:30px;height:30px;color:var(--muted);opacity:.55}
@@ -151,6 +167,18 @@
   #bulk-table td.iconcell.has-icon .icon-input{display:block}
   .prev-pop{position:fixed;z-index:1001;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:6px;pointer-events:none}
   .prev-pop canvas{display:block;border-radius:4px}
+  /* Карточка иконки по ховеру (интерактивная, в отличие от .prev-pop): превью + пункты .act-item. */
+  .icon-pop{position:fixed;z-index:1002;min-width:170px;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 12px 34px rgba(0,0,0,.16);padding:6px}
+  .icon-pop .ip-prev canvas{display:block;margin:0 auto;border-radius:4px}
+  .icon-pop .ip-ph{height:120px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+  .icon-pop .ip-ph svg{width:56px;height:56px;opacity:.45}
+  .icon-pop .ip-sep{border-top:1px solid var(--line);margin:6px -6px 4px}
+  /* Своя SVG не совпадает с названием → мягкая янтарная ячейка (как .cell-soft); красная ошибка важнее (:not). !important —
+     чтобы перебить фон отмеченной/наведённой строки. */
+  #bulk-table td.iconcell.icon-soft:not(:has(.icon-input.cell-invalid, .icon-input.cell-empty)){background:#fff7e0 !important;box-shadow:inset 0 0 0 1.5px #e8c56a;border-radius:4px}
+  /* width:0 + min-width:100% — во всю ширину карточки, но саму карточку не расширяют (её ширину задают превью и пункты) */
+  .icon-pop .ip-warn{box-sizing:border-box;width:0;min-width:100%;overflow-wrap:anywhere;margin-bottom:6px;padding:6px 10px;border:1px solid #e8c56a;border-radius:8px;background:#fff7e0;color:#8a6412;font-size:12px;line-height:1.35;white-space:pre-line}
+  .icon-pop .ip-note{box-sizing:border-box;width:0;min-width:100%;padding:4px 12px 2px;font-size:11px;color:var(--muted);overflow-wrap:anywhere}
   #bulk-table td.col-data{padding:0;width:1%;white-space:nowrap}
   #bulk-table .cell-date{display:flex;align-items:center}
   #bulk-table .cell-date .dd{min-width:0}
@@ -305,6 +333,7 @@
   <div class="bulk-head">
     <h2 style="padding-left:24px;">Каждая строка = стикер</h2>
     <!-- <button id="bulk-back">← Одиночный режим</button> -->
+    <input type="search" id="bulk-search" placeholder="Поиск по названию" aria-label="Поиск по названию товара" autocomplete="off" spellcheck="false">
   </div>
   <div class="bulk-toolbar">
     <button id="bulk-add" style="margin-right:10px">+ Строка</button>
@@ -326,7 +355,7 @@
     <span class="bulk-gen-group">
       <span id="bulk-count" class="bulk-count" data-bulk-count></span>
       <span id="bulk-errors" class="bulk-errors" data-bulk-errors hidden></span>
-      <button class="primary" id="bulk-generate">Сгенерировать всё</button>
+      <span class="gen-wrap"><button class="primary" id="bulk-generate">Сгенерировать всё</button></span>
     </span>
   </div>
   <div id="importMap" class="import-map" hidden>
@@ -370,17 +399,18 @@
         <tr class="row-add-tr"><td id="bulk-add-td"><button type="button" class="row-add" id="bulk-add-bottom">+ Строка</button></td></tr>
       </tfoot>
     </table>
+    <div id="bulk-empty" class="bulk-empty" hidden>Ничего не найдено</div>
     <div class="bulk-foot">
       <span class="bulk-count" data-bulk-count></span>
       <span class="bulk-errors" data-bulk-errors hidden></span>
-      <button class="primary" id="bulk-generate-bottom">Сгенерировать всё</button>
+      <span class="gen-wrap"><button class="primary" id="bulk-generate-bottom">Сгенерировать всё</button></span>
     </div>
   </div>
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 116 · 25.09.2026 18:24</footer>
-<script>console.info("edda sticker generator — сборка 116 · 25.09.2026 18:24");</script>
+<footer class="build-info">сборка 129 · 29.09.2026 14:10</footer>
+<script>console.info("edda sticker generator — сборка 129 · 29.09.2026 14:10");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -1077,6 +1107,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // Ключ = имя файла (нормализованное: нижний регистр, без пути). Значение = текст SVG.
   // Модульная область — доступна и генерации, и превью.
   var ICONS = new Map();
+  // SVG, загруженные для одной строки (клик по иконке / карточка по ховеру): ключ «@row:N» → текст SVG.
+  // Отдельно от набора: не входит в индекс по названию и счётчик набора, другие строки её не подхватят.
+  var ROW_ICONS = new Map();
   // Плейсхолдер «картинка» для ячейки иконки (пока нет реального рендера/иконки).
   var ICON_PLACEHOLDER = '<svg class="icon-ph" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
     '<rect x="3" y="4.5" width="18" height="15" rx="2.2" stroke="currentColor" stroke-width="1.6"/>' +
@@ -1088,6 +1121,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Терпимый поиск: пробуем как есть и с добавленным «.svg».
   function iconGet(name){
     if (!name) return null;
+    if (ROW_ICONS.has(name)) return ROW_ICONS.get(name); // иконка, загруженная для строки
     var k = iconKey(name);
     if (ICONS.has(k)) return ICONS.get(k);
     if (!/\.svg$/.test(k) && ICONS.has(k + ".svg")) return ICONS.get(k + ".svg");
@@ -1510,11 +1544,13 @@ document.addEventListener("DOMContentLoaded", function () {
       return v;
     }
     // Какая иконка рисуется в строке (имя/ключ для iconGet или ""):
+    //  0) SVG, загруженный для этой строки (tr._rowIcon → ROW_ICONS) → он, главнее всего;
     //  1) ячейку «Иконка» правил пользователь (data-manual) → она;
     //  2) иначе — по названию товара (iconByName, точное после нормализации);
     //  3) иначе — значение ячейки (из Excel; колонки может не быть → пусто).
     // Отображение ячейки не меняется — инпут показывает своё значение.
     function rowIcon(tr){
+      if (tr._rowIcon && ROW_ICONS.has(tr._rowIcon)) return tr._rowIcon;
       var ii = tr.querySelector('input[data-col="icon"]'), ni = tr.querySelector('input[data-col="name"]');
       var v = ii ? ii.value.trim() : "";
       if (v && ii.dataset.manual) return v;
@@ -1522,8 +1558,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Ошибка иконки строки (текст) или null. Учитывает и название, и ячейку — см. rowIcon.
     function iconError(tr){
+      var eff = rowIcon(tr); if (eff && iconGet(eff)) return null; // своя иконка строки — не ошибка и без набора
       if (!ICONS.size) return "Иконки не загружены — импортируйте набор SVG";
-      var eff = rowIcon(tr); if (eff && iconGet(eff)) return null;
       var ii = tr.querySelector('input[data-col="icon"]'), ni = tr.querySelector('input[data-col="name"]');
       var v = ii ? ii.value.trim() : "", n = ni ? ni.value.trim() : "";
       if (v && ii.dataset.manual) return "Иконка «"+v+"» не найдена в наборе";
@@ -1571,6 +1607,21 @@ document.addEventListener("DOMContentLoaded", function () {
       updateIconThumb(td);
       var ii = td.querySelector('input[data-col="icon"]');
       if (ii && !iconError(tr)){ ii.classList.remove("cell-empty", "cell-invalid"); delete ii.dataset.err; }
+      markIconSoft(tr, true); // названия совпали → жёлтая подсказка снимается сразу (ставится при уходе из строки)
+    }
+    // Своя SVG строки (tr._rowIcon), имя файла ≠ название товара (сравнение как у поиска по названию — iconNameKey)
+    // → текст мягкой подсказки, иначе null. Пустое название — без подсказки (там и так красная ошибка).
+    function rowIconMismatch(tr){
+      if (!tr._rowIcon || !tr._rowIconName) return null;
+      var ni = tr.querySelector('input[data-col="name"]'), n = ni ? ni.value.trim() : "";
+      if (!n || iconNameKey(tr._rowIconName) === iconNameKey(n)) return null;
+      return "Файл «" + tr._rowIconName + "» не совпадает с названием товара «" + n + "»\nПроверьте на всякий случай";
+    }
+    // Жёлтая (мягкая) подсветка ячейки «Иконка» — не ошибка, строку не блокирует. onlyClear — только снять.
+    function markIconSoft(tr, onlyClear){
+      var td = tr.querySelector("td.iconcell"); if (!td) return;
+      if (!rowIconMismatch(tr)) td.classList.remove("icon-soft");
+      else if (!onlyClear) td.classList.add("icon-soft");
     }
     function refreshIconCells(){ Array.prototype.forEach.call(tbody.querySelectorAll("td.iconcell"), updateIconThumb); }
 
@@ -1589,20 +1640,103 @@ document.addEventListener("DOMContentLoaded", function () {
       var top = Math.max(6, Math.min(r.top + r.height / 2 - p.height / 2, window.innerHeight - p.height - 6));
       prevPop.style.left = left + "px"; prevPop.style.top = top + "px";
     }
-    function hidePreviewPopup(){ prevPop.hidden = true; prevPop.textContent = ""; }
-    // Ховер-превью самой иконки (крупно), позиционируется как большое превью строки.
-    function showIconPopup(td){
-      if (!td.parentNode) return;
-      var eff = rowIcon(td.parentNode);
-      var cv = eff ? renderIconBig(eff, 220) : null;
-      if (!cv) return; // иконки нет в наборе — попап не показываем
-      prevPop.textContent = ""; prevPop.appendChild(cv); prevPop.hidden = false;
-      var r = td.getBoundingClientRect(), p = prevPop.getBoundingClientRect();
+    function hidePreviewPopup(){ prevPop.hidden = true; prevPop.textContent = ""; hideIconCard(); }
+
+    // --- Карточка иконки по ховеру на ячейку «Иконка»: крупная SVG (или заглушка) + «Загрузить SVG…» / «Сбросить». ---
+    // Интерактивная: не закрывается, пока мышь идёт с ячейки на карточку (задержка ICON_CARD_HIDE_MS).
+    // Закрывается уходом мыши, Esc, прокруткой, ресайзом. Позиция — как у большого превью (справа, не влезает → слева).
+    var ICON_CARD_HIDE_MS = 150;
+    var iconCard = document.createElement("div"); iconCard.className = "icon-pop"; iconCard.hidden = true;
+    document.body.appendChild(iconCard);
+    var iconCardTd = null, iconCardTimer = 0;
+    iconCard.addEventListener("mouseenter", function(){ clearTimeout(iconCardTimer); });
+    iconCard.addEventListener("mouseleave", scheduleHideIconCard);
+    function showIconCard(td){
+      var tr = td.parentNode; if (!tr) return;
+      clearTimeout(iconCardTimer);
+      if (iconCardTd === td && !iconCard.hidden) return; // вернулись с карточки на ту же ячейку
+      hideBcTip();
+      iconCard.textContent = "";
+      if (td.classList.contains("icon-soft")){ // подсказка — по тому, что подсвечено в ячейке
+        var warn = document.createElement("div"); warn.className = "ip-warn"; warn.textContent = nbspShort(rowIconMismatch(tr) || "");
+        if (warn.textContent) iconCard.appendChild(warn);
+      }
+      var eff = rowIcon(tr), cv = eff ? renderIconBig(eff, 220) : null;
+      var prev = document.createElement("div"); prev.className = "ip-prev";
+      if (cv) prev.appendChild(cv); else { prev.classList.add("ip-ph"); prev.innerHTML = ICON_PLACEHOLDER; }
+      iconCard.appendChild(prev);
+      var sep = document.createElement("div"); sep.className = "ip-sep"; iconCard.appendChild(sep);
+      var items = [{ label: "Загрузить SVG…", fn: function(){ pickRowIcon(tr); } }];
+      if (tr._rowIcon) items.push({ label: "Сбросить", fn: function(){ clearRowIcon(tr); } });
+      items.forEach(function(it){
+        var b = document.createElement("button"); b.type = "button"; b.className = "act-item"; b.textContent = it.label;
+        b.addEventListener("click", function(){ hideIconCard(); it.fn(); });
+        iconCard.appendChild(b);
+      });
+      if (tr._rowIcon && tr._rowIconName){ // имя загруженного файла — только здесь (подпись ячейки не меняем)
+        var note = document.createElement("div"); note.className = "ip-note"; note.textContent = nbspShort("Загружено вручную: " + tr._rowIconName);
+        iconCard.appendChild(note);
+      }
+      iconCard.hidden = false; iconCardTd = td;
+      var r = td.getBoundingClientRect(), p = iconCard.getBoundingClientRect();
       var left = r.right + 8;
       if (left + p.width > window.innerWidth - 6) left = r.left - p.width - 8;
       left = Math.max(6, left);
       var top = Math.max(6, Math.min(r.top + r.height / 2 - p.height / 2, window.innerHeight - p.height - 6));
-      prevPop.style.left = left + "px"; prevPop.style.top = top + "px";
+      iconCard.style.left = left + "px"; iconCard.style.top = top + "px";
+      document.addEventListener("keydown", onIconCardKey, true);
+      window.addEventListener("scroll", hideIconCard, true); window.addEventListener("resize", hideIconCard);
+    }
+    // Неразрывный пробел после слов из 1–2 букв/цифр («с названием», «в наборе») — не висят в конце строки.
+    function nbspShort(s){ return String(s).replace(/(?<=^|[\s«"(\u00a0])([\p{L}\p{N}]{1,2}) /gu, "$1\u00a0"); }
+    function scheduleHideIconCard(){ clearTimeout(iconCardTimer); iconCardTimer = setTimeout(hideIconCard, ICON_CARD_HIDE_MS); }
+    function hideIconCard(){
+      clearTimeout(iconCardTimer);
+      if (iconCard.hidden) return;
+      iconCard.hidden = true; iconCard.textContent = ""; iconCardTd = null;
+      document.removeEventListener("keydown", onIconCardKey, true);
+      window.removeEventListener("scroll", hideIconCard, true); window.removeEventListener("resize", hideIconCard);
+    }
+    function onIconCardKey(e){ if (e.key === "Escape"){ e.preventDefault(); hideIconCard(); } }
+
+    // --- Загрузка SVG для одной строки (клик по миниатюре или «Загрузить SVG…» в карточке). ---
+    // Хранится в ROW_ICONS под новым ключом «@row:N» на каждую загрузку (кэш разбора не устаревает); ключ — на tr.
+    // Дубль строки её не копирует (ключ на tr, не в инпуте). Сброс → снова по правилам rowIcon (ручная/название/Excel).
+    var rowIconInput = document.createElement("input");
+    rowIconInput.type = "file"; rowIconInput.accept = ".svg,image/svg+xml"; rowIconInput.hidden = true;
+    document.body.appendChild(rowIconInput);
+    var rowIconTarget = null, rowIconSeq = 0;
+    function pickRowIcon(tr){ hideIconCard(); rowIconTarget = tr; rowIconInput.value = ""; rowIconInput.click(); }
+    rowIconInput.addEventListener("change", async function(){
+      var tr = rowIconTarget, f = rowIconInput.files && rowIconInput.files[0];
+      rowIconTarget = null; rowIconInput.value = "";
+      if (!tr || !f || !tr.isConnected) return;
+      try {
+        var svg = await f.text(), pi = parseSvgIcon(svg);
+        if (!pi || !pi.paths.length){ alert("Не удалось разобрать SVG «" + f.name + "»: нет поддерживаемых контуров."); return; }
+        if (pi.warnings.length) console.warn("Иконка " + f.name + ": не поддержано —", pi.warnings.join(", "));
+      } catch(e){ alert("Не удалось разобрать SVG «" + f.name + "»: " + e.message); console.error(e); return; }
+      if (tr._rowIcon){ ROW_ICONS.delete(tr._rowIcon); _iconCache.delete(iconKey(tr._rowIcon)); }
+      tr._rowIcon = "@row:" + (++rowIconSeq); tr._rowIconName = f.name;
+      ROW_ICONS.set(tr._rowIcon, svg);
+      afterRowIconChange(tr, true);
+    });
+    function clearRowIcon(tr){
+      if (!tr._rowIcon) return;
+      ROW_ICONS.delete(tr._rowIcon); _iconCache.delete(iconKey(tr._rowIcon));
+      delete tr._rowIcon; delete tr._rowIconName;
+      afterRowIconChange(tr);
+    }
+    // fromUpload: загрузили SVG и имя файла ≠ название → снять отметку строки (чекбокс остаётся активным; когда
+    // подсказка уйдёт — сам не отмечается, отмечает пользователь).
+    function afterRowIconChange(tr, fromUpload){
+      syncIconByName(tr);  // миниатюра + снять красную подсветку, если иконка нашлась
+      updateRowState(tr);  // полная проверка (если фокус не в строке)
+      markIconSoft(tr);    // жёлтая подсказка — сразу после загрузки/сброса, даже если фокус в строке
+      updateRowCheck(tr);
+      var chk = tr.querySelector("input.rowchk");
+      if (fromUpload && chk && rowIconMismatch(tr)) chk.checked = false;
+      updateCheckAll(); refreshRowPreview(tr);
     }
 
     function renumber(){
@@ -1612,6 +1746,7 @@ document.addEventListener("DOMContentLoaded", function () {
         var idx = tr.querySelector("td.idx"); if (idx) idx.textContent = (++n);
       });
       refreshDupes(); // состав/порядок строк изменился → пары повторов и номера строк в подсказках тоже
+      if (!searchHold && searchQuery()) applySearch(); // и видимость/подсветка при активном поиске
     }
     // Форматные правила полей. Возвращает текст ошибки для НЕПУСТОГО значения или null, если валидно.
     // kolvo — целое > 0; artikul — латиница/цифры/дефис; barcode — длина ровно 14 (≠14 → ошибка;
@@ -1750,6 +1885,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Проверка кода ШК (иконка «!»).
       var bcInp = tr.querySelector('input[data-col="barcode"]');
       if (bcInp){ var w = bcInp.closest(".bc-wrap"); if (w) validateBc(bcInp, w, w.querySelector(".bc-err")); }
+      markIconSoft(tr); // своя SVG не совпадает с названием → жёлтая подсказка
       updateRowCheck(tr);
     }
     // Только чекбокс строки по полноте (без подсветки ячеек) — можно звать и пока фокус в строке:
@@ -1757,16 +1893,19 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateRowCheck(tr){
       var chk = tr.querySelector("input.rowchk"); if (!chk) return;
       if (rowComplete(tr)){
-        if (chk.disabled){ chk.disabled = false; chk.checked = true; }
+        // строка стала полной → отмечаем, но не при жёлтой подсказке «своя SVG ≠ название» (отмечает пользователь)
+        if (chk.disabled){ chk.disabled = false; chk.checked = !rowIconMismatch(tr); }
       } else {
         chk.disabled = true; chk.checked = false;
       }
     }
-    // Состояние «главного» чекбокса по активным строкам (отмечен/снят/промежуточный).
+    // Состояние «главного» чекбокса по активным ВИДИМЫМ строкам (отмечен/снят/промежуточный); скрытые поиском
+    // строки не учитываются — «Выделить все» действует только на видимые.
+    var VISIBLE_ROWCHK = "tr:not(.is-filtered) > td > input.rowchk";
     function updateCheckAll(){
       if (!checkAll) return;
       var enabled = 0, checked = 0;
-      Array.prototype.forEach.call(tbody.querySelectorAll("input.rowchk"), function(c){
+      Array.prototype.forEach.call(tbody.querySelectorAll(VISIBLE_ROWCHK), function(c){
         if (!c.disabled){ enabled++; if (c.checked) checked++; }
       });
       checkAll.disabled = enabled === 0;
@@ -1781,6 +1920,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var total = tbody.querySelectorAll("input.rowchk").length;
       var checked = tbody.querySelectorAll("input.rowchk:checked").length;
       var countText = checked + " из " + total + " строк отмечено для генерации";
+      // Поиск активен → сколько строк видно (отмеченные скрытые строки всё равно идут в генерацию).
+      if (searchQuery()) countText += " · показано " + tbody.querySelectorAll("tr:not(.grp):not(.is-filtered)").length + " из " + total;
       Array.prototype.forEach.call(document.querySelectorAll("[data-bulk-count]"), function(el){ el.textContent = countText; });
       // Подсказка о строках с ошибками: непустые строки, которые не пройдут в генерацию.
       var errors = 0;
@@ -1811,12 +1952,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // Пересчёт трёхпозиционного чекбокса заголовка по его строкам-данным (учитываем только полные/валидные).
     function updateGroupHead(headTr){
       var chk = headTr.querySelector("input.grpchk"); if(!chk) return;
-      var rows = groupRows(headTr), enabled=0, checked=0;
-      rows.forEach(function(tr){ var c=tr.querySelector("input.rowchk"); if(c && !c.disabled){ enabled++; if(c.checked) checked++; } });
+      var rows = groupRows(headTr), enabled=0, checked=0, checkedAll=0;
+      rows.forEach(function(tr){
+        var c=tr.querySelector("input.rowchk"); if(!c || c.disabled) return;
+        if (c.checked) checkedAll++;                         // счётчик (N/M) — по всему блоку
+        if (!tr.classList.contains("is-filtered")){ enabled++; if(c.checked) checked++; } // чекбокс — по видимым
+      });
       chk.disabled = enabled===0;
       chk.checked = enabled>0 && checked===enabled;
       chk.indeterminate = checked>0 && checked<enabled;
-      var cnt = headTr.querySelector(".grp-count"); if(cnt) cnt.textContent = "("+checked+"/"+rows.length+")"; // отмечено / всего строк в блоке
+      var cnt = headTr.querySelector(".grp-count"); if(cnt) cnt.textContent = "("+checkedAll+"/"+rows.length+")"; // отмечено / всего строк в блоке
       syncGroupDate(headTr, rows, headTr._grpMonth, "Месяц");
       syncGroupDate(headTr, rows, headTr._grpYear, "Год");
     }
@@ -1843,7 +1988,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var chk=document.createElement("input"); chk.type="checkbox"; chk.className="grpchk"; chk.title="Отметить/снять всю группу";
       chk.addEventListener("change", function(){
         var on=chk.checked;
-        groupRows(tr).forEach(function(r){ var c=r.querySelector("input.rowchk"); if(c && !c.disabled) c.checked=on; });
+        groupRows(tr).forEach(function(r){ var c=r.querySelector("input.rowchk"); if(c && !c.disabled && !r.classList.contains("is-filtered")) c.checked=on; }); // только видимые
         updateCheckAll();
       });
       selTd.appendChild(chk); tr.appendChild(selTd);
@@ -1909,7 +2054,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Соседняя строка-данные вниз (dir=1) / вверх (dir=-1), заголовки групп пропускаются; нет → null.
     function nextDataRow(tr, dir){
       var t = dir < 0 ? tr.previousElementSibling : tr.nextElementSibling;
-      while (t && t.classList.contains("grp")) t = dir < 0 ? t.previousElementSibling : t.nextElementSibling;
+      while (t && (t.classList.contains("grp") || t.classList.contains("is-filtered"))) t = dir < 0 ? t.previousElementSibling : t.nextElementSibling; // и скрытые поиском
       return t;
     }
     // Значение из заголовка группы → в select месяца/года (part = aria-label) каждой строки группы. change строки
@@ -1985,7 +2130,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var rows = head._deletedRows || [], mh = head.dataset.kind === "manual" ? manualHead() : null;
       head._deletedRows = null; head.classList.remove("grp-deleted");
       var target = mh && mh !== head ? mh : head, ref = target.nextElementSibling;
-      rows.forEach(function(r){ tbody.insertBefore(r, ref); });
+      rows.forEach(function(r){ r._searchKeep = true; tbody.insertBefore(r, ref); }); // восстановленные видны при поиске
       if (target !== head) head.remove();
       renumber(); updateCheckAll();
     }
@@ -2119,6 +2264,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function addRow(values, before){
       values = values || {};
       var tr = document.createElement("tr");
+      tr._searchKeep = true; // новая строка (ручная, дубль, импорт) видна при любом запросе — до его следующего изменения
       var selTd = document.createElement("td"); selTd.className="sel";
       var chk = document.createElement("input"); chk.type="checkbox"; chk.className="rowchk";
       chk.disabled = true; chk.checked = false; // до расчёта считаем строку неполной
@@ -2154,7 +2300,11 @@ document.addEventListener("DOMContentLoaded", function () {
           var next = target.querySelector('input[data-col="'+col+'"]');
           if (next){ next.focus(); next.select(); }
         });
-        if (id === "name") inp.addEventListener("input", function(){ syncIconByName(tr); });
+        if (id === "name"){
+          inp.addEventListener("input", function(){ syncIconByName(tr); paintNameHl(inp); });
+          var mir = document.createElement("div"); mir.className = "hl-mirror"; mir.setAttribute("aria-hidden", "true");
+          td.appendChild(mir); inp._hl = mir; // подложка подсветки поиска — под инпутом (см. .hl-mirror)
+        }
         if (id === "icon"){
           td.className = "prev iconcell";                 // размер как у ячейки «Превью»
           var thumb = document.createElement("div"); thumb.className = "icon-thumb"; // миниатюра — заполнит S5
@@ -2164,9 +2314,10 @@ document.addEventListener("DOMContentLoaded", function () {
           inp.addEventListener("blur", function(){ updateIconThumb(td); });
           // Правка пользователем → ручное значение важнее названия; очистил → снова по названию/Excel.
           inp.addEventListener("input", function(){ if (inp.value.trim()) inp.dataset.manual = "1"; else delete inp.dataset.manual; });
-          // Ховер по ячейке иконки → крупное превью самой SVG (не всего стикера).
-          td.addEventListener("mouseenter", function(){ showIconPopup(td); });
-          td.addEventListener("mouseleave", hidePreviewPopup);
+          // Ховер по ячейке иконки → карточка: крупная SVG + «Загрузить SVG…» / «Сбросить» (showIconCard).
+          td.addEventListener("mouseenter", function(){ showIconCard(td); });
+          td.addEventListener("mouseleave", scheduleHideIconCard);
+          thumb.addEventListener("click", function(){ pickRowIcon(tr); }); // клик по иконке → сразу выбор SVG для строки
         } else if (id === "barcode"){
           var wrap = document.createElement("div"); wrap.className = "bc-wrap";
           var err = document.createElement("span"); err.className = "bc-err"; err.textContent = "!";
@@ -2194,7 +2345,8 @@ document.addEventListener("DOMContentLoaded", function () {
       updateIconThumb(tr.querySelector("td.iconcell")); // начальный рендер — когда строка собрана (иконка может быть по названию)
       // Уход фокуса из строки наружу → полная валидация строки + пересчёт чекбокса/счётчика + обновление превью.
       tr.addEventListener("focusout", function(e){
-        if (!tr.contains(e.relatedTarget)){ updateRowState(tr); updateCheckAll(); refreshRowPreview(tr); updateIconThumb(tr.querySelector("td.iconcell")); } // название могло поменять иконку
+        if (!tr.contains(e.relatedTarget)){ updateRowState(tr); updateCheckAll(); refreshRowPreview(tr); updateIconThumb(tr.querySelector("td.iconcell")); // название могло поменять иконку
+          if (searchQuery()) applySearch(); } // название могло перестать подходить под поиск — скрываем только после ухода из строки
         else { updateRowCheck(tr); updateCheckAll(); } // переход между контролами строки → чекбокс и счётчики сразу
       });
       tbody.insertBefore(tr, before || null); renumber();
@@ -2277,11 +2429,92 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (checkAll) checkAll.addEventListener("change", function(){
       var on = checkAll.checked;
-      Array.prototype.forEach.call(tbody.querySelectorAll("input.rowchk"), function(c){
+      Array.prototype.forEach.call(tbody.querySelectorAll(VISIBLE_ROWCHK), function(c){ // только видимые
         if (!c.disabled) c.checked = on;
       });
       updateCheckAll();
     });
+
+    // --- Поиск по названию товара (фильтр строк) ---
+    // Совпадение — вхождение подстроки после нормализации (NFC, регистр, ё→е, пробелы схлопнуты). Несовпавшие строки
+    // получают is-filtered (скрыты, данные и отметки на месте). Заголовок группы виден, если совпал сам (тогда видны
+    // все его строки) или совпала хоть одна его строка. Плашки удалённых блоков видны всегда.
+    var searchInp = document.getElementById("bulk-search");
+    var searchEmpty = document.getElementById("bulk-empty");
+    function searchQuery(){ return searchNorm(searchInp ? searchInp.value : "").s.trim(); }
+    // Нормализация с картой позиций: map[i] — индекс символа исходной строки для i-го символа результата
+    // (нужно, чтобы подсветить найденное в исходном тексте).
+    function searchNorm(text){
+      text = String(text == null ? "" : text).normalize("NFC");
+      var s = "", map = [];
+      for (var i = 0; i < text.length; i++){
+        var ch = text[i].toLowerCase(); if (ch === "ё") ch = "е";
+        if (/\s/.test(ch)){ if (s.slice(-1) === " ") continue; ch = " "; }
+        s += ch; map.push(i);
+      }
+      return { text: text, s: s, map: map };
+    }
+    function searchMatch(text, q){ return !q || searchNorm(text).s.indexOf(q) >= 0; }
+    // HTML текста с <mark class="hl"> на всех вхождениях q (пустой q → просто экранированный текст).
+    function hlHtml(text, q){
+      var n = searchNorm(text), out = "", last = 0, from = 0, k;
+      function esc(t){ return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+      if (q) while ((k = n.s.indexOf(q, from)) >= 0){
+        var a = n.map[k], b = n.map[k + q.length - 1] + 1;
+        out += esc(n.text.slice(last, a)) + '<mark class="hl">' + esc(n.text.slice(a, b)) + "</mark>";
+        last = b; from = k + q.length;
+      }
+      return out + esc(n.text.slice(last));
+    }
+    function paintNameHl(inp){ if (inp && inp._hl) inp._hl.innerHTML = hlHtml(inp.value, searchQuery()); }
+    // fromQuery — изменился сам запрос: снимаем «липкость» новых строк (_searchKeep). Строка с фокусом не скрывается
+    // (правка названия не прячет её посреди ввода — только после ухода из строки, см. focusout в addRow).
+    var searchHold = false; // true — во время импорта (фильтр пересчитается один раз в конце)
+    function searchKeep(tr){ return tr._searchKeep || tr.contains(document.activeElement); }
+    function applySearch(fromQuery){
+      var q = searchQuery(), any = false;
+      if (fromQuery) Array.prototype.forEach.call(tbody.rows, function(tr){ tr._searchKeep = false; });
+      Array.prototype.forEach.call(tbody.rows, function(tr){
+        if (tr.classList.contains("grp")){
+          var title = tr.querySelector(".grp-title");
+          if (title){ var t = title.textContent; title.innerHTML = hlHtml(t, q); }
+          if (tr.classList.contains("grp-deleted")){ tr.classList.remove("is-filtered"); return; }
+          var rows = groupRows(tr), headHit = !!q && searchMatch(title ? title.textContent : "", q);
+          var shown = 0;
+          rows.forEach(function(r){
+            var ni = r.querySelector('input[data-col="name"]');
+            var hit = headHit || searchKeep(r) || searchMatch(ni ? ni.value : "", q);
+            r.classList.toggle("is-filtered", !hit); if (hit) shown++;
+          });
+          tr.classList.toggle("is-filtered", !!q && !shown);
+          if (shown) any = true;
+          return;
+        }
+        var ni = tr.querySelector('input[data-col="name"]');
+        paintNameHl(ni);
+        if (tr.classList.contains("in-grp")) return; // видимость строк группы — выше, по заголовку
+        var hit = searchKeep(tr) || searchMatch(ni ? ni.value : "", q);
+        tr.classList.toggle("is-filtered", !hit); if (hit) any = true;
+      });
+      if (searchEmpty) searchEmpty.hidden = !q || any;
+      updateCheckAll(); // состояние «Выделить все»/групп и «показано N из M» зависят от видимости
+      syncGenBlocked();
+    }
+    // При активном поиске «Сгенерировать всё» (обе) заблокирована — по решению пользователя, чтобы не выгрузить
+    // скрытые отмеченные строки незаметно. Подсказка — тёмный тултип на обёртке .gen-wrap.
+    var GEN_SEARCH_TIP = "Генерация недоступна при активном поиске\nОчистите поиск, чтобы сгенерировать";
+    var genBusy = false; // идёт генерация — кнопки держит onBulkGenerate
+    function syncGenBlocked(){
+      if (!genBtns || genBusy) return;
+      var on = !!searchQuery();
+      genBtns.forEach(function(b){ b.disabled = on; });
+    }
+    if (searchInp){
+      searchInp.addEventListener("input", function(){ applySearch(true); });
+      searchInp.addEventListener("keydown", function(e){
+        if (e.key === "Escape" && searchInp.value){ e.preventDefault(); searchInp.value = ""; applySearch(true); }
+      });
+    }
 
     if (!tbody.rows.length){ addRow(); } // массовый режим — стартовый: сразу одна пустая строка
 
@@ -2308,12 +2541,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // «Сгенерировать всё» — сверху (тулбар) и снизу (под таблицей); на время генерации блокируются обе.
     var genBtns = [document.getElementById("bulk-generate"), document.getElementById("bulk-generate-bottom")];
     async function onBulkGenerate(){
+      if (searchQuery()) return; // при активном поиске генерация недоступна (кнопки и так disabled)
       var rows = readRows();
       if (!rows.length){ alert("Отметьте хотя бы одну заполненную строку."); return; }
       var upper = document.getElementById("bulk-upper").checked;
       var outType = (document.querySelector('input[name="bulk-out"]:checked')||{}).value || "zip";
       var old = genBtns[0].textContent;
-      genBtns.forEach(function(b){ b.disabled=true; b.textContent="Генерация…"; });
+      genBusy = true; genBtns.forEach(function(b){ b.disabled=true; b.textContent="Генерация…"; });
       try {
         if (rows.length === 1){
           var bytes = await generateSinglePdf(rows[0], upper);
@@ -2334,9 +2568,15 @@ document.addEventListener("DOMContentLoaded", function () {
           downloadBlob(blob, "edda-labels-"+rows.length+".zip");
         }
       } catch(e){ alert("Ошибка генерации: "+e.message); console.error(e); }
-      finally { genBtns.forEach(function(b){ b.disabled=false; b.textContent=old; }); }
+      finally { genBusy = false; genBtns.forEach(function(b){ b.disabled=false; b.textContent=old; }); syncGenBlocked(); }
     }
-    genBtns.forEach(function(b){ b.addEventListener("click", onBulkGenerate); });
+    genBtns.forEach(function(b){
+      b.addEventListener("click", onBulkGenerate);
+      var w = b.closest(".gen-wrap"); if (!w) return;
+      // max-width снят: иначе первая строка подсказки переносится (у общего тултипа 280px)
+      w.addEventListener("mouseenter", function(){ if (searchQuery() && !genBusy){ bcTip.style.maxWidth = "none"; showBcTip(w, GEN_SEARCH_TIP, true); } });
+      w.addEventListener("mouseleave", function(){ hideBcTip(); bcTip.style.maxWidth = ""; });
+    });
 
     // --- Импорт CSV/Excel ---
     var labels = {}; (window.EDDA_FIELDS.fields||[]).forEach(function(f){ labels[f.id]=f.label; });
@@ -2456,7 +2696,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var sels = importGrid.querySelectorAll("select[data-field]");
       var colFor={}; Array.prototype.forEach.call(sels,function(s){ colFor[s.dataset.field]=parseInt(s.value,10); });
       var replace = document.getElementById("import-replace").checked;
-      if(replace){ tbody.innerHTML=""; clearUndo(); }
+      if(replace){ tbody.innerHTML=""; clearUndo(); if (searchInp) searchInp.value = ""; } // новая таблица — поиск сбрасываем
+      searchHold = true; // без пересчёта фильтра на каждой строке импорта — один раз в конце
       // Стартовая/пустые строки-данные мешают группировке — убираем полностью пустые (в обоих режимах).
       Array.prototype.forEach.call(tbody.querySelectorAll("tr:not(.grp)"), function(tr){ if(!rowAnyFilled(tr)) tr.remove(); });
       pruneEmptyGroups();
@@ -2487,8 +2728,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (noName.length){ addGroupHead("Без названия", "noname"); noName.forEach(function(v){ addRow(v).classList.add("in-grp"); }); }
       if(!tbody.querySelector("tr:not(.grp)")) addRow();
       pruneEmptyGroups();
+      searchHold = false;
       renumber();
-      updateCheckAll();
+      applySearch(true); // «Добавить в конец» при активном поиске — фильтр и к новым строкам
       importMap.hidden=true; parsed=null;
     }
 
