@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="131 · 29.09.2026 14:35">
+<meta name="build" content="142 · 29.09.2026 19:22">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
@@ -170,7 +170,8 @@
   /* Карточка иконки по ховеру (интерактивная, в отличие от .prev-pop): превью + пункты .act-item. */
   .icon-pop{position:fixed;z-index:1002;min-width:170px;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 12px 34px rgba(0,0,0,.16);padding:6px}
   .icon-pop .ip-prev canvas{display:block;margin:0 auto;border-radius:4px}
-  .icon-pop .ip-ph{height:120px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+  /* размер = рамка крупного превью (ICON_BIG_W/H + 2·ICON_BIG_PAD) — карточка без иконки той же ширины */
+  .icon-pop .ip-ph{width:248px;height:170px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
   .icon-pop .ip-ph svg{width:56px;height:56px;opacity:.45}
   .icon-pop .ip-sep{border-top:1px solid var(--line);margin:6px -6px 4px}
   /* Своя SVG не совпадает с названием → мягкая янтарная ячейка (как .cell-soft); красная ошибка важнее (:not). !important —
@@ -193,6 +194,12 @@
   /* заголовок группы разбит на ячейки (контрол даты над колонкой даты), но визуально — одна строка */
   #bulk-table tr.grp td + td{border-left-style:hidden} /* hidden (не none/transparent) — в border-collapse гасит общую границу */
   #bulk-table tr.grp td.grp-date{padding:0}
+  /* SVG на блок: кнопка в колонке «Иконка» заголовка группы (пусто — пунктир со значком; загружено — миниатюра) */
+  #bulk-table tr.grp td.grp-icon{text-align:center;padding:2px 3px}
+  .grp-icon-btn{box-sizing:content-box;display:inline-flex;align-items:center;justify-content:center;width:40px;height:28px;padding:0;border:1px dashed #b3bbc7;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;vertical-align:middle;overflow:hidden}
+  .grp-icon-btn:hover{border-color:var(--accent);color:var(--accent);background:#fff}
+  .grp-icon-btn.has-icon{border-style:solid;border-color:var(--line);background:#fff}
+  .grp-icon-btn canvas{display:block;background:#fff}
   #bulk-table tr.grp .dd.dd-mixed .dd-label{color:var(--muted);} /* «—» — у строк группы значения расходятся */
   /* заголовок группы: кликабельны чекбокс, промежуток и текст (label for); промежуток — padding-left у label */
   #bulk-table td.sel,#bulk-table th.sel{cursor:pointer;user-select:none} /* вся ячейка с чекбоксом кликабельна */
@@ -202,7 +209,8 @@
   #bulk-table tr.grp:has(.grpchk:disabled) .grp-label{cursor:default}
   #bulk-table tr.grp .grp-name{font-weight:600;color:var(--fg,#1a1a1a);white-space:normal}
   #bulk-table tr.grp[data-kind="manual"] .grp-title,#bulk-table tr.grp[data-kind="noname"] .grp-title{color:var(--muted)} /* служебные группы */
-  #bulk-table tr.grp .grp-count{color:var(--muted);font-weight:400;font-size:12px;font-variant-numeric:tabular-nums} /* «(N/M)» перед названием; цифры одной ширины */
+  #bulk-table tr.grp .grp-count{color:var(--muted);font-weight:400;font-size:12px;font-variant-numeric:tabular-nums;cursor:pointer;user-select:none} /* «N/M» в ячейке над «№»/«Превью», по левому краю; цифры одной ширины */
+  #bulk-table tr.grp:has(.grpchk:disabled) .grp-count{cursor:default}
   #bulk-table td.del{text-align:center;white-space:nowrap}
   /* действия строки/группы: ⧉ «Дублировать» + «⋯» (меню с «Удалить») */
   .row-act{border:none;background:transparent;color:var(--muted);cursor:pointer;line-height:0;border-radius:5px;vertical-align:middle;padding:8px 9px}
@@ -315,9 +323,9 @@
       <div class="field"><label>Срок годности</label><input id="in-srok" data-field-id="srok" placeholder="пример: Не ограничен"></div>
       <div class="field">
         <label>Штрих-код (ITF-14, 14 цифр)</label>
-        <input id="in-barcode" data-field-id="barcode" inputmode="numeric" maxlength="14" placeholder="пример: 14673753490645">
-        <label class="check" style="margin-top:6px"><input type="checkbox" id="barcode-bearer" checked> Опорные полосы</label>
-        <div id="barcode-msg" class="stub" style="margin-top:4px"></div>
+        <input id="in-itf14" data-field-id="itf14" inputmode="numeric" maxlength="14" placeholder="пример: 14673753490645">
+        <label class="check" style="margin-top:6px"><input type="checkbox" id="itf14-bearer" checked> Опорные полосы</label>
+        <div id="itf14-msg" class="stub" style="margin-top:4px"></div>
       </div>
 
       <div class="actions">
@@ -390,6 +398,7 @@
           <th>Дата изготовления</th>
           <th class="col-srok">Срок годности</th>
           <th>Код ШК ITF-14</th>
+          <th>Код ШК EAN-13</th>
           <th></th>
           <th class="sel sel-mirror"><input type="checkbox" class="chk-mirror" title="Выделить/снять все"></th> <!-- зеркало колонки выбора (пока только разметка) -->
         </tr>
@@ -409,8 +418,8 @@
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 131 · 29.09.2026 14:35</footer>
-<script>console.info("edda sticker generator — сборка 131 · 29.09.2026 14:35");</script>
+<footer class="build-info">сборка 142 · 29.09.2026 19:22</footer>
+<script>console.info("edda sticker generator — сборка 142 · 29.09.2026 19:22");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -522,7 +531,7 @@
       "color": { "c": 0, "m": 0, "y": 0, "k": 1 }
     },
     {
-      "id": "barcode",
+      "id": "itf14",
       "type": "barcode-itf14",
       "label": "Штрих-код (ITF-14 / GTIN)",
       "note": "Полосы кодирует bwip-js (bcid=itf14); ширину модуля X подгоняем под ширину bars по сумме sbs из raw(). Координаты — замер по эталону.",
@@ -799,9 +808,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Живой штрих-код на textCanvas (превью). Та же геометрия, что и в PDF, но в device-px (top-origin).
-  function drawBarcodeCanvas(ctx, f, value, font, capRatio, sPx, H) {
+  function drawItf14Canvas(ctx, f, value, font, capRatio, sPx, H) {
     var bwipjs = window.bwipjs; if (!bwipjs) return;
-    var norm = normalizeBarcode(value); if (!norm.digits) return;
+    var norm = normalizeItf14(value); if (!norm.digits) return;
     value = norm.digits;
     var sbs = Array.prototype.slice.call(bwipjs.raw({ bcid: "interleaved2of5", text: value, includetext: false })[0].sbs);
     var xm = 0, bars = [];
@@ -813,7 +822,7 @@ document.addEventListener("DOMContentLoaded", function () {
     bars.forEach(function (b) {
       ctx.fillRect((box[0] + (b.s - minS) * X) * sPx, topY, b.w * X * sPx, hPx);
     });
-    if (barcodeBearerOn(f) && f.bearer) {
+    if (itf14BearerOn(f) && f.bearer) {
       var bx = f.bearer.x0 * sPx, bw = (f.bearer.x1 - f.bearer.x0) * sPx, t = f.bearer.thickness;
       ctx.fillRect(bx, (H - (y0 + t)) * sPx, bw, t * sPx);          // низ
       ctx.fillRect(bx, (H - f.bars.y1) * sPx, bw, t * sPx);         // верх
@@ -905,7 +914,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var shift = (circF && circleTextPresent(getVal(circF))) ? 0 : noCircleShift(); // нет круга → иконка/название вправо
     cfg.fields.forEach(function (f) {
       if (f.type === "barcode-itf14") {
-        drawBarcodeCanvas(ctx, f, getVal(f) || f.sample, font, capRatio, sPx, H);
+        drawItf14Canvas(ctx, f, getVal(f) || f.sample, font, capRatio, sPx, H);
         return;
       }
       if (f.type === "svg-image") {
@@ -1025,8 +1034,8 @@ document.addEventListener("DOMContentLoaded", function () {
   })();
   // Штрих-код: сообщение валидации (только предупреждаем) + перерисовка при смене чекбокса bearer.
   (function(){
-    var bi=document.getElementById("in-barcode"), msg=document.getElementById("barcode-msg"), cb=document.getElementById("barcode-bearer");
-    function upd(){ if(!bi||!msg) return; var n=normalizeBarcode(bi.value); msg.textContent=n.msg; msg.style.color=n.valid?"var(--muted)":"#c0392b"; }
+    var bi=document.getElementById("in-itf14"), msg=document.getElementById("itf14-msg"), cb=document.getElementById("itf14-bearer");
+    function upd(){ if(!bi||!msg) return; var n=normalizeItf14(bi.value); msg.textContent=n.msg; msg.style.color=n.valid?"var(--muted)":"#c0392b"; }
     if(bi) bi.addEventListener("input", upd);
     if(cb) cb.addEventListener("change", renderText);
     upd();
@@ -1041,10 +1050,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (f.id === "data" || f.id === "srok") v = ucFirst(v); // дата/срок — первая буква заглавная
     return v;
   }
-  // Контрольная цифра GTIN-14 (mod-10) по первым 13 цифрам.
-  function gtinCheck(d13) {
-    var sum = 0;
-    for (var i = 0; i < 13; i++) sum += (+d13[i]) * (((13 - i) % 2 === 1) ? 3 : 1);
+  // Контрольная цифра GTIN (mod-10) по цифрам без контрольной: 13 для ITF-14, 12 для EAN-13.
+  // Веса 3,1,3,… считаются справа — поэтому одна функция на любую длину.
+  function gtinCheck(d) {
+    var sum = 0, n = d.length;
+    for (var i = 0; i < n; i++) sum += (+d[i]) * (((n - i) % 2 === 1) ? 3 : 1);
     return (10 - (sum % 10)) % 10;
   }
   function cleanString(str) {
@@ -1057,7 +1067,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Нормализация ввода штрих-кода. Возвращает {digits, valid, msg}.
   // Требуется РОВНО 14 цифр; контрольная (14-я) проверяется, но НЕ дописывается (только предупреждаем).
   // Любая другая длина (в т.ч. 13) — ошибка, код не рисуется.
-  function normalizeBarcode(input) {
+  function normalizeItf14(input) {
     var s = String(input == null ? "" : input).replace(/\D/g, "");
     if (s.length === 14) {
       var exp = gtinCheck(s.slice(0, 13));
@@ -1066,18 +1076,29 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     return { digits: null, valid: false, msg: s.length ? ("Нужно 14 цифр — введено " + s.length) : "" };
   }
-  function barcodeBearerOn(f) {
-    var cb = document.getElementById("barcode-bearer");
+  // То же для EAN-13 (ШК упаковки, пока только массовый режим — валидация, без отрисовки): РОВНО 13 цифр,
+  // 13-я — контрольная. Возвращает {digits, valid, msg}.
+  function normalizeEan13(input) {
+    var s = String(input == null ? "" : input).replace(/\D/g, "");
+    if (s.length === 13) {
+      var exp = gtinCheck(s.slice(0, 12));
+      if (String(exp) === s[12]) return { digits: s, valid: true, msg: "Контрольная цифра верна ✓" };
+      return { digits: s, valid: false, msg: "⚠ Контрольная цифра должна быть " + exp + " — введено " + s[12] };
+    }
+    return { digits: null, valid: false, msg: s.length ? ("Нужно 13 цифр — введено " + s.length) : "" };
+  }
+  function itf14BearerOn(f) {
+    var cb = document.getElementById("itf14-bearer");
     return cb ? cb.checked : !!(f && f.bearerBars);
   }
 
   // Штрих-код ITF-14: полосы в CMYK через bwip-js. Кодируем interleaved2of5 (те же полосы, что itf14,
   // но без обязательной проверки контрольной — чтобы «только предупреждать»). Геометрия из bwipjs.raw()
   // (sbs — ширины [полоса,пробел,...] в модулях, начинается с ПОЛОСЫ). Пролёт полос вписываем в f.box по X.
-  function drawBarcode(page, f, value, font, capRatio) {
+  function drawItf14(page, f, value, font, capRatio) {
     var PDFLib = window.PDFLib, bwipjs = window.bwipjs;
     if (!bwipjs) return;
-    var norm = normalizeBarcode(value);
+    var norm = normalizeItf14(value);
     if (!norm.digits) return; // нечего рисовать (неверная длина)
     value = norm.digits;
     var raw = bwipjs.raw({ bcid: "interleaved2of5", text: value, includetext: false })[0];
@@ -1096,7 +1117,7 @@ document.addEventListener("DOMContentLoaded", function () {
       page.drawRectangle({ x: box[0] + (b.s - minS) * X, y: y0, width: b.w * X, height: h, color: col });
     });
     // Опорные полосы (bearer bars) — две горизонтальные (верх/низ), по чекбоксу/флагу. Геометрия из f.bearer.
-    if (barcodeBearerOn(f) && f.bearer) {
+    if (itf14BearerOn(f) && f.bearer) {
       var bw = f.bearer.x1 - f.bearer.x0, t = f.bearer.thickness;
       page.drawRectangle({ x: f.bearer.x0, y: y0, width: bw, height: t, color: col });             // низ
       page.drawRectangle({ x: f.bearer.x0, y: y0 + h - t, width: bw, height: t, color: col });     // верх
@@ -1370,10 +1391,10 @@ document.addEventListener("DOMContentLoaded", function () {
     var x0=box[0]*sPx, wpx=(box[2]-box[0])*sPx, topY=(H-box[3])*sPx, hpx=(box[3]-box[1])*sPx;
     drawIconCanvasBox(ctx, pi, x0, topY, wpx, hpx);
   }
-  // Миниатюра иконки для ячейки таблицы (56×44 CSS). null — если иконки нет в наборе.
-  function renderIconThumb(name){
+  // Миниатюра иконки для ячейки таблицы (по умолчанию 56×44 CSS; в заголовке группы — меньше). null — если иконки нет в наборе.
+  function renderIconThumb(name, W, Hc){
     var pi=getParsedIcon(name); if(!pi) return null;
-    var dpr=window.devicePixelRatio||1, W=56, Hc=44;
+    var dpr=window.devicePixelRatio||1; W=W||56; Hc=Hc||44;
     var cv=document.createElement('canvas');
     cv.width=Math.round(W*dpr); cv.height=Math.round(Hc*dpr);
     cv.style.width=W+'px'; cv.style.height=Hc+'px';
@@ -1381,11 +1402,12 @@ document.addEventListener("DOMContentLoaded", function () {
     return cv;
   }
   // Крупное превью самой иконки (для ховер-попапа). null — если иконки нет в наборе.
-  function renderIconBig(name, maxPx){
+  // Рамка крупного превью — одна на все иконки (как у «Игрушка-пазл.svg», 68.43×44.23): иконка вписывается (contain)
+  // по центру, размер карточки не прыгает от пропорций картинки. Поля — ICON_BIG_PAD вокруг.
+  var ICON_BIG_W = 220, ICON_BIG_H = 142, ICON_BIG_PAD = 14;
+  function renderIconBig(name){
     var pi=getParsedIcon(name); if(!pi) return null;
-    var vb=pi.vb, ar=vb[2]/vb[3], W, Hc;
-    if (ar>=1){ W=maxPx; Hc=Math.round(maxPx/ar); } else { Hc=maxPx; W=Math.round(maxPx*ar); }
-    var pad=14, dpr=window.devicePixelRatio||1;
+    var W=ICON_BIG_W, Hc=ICON_BIG_H, pad=ICON_BIG_PAD, dpr=window.devicePixelRatio||1;
     var cv=document.createElement('canvas');
     cv.width=Math.round((W+pad*2)*dpr); cv.height=Math.round((Hc+pad*2)*dpr);
     cv.style.width=(W+pad*2)+'px'; cv.style.height=(Hc+pad*2)+'px';
@@ -1406,7 +1428,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       if (f.type === "barcode-itf14") {
         var bcVal = resolveText(f, values, upperName) || f.sample;
-        if (bcVal) { try { drawBarcode(page, f, bcVal, font, capRatio); } catch (e) { console.warn("barcode:", e && e.message || e); } }
+        if (bcVal) { try { drawItf14(page, f, bcVal, font, capRatio); } catch (e) { console.warn("itf14:", e && e.message || e); } }
         return;
       }
       var text = resolveText(f, values, upperName);
@@ -1523,12 +1545,15 @@ document.addEventListener("DOMContentLoaded", function () {
     var tbody = document.getElementById("bulk-tbody");
     if (!layout || !bulkView || !tbody) return;
     // icon — первым: первая order-ячейка идёт сразу за «Превью» (нужное место колонки «Иконка»).
-    var order = ["icon","name","circle","artikul","kolvo","data","srok","barcode"];
-    var placeholders = {name:"Название товара",circle:"Цвет",artikul:"AAA-000000",kolvo:"0",data:"Октябрь 2026",srok:"Срок",barcode:"00000000000000"};
-    var mapLabels = {barcode:"Код ШК ITF-14",icon:"Иконка (имя SVG)"}; // подпись селекта в сопоставлении
+    var order = ["icon","name","circle","artikul","kolvo","data","srok","itf14","ean13"];
+    var placeholders = {name:"Название товара",circle:"Цвет",artikul:"AAA-000000",kolvo:"0",data:"Октябрь 2026",srok:"Срок",itf14:"00000000000000",ean13:"0000000000000"};
+    var mapLabels = {itf14:"Код ШК ITF-14",ean13:"Код ШК EAN-13",icon:"Иконка (имя SVG)"}; // подпись селекта в сопоставлении
 
     // Обязательные поля для включения строки в генерацию (Цвет — необязателен).
-    var required = ["icon","name","artikul","kolvo","data","srok","barcode"];
+    var required = ["icon","name","artikul","kolvo","data","srok","itf14","ean13"];
+    // Колонки штрих-кодов → нормализатор ({digits, valid, msg}): одинаковые проверки (цифры, длина, контрольная),
+    // ячейка с иконкой «!» (validateBc). ean13 пока только валидируется — в PDF/превью не рисуется.
+    var BC_NORM = { itf14: normalizeItf14, ean13: normalizeEan13 };
     // Поля, участвующие в СОПОСТАВЛЕНИИ ИМПОРТА (и подстановке значений из файла). Дату изготовления
     // (`data`) не импортируем — по решению пользователя; при этом колонка `data` в таблице остаётся (order).
     var importOrder = order.filter(function(id){ return id !== "data"; });
@@ -1555,12 +1580,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Какая иконка рисуется в строке (имя/ключ для iconGet или ""):
     //  0) SVG, загруженный для этой строки (tr._rowIcon → ROW_ICONS) → он, главнее всего;
+    //  0б) SVG, загруженный на блок (head._grpIcon заголовка группы строки) → он;
     //  1) ячейку «Иконка» правил пользователь (data-manual) → она;
     //  2) иначе — по названию товара (iconByName, точное после нормализации);
     //  3) иначе — значение ячейки (из Excel; колонки может не быть → пусто).
     // Отображение ячейки не меняется — инпут показывает своё значение.
     function rowIcon(tr){
       if (tr._rowIcon && ROW_ICONS.has(tr._rowIcon)) return tr._rowIcon;
+      var gh = groupHeadOf(tr); if (gh && gh._grpIcon && ROW_ICONS.has(gh._grpIcon)) return gh._grpIcon;
       var ii = tr.querySelector('input[data-col="icon"]'), ni = tr.querySelector('input[data-col="name"]');
       var v = ii ? ii.value.trim() : "";
       if (v && ii.dataset.manual) return v;
@@ -1619,13 +1646,19 @@ document.addEventListener("DOMContentLoaded", function () {
       if (ii && !iconError(tr)){ ii.classList.remove("cell-empty", "cell-invalid"); delete ii.dataset.err; }
       markIconSoft(tr, true); // названия совпали → жёлтая подсказка снимается сразу (ставится при уходе из строки)
     }
-    // Своя SVG строки (tr._rowIcon), имя файла ≠ название товара (сравнение как у поиска по названию — iconNameKey)
-    // → текст мягкой подсказки, иначе null. Пустое название — без подсказки (там и так красная ошибка).
+    // Загруженная SVG, которой рисуется строка: своя (tr._rowIcon) или блока (head._grpIcon) → имя файла, иначе null.
+    function loadedIconName(tr){
+      if (tr._rowIcon) return tr._rowIconName || null;
+      var gh = groupHeadOf(tr);
+      return (gh && gh._grpIcon && gh._grpIconName) || null;
+    }
+    // Загруженная SVG строки (своя или блока), имя файла ≠ название товара (сравнение как у поиска по названию —
+    // iconNameKey) → текст мягкой подсказки, иначе null. Пустое название — без подсказки (там и так красная ошибка).
     function rowIconMismatch(tr){
-      if (!tr._rowIcon || !tr._rowIconName) return null;
+      var file = loadedIconName(tr); if (!file) return null;
       var ni = tr.querySelector('input[data-col="name"]'), n = ni ? ni.value.trim() : "";
-      if (!n || iconNameKey(tr._rowIconName) === iconNameKey(n)) return null;
-      return "Файл «" + tr._rowIconName + "» не совпадает с названием товара «" + n + "»\nПроверьте на всякий случай";
+      if (!n || iconNameKey(file) === iconNameKey(n)) return null;
+      return "Файл «" + file + "» не совпадает с названием товара «" + n + "»\nПроверьте на всякий случай";
     }
     // Жёлтая (мягкая) подсветка ячейки «Иконка» — не ошибка, строку не блокирует. onlyClear — только снять.
     function markIconSoft(tr, onlyClear){
@@ -1641,6 +1674,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.appendChild(prevPop);
     function showPreviewPopup(prevTd){
       var tr = prevTd.parentNode; if (!tr) return;
+      hideIconCard(); // карточка иконки закрывается с задержкой — не держать её поверх превью
       prevPop.textContent = ""; prevPop.appendChild(renderRowPreview(rowValues(tr), PREV_BIG_W));
       prevPop.hidden = false;
       var r = prevTd.getBoundingClientRect(), p = prevPop.getBoundingClientRect();
@@ -1661,32 +1695,40 @@ document.addEventListener("DOMContentLoaded", function () {
     var iconCardTd = null, iconCardTimer = 0;
     iconCard.addEventListener("mouseenter", function(){ clearTimeout(iconCardTimer); });
     iconCard.addEventListener("mouseleave", scheduleHideIconCard);
+    // td — ячейка «Иконка» строки или td.grp-icon заголовка группы (SVG на блок): карточка одна, пункты — свои.
     function showIconCard(td){
       var tr = td.parentNode; if (!tr) return;
       clearTimeout(iconCardTimer);
       if (iconCardTd === td && !iconCard.hidden) return; // вернулись с карточки на ту же ячейку
       hideBcTip();
       iconCard.textContent = "";
-      if (td.classList.contains("icon-soft")){ // подсказка — по тому, что подсвечено в ячейке
+      var isGrp = tr.classList.contains("grp");
+      if (!isGrp && td.classList.contains("icon-soft")){ // подсказка — по тому, что подсвечено в ячейке
         var warn = document.createElement("div"); warn.className = "ip-warn"; warn.textContent = nbspShort(rowIconMismatch(tr) || "");
         if (warn.textContent) iconCard.appendChild(warn);
       }
-      var eff = rowIcon(tr), cv = eff ? renderIconBig(eff, 220) : null;
+      var eff = isGrp ? tr._grpIcon : rowIcon(tr), cv = eff ? renderIconBig(eff) : null;
       var prev = document.createElement("div"); prev.className = "ip-prev";
       if (cv) prev.appendChild(cv); else { prev.classList.add("ip-ph"); prev.innerHTML = ICON_PLACEHOLDER; }
       iconCard.appendChild(prev);
       var sep = document.createElement("div"); sep.className = "ip-sep"; iconCard.appendChild(sep);
-      var items = [{ label: "Загрузить SVG…", fn: function(){ pickRowIcon(tr); } }];
-      if (tr._rowIcon) items.push({ label: "Сбросить", fn: function(){ clearRowIcon(tr); } });
+      var items = isGrp
+        ? [{ label: "Загрузить SVG на блок…", fn: function(){ pickRowIcon(tr); } }, { label: "Сбросить", fn: function(){ clearGroupIcon(tr); } }]
+        : [{ label: "Загрузить SVG…", fn: function(){ pickRowIcon(tr); } }];
+      if (!isGrp && tr._rowIcon) items.push({ label: "Сбросить", fn: function(){ clearRowIcon(tr); } });
       items.forEach(function(it){
         var b = document.createElement("button"); b.type = "button"; b.className = "act-item"; b.textContent = it.label;
         b.addEventListener("click", function(){ hideIconCard(); it.fn(); });
         iconCard.appendChild(b);
       });
-      if (tr._rowIcon && tr._rowIconName){ // имя загруженного файла — только здесь (подпись ячейки не меняем)
-        var note = document.createElement("div"); note.className = "ip-note"; note.textContent = nbspShort("Загружено вручную: " + tr._rowIconName);
+      var notes = [];
+      if (isGrp){ notes.push("Загружено на блок: " + tr._grpIconName, GRP_ICON_REPLACE); }
+      else if (tr._rowIcon && tr._rowIconName) notes.push("Загружено вручную: " + tr._rowIconName); // имя файла — только здесь (подпись ячейки не меняем)
+      else if (loadedIconName(tr)) notes.push("Иконка блока: " + loadedIconName(tr));
+      notes.forEach(function(t){
+        var note = document.createElement("div"); note.className = "ip-note"; note.textContent = nbspShort(t);
         iconCard.appendChild(note);
-      }
+      });
       iconCard.hidden = false; iconCardTd = td;
       var r = td.getBoundingClientRect(), p = iconCard.getBoundingClientRect();
       var left = r.right + 8;
@@ -1726,6 +1768,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!pi || !pi.paths.length){ alert("Не удалось разобрать SVG «" + f.name + "»: нет поддерживаемых контуров."); return; }
         if (pi.warnings.length) console.warn("Иконка " + f.name + ": не поддержано —", pi.warnings.join(", "));
       } catch(e){ alert("Не удалось разобрать SVG «" + f.name + "»: " + e.message); console.error(e); return; }
+      if (tr.classList.contains("grp")){ setGroupIcon(tr, svg, f.name); return; } // SVG на блок (заголовок группы)
       if (tr._rowIcon){ ROW_ICONS.delete(tr._rowIcon); _iconCache.delete(iconKey(tr._rowIcon)); }
       tr._rowIcon = "@row:" + (++rowIconSeq); tr._rowIconName = f.name;
       ROW_ICONS.set(tr._rowIcon, svg);
@@ -1749,6 +1792,52 @@ document.addEventListener("DOMContentLoaded", function () {
       updateCheckAll(); refreshRowPreview(tr);
     }
 
+    // --- SVG на блок (кнопка в колонке «Иконка» заголовка группы) ---
+    // Хранится у заголовка: ROW_ICONS под ключом «@grp:N», ключ/имя файла — head._grpIcon / head._grpIconName.
+    var GRP_ICON_TIP = "Загрузить SVG на весь блок\n";
+    var GRP_ICON_REPLACE = "SVG, загруженные в строки вручную, будут заменены";
+    var ICON_UPLOAD = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 8h.01"/><path d="M12.5 21H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v6.5"/><path d="m3 16 5-5c.93-.9 2.07-.9 3 0l3 3"/><path d="M19 22v-6"/><path d="m22 19-3-3-3 3"/></svg>';
+    function makeGroupIconCell(head){
+      var td = document.createElement("td"); td.className = "grp-icon";
+      var b = document.createElement("button"); b.type = "button"; b.className = "grp-icon-btn";
+      b.setAttribute("aria-label", "Загрузить SVG на блок");
+      td.appendChild(b); head._grpIconBtn = b;
+      b.addEventListener("click", function(){ pickRowIcon(head); });
+      // Нет иконки → тёмный тултип; есть → карточка (как у ячейки строки).
+      td.addEventListener("mouseenter", function(){ if (head._grpIcon) showIconCard(td); else showBcTip(b, GRP_ICON_TIP + GRP_ICON_REPLACE); });
+      td.addEventListener("mouseleave", function(){ hideBcTip(); scheduleHideIconCard(); });
+      updateGroupIconBtn(head);
+      return td;
+    }
+    function updateGroupIconBtn(head){
+      var b = head._grpIconBtn; if (!b) return;
+      var cv = head._grpIcon ? renderIconThumb(head._grpIcon, 40, 28) : null;
+      b.innerHTML = ""; b.classList.toggle("has-icon", !!cv);
+      if (cv) b.appendChild(cv); else b.innerHTML = ICON_UPLOAD;
+    }
+    function dropGroupIcon(head){
+      if (!head._grpIcon) return;
+      ROW_ICONS.delete(head._grpIcon); _iconCache.delete(iconKey(head._grpIcon));
+      delete head._grpIcon; delete head._grpIconName;
+    }
+    // Загрузка на блок: свои SVG всех строк блока (и скрытых поиском) снимаются молча — весь блок получает одну иконку;
+    // дальше строки обновляются как после загрузки в строку (несовпадение имени → снять отметку).
+    function setGroupIcon(head, svg, fileName){
+      dropGroupIcon(head);
+      head._grpIcon = "@grp:" + (++rowIconSeq); head._grpIconName = fileName;
+      ROW_ICONS.set(head._grpIcon, svg);
+      updateGroupIconBtn(head);
+      groupRows(head).forEach(function(r){
+        if (r._rowIcon){ ROW_ICONS.delete(r._rowIcon); _iconCache.delete(iconKey(r._rowIcon)); delete r._rowIcon; delete r._rowIconName; }
+        afterRowIconChange(r, true);
+      });
+    }
+    function clearGroupIcon(head){
+      if (!head._grpIcon) return;
+      dropGroupIcon(head); updateGroupIconBtn(head);
+      groupRows(head).forEach(function(r){ afterRowIconChange(r); });
+    }
+
     function renumber(){
       var n=0;
       Array.prototype.forEach.call(tbody.rows, function(tr){
@@ -1759,7 +1848,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!searchHold && searchQuery()) applySearch(); // и видимость/подсветка при активном поиске
     }
     // Форматные правила полей. Возвращает текст ошибки для НЕПУСТОГО значения или null, если валидно.
-    // kolvo — целое > 0; artikul — латиница/цифры/дефис; barcode — длина ровно 14 (≠14 → ошибка;
+    // kolvo — целое > 0; artikul — латиница/цифры/дефис; itf14 — длина ровно 14 (≠14 → ошибка;
     // 14 с неверной контрольной валидна для генерации — «только предупреждаем», см. validateBc/иконку).
     function fieldError(id, v){
       v = String(v).trim();
@@ -1767,8 +1856,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (id === "name"){var s = cleanString(v); const regexName = /^[а-яА-ЯёЁa-zA-Z0-9 .,\u00AB\u00BB-]+$/; if (!regexName.test(v)) return "Разрешённые символы: русские и английские буквы, цифры, пробел, точка, запятая, дефис, кавычки «»";}
       if (id === "kolvo"   && !(/^\d+$/.test(v) && +v > 0)) return "Целое число больше 0";
       if (id === "artikul" && !/^[A-Za-z0-9-]+$/.test(v))   return "Только латинские буквы, цифры и дефис";
-      // if (id === "barcode"){ var n = normalizeBarcode(v); if (n.digits == null) return n.msg || "Нужно 14 цифр"; }
-      if(id==="barcode"){if(!/^\d+$/.test(v)){return"В ШК допустимы только цифры";}var n=normalizeBarcode(v);if(n.digits==null){return n.msg||"Нужно 14 цифр";}if(!n.valid){return n.msg;}}
+      if (id === "srok" && /^0+(?:[.,]0+)?(?![.,]?\d)/.test(v)) return "Срок годности не может быть 0"; // «0», «0 лет», «0,0»; «0,5 года»/«05 лет» — не ошибка
+      // if (id === "itf14"){ var n = normalizeItf14(v); if (n.digits == null) return n.msg || "Нужно 14 цифр"; }
+      if(BC_NORM[id]){if(!/^\d+$/.test(v)){return"В ШК допустимы только цифры";}var n=BC_NORM[id](v);if(!n.valid){return n.msg||"Некорректный штрих-код";}}
       return null;
     }
     // Полнота строки: все обязательные поля заполнены и проходят форматные правила.
@@ -1796,8 +1886,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       if (required.indexOf(id) < 0) return;
-      // Повтор (cell-soft у ШК/артикула) здесь не пересчитываем — только markDup/refreshDupes; текст подсказки сохраняем.
-      var dupMsg = DUP_COLS[id] && inp.classList.contains("cell-soft") ? inp.dataset.err : null;
+      // Мягкие подсказки (повтор, ITF≠EAN) здесь не пересчитываем — только рисуем сохранённые (paintSoft ниже).
       inp.classList.remove("cell-empty", "cell-invalid"); delete inp.dataset.err;
       var v = inp.value.trim();
       if (id === "data"){ // дата — скрытый инпут; красим ОТДЕЛЬНО месяц/год (тот, что не выбран)
@@ -1819,12 +1908,22 @@ document.addEventListener("DOMContentLoaded", function () {
       if (v === ""){ inp.classList.remove("cell-soft"); if (rowAnyFilled(tr)) inp.classList.add("cell-empty"); return; }
       var err = fieldError(id, v);
       if (err){ inp.classList.add("cell-invalid"); inp.dataset.err = err; inp.classList.remove("cell-soft"); } // ошибка важнее повтора
-      else if (dupMsg) inp.dataset.err = dupMsg;
+      else paintSoft(inp);
     }
-    // Повтор значения в других строках таблицы (ШК, артикул — у каждой строки должен быть свой) → мягкая подсказка
-    // .cell-soft (как пустой «Цвет»): генерацию не блокирует, в счётчик ошибок не входит. Только для валидного значения
-    // (ошибка формата важнее); ячейку в фокусе не трогаем. Сравнение — без учёта регистра и пробелов по краям.
-    var DUP_COLS = { barcode: "ШК", artikul: "Артикул" }; // колонка → подпись в подсказке
+    // Мягкие подсказки ячейки (.cell-soft): не блокируют, в счётчик ошибок не входят. Хранятся на инпуте отдельно —
+    // inp._softDup (повтор) и inp._softPair (ITF-14 ≠ EAN-13) — и рисуются одним тултипом с общей строкой
+    // «Проверьте на всякий случай». Считают их markDup/markPair; paintSoft только рисует. Ячейку в фокусе и
+    // ячейку с ошибкой (пусто/формат — важнее) не красим: на blur markCellValidity нарисует заново.
+    function paintSoft(inp){
+      if (inp === document.activeElement) return;
+      if (inp.classList.contains("cell-empty") || inp.classList.contains("cell-invalid")){ inp.classList.remove("cell-soft"); return; }
+      var msgs = [inp._softDup, inp._softPair].filter(Boolean);
+      inp.classList.toggle("cell-soft", msgs.length > 0);
+      if (msgs.length) inp.dataset.err = msgs.join("\n") + "\nПроверьте на всякий случай"; else delete inp.dataset.err;
+    }
+    // Повтор значения в других строках таблицы (ШК, EAN-13, артикул — у каждой строки должен быть свой) → мягкая
+    // подсказка. Только для валидного значения (ошибка формата важнее). Сравнение — без учёта регистра и пробелов по краям.
+    var DUP_COLS = { itf14: "ШК", ean13: "EAN-13", artikul: "Артикул" }; // колонка → подпись в подсказке
     function dupKey(v){ return String(v).trim().toUpperCase(); }
     // {значение: [строки]} по колонке col — для пересчёта всей таблицы за один проход.
     function dupMap(col){
@@ -1838,14 +1937,29 @@ document.addEventListener("DOMContentLoaded", function () {
     function markDup(inp, tr, map){
       if (inp === document.activeElement) return;
       var col = inp.dataset.col;
-      if (inp.classList.contains("cell-soft")){ inp.classList.remove("cell-soft"); delete inp.dataset.err; }
+      inp._softDup = null;
       var k = dupKey(inp.value);
-      if (!k || inp.classList.contains("cell-empty") || inp.classList.contains("cell-invalid")) return;
-      var others = ((map || dupMap(col))[k] || []).filter(function(r){ return r !== tr; });
-      if (!others.length) return;
-      var nums = others.map(function(r){ var x = r.querySelector("td.idx"); return x ? x.textContent : "?"; });
-      inp.classList.add("cell-soft");
-      inp.dataset.err = DUP_COLS[col] + " повторяется в " + (nums.length > 1 ? "строках " : "строке ") + nums.join(", ") + ".\nПроверьте на всякий случай";
+      if (k && !fieldError(col, inp.value)){
+        var others = ((map || dupMap(col))[k] || []).filter(function(r){ return r !== tr; });
+        if (others.length){
+          var nums = others.map(function(r){ var x = r.querySelector("td.idx"); return x ? x.textContent : "?"; });
+          inp._softDup = DUP_COLS[col] + " повторяется в " + (nums.length > 1 ? "строках " : "строке ") + nums.join(", ") + ".";
+        }
+      }
+      paintSoft(inp);
+    }
+    // ITF-14 короба строится из EAN-13 товара: индикатор + первые 12 цифр EAN + своя контрольная. Если оба кода
+    // строки сами по себе валидны, а цифры 2–13 ITF ≠ первым 12 EAN → мягкая подсказка на ОБЕИХ ячейках (неясно,
+    // какой из двух неверен). Не блокирует, чекбокс не трогает. Пересчёт — уход из ячейки ITF/EAN (validateCell)
+    // и полная валидация строки (updateRowState: уход из строки, импорт, дубль, добавление).
+    var PAIR_HINT = "ITF-14 и EAN-13 не совпадают: цифры 2–13 ITF-14 должны повторять первые 12 цифр EAN-13.";
+    function markPair(tr){
+      var bc = tr.querySelector('input[data-col="itf14"]'), ean = tr.querySelector('input[data-col="ean13"]');
+      if (!bc || !ean) return;
+      var b = bc.value.trim(), e = ean.value.trim();
+      var bad = !!b && !!e && !fieldError("itf14", b) && !fieldError("ean13", e) && b.slice(1, 13) !== e.slice(0, 12);
+      bc._softPair = ean._softPair = bad ? PAIR_HINT : null;
+      paintSoft(bc); paintSoft(ean);
     }
     // Когда пересчитываем повторы (по всем строкам таблицы — повтор касается и второй строки):
     //  • col задан — одна колонка: ушли из её ячейки, и значение изменилось (validateCell);
@@ -1862,25 +1976,25 @@ document.addEventListener("DOMContentLoaded", function () {
     // Валидация ОДНОЙ ячейки (при потере её фокуса): подсветка + (для ШК) иконка.
     function validateCell(inp, tr){
       if (required.indexOf(inp.dataset.col) >= 0 || inp.dataset.col === "circle") markCellValidity(inp, tr);
-      if (inp.dataset.col === "barcode"){
+      var col = inp.dataset.col;
+      if (BC_NORM[col]){
         var w = inp.closest(".bc-wrap"); if (w) validateBc(inp, w, w.querySelector(".bc-err"));
       }
-      // ШК/артикул: значение изменилось → перепроверить повторы этой колонки; нет → вернуть подсказку, снятую на фокусе.
-      var col = inp.dataset.col;
+      // ШК/EAN/артикул: значение изменилось → перепроверить повторы этой колонки; нет → сохранённая подсказка
+      // уже нарисована заново (markCellValidity → paintSoft).
       if (DUP_COLS[col]){
         var prev = inp._dupPrev; delete inp._dupPrev;
         if (!prev || prev.key !== dupKey(inp.value)) refreshDupes(col);
-        else if (prev.err && !inp.classList.contains("cell-invalid") && !inp.classList.contains("cell-empty")){
-          inp.classList.add("cell-soft"); inp.dataset.err = prev.err;
-        }
       }
+      if (col === "itf14" || col === "ean13") markPair(tr); // ITF-14 ↔ EAN-13 этой строки
     }
     // Сброс подсветки/иконки/тултипа ТОЛЬКО у одной ячейки (при получении ею фокуса).
-    // ШК/артикул: запоминаем значение и подсказку о повторе — на blur сравним (validateCell).
+    // ШК/EAN/артикул: запоминаем значение — на blur сравним (validateCell). Мягкие подсказки (_softDup/_softPair)
+    // остаются сохранёнными — снимаем только их отображение.
     function clearCell(inp){
-      if (DUP_COLS[inp.dataset.col]) inp._dupPrev = { key: dupKey(inp.value), err: inp.classList.contains("cell-soft") ? inp.dataset.err : null };
+      if (DUP_COLS[inp.dataset.col]) inp._dupPrev = { key: dupKey(inp.value) };
       inp.classList.remove("cell-empty", "cell-invalid", "cell-soft"); delete inp.dataset.err; hideBcTip();
-      if (inp.dataset.col === "barcode"){ var w = inp.closest(".bc-wrap"); if (w) w.classList.remove("invalid"); }
+      if (BC_NORM[inp.dataset.col]){ var w = inp.closest(".bc-wrap"); if (w) w.classList.remove("invalid"); }
     }
     // Полная валидация строки (импорт/добавление/уход фокуса из строки). Пока строка в фокусе — пропускаем,
     // чтобы не перезапускать валидацию всей строки при переходах между её ячейками.
@@ -1892,9 +2006,12 @@ document.addEventListener("DOMContentLoaded", function () {
         var inp = tr.querySelector('input[data-col="'+id+'"]');
         if (inp) markCellValidity(inp, tr);
       });
-      // Проверка кода ШК (иконка «!»).
-      var bcInp = tr.querySelector('input[data-col="barcode"]');
-      if (bcInp){ var w = bcInp.closest(".bc-wrap"); if (w) validateBc(bcInp, w, w.querySelector(".bc-err")); }
+      // Проверка кодов ШК (иконка «!») и их связки ITF-14 ↔ EAN-13.
+      Object.keys(BC_NORM).forEach(function(col){
+        var bcInp = tr.querySelector('input[data-col="'+col+'"]');
+        if (bcInp){ var w = bcInp.closest(".bc-wrap"); if (w) validateBc(bcInp, w, w.querySelector(".bc-err")); }
+      });
+      markPair(tr);
       markIconSoft(tr); // своя SVG не совпадает с названием → жёлтая подсказка
       updateRowCheck(tr);
     }
@@ -1978,7 +2095,7 @@ document.addEventListener("DOMContentLoaded", function () {
       chk.disabled = enabled===0;
       chk.checked = enabled>0 && checked===enabled;
       chk.indeterminate = checked>0 && checked<enabled;
-      var cnt = headTr.querySelector(".grp-count"); if(cnt) cnt.textContent = "("+checkedAll+"/"+rows.length+")"; // отмечено / всего строк в блоке
+      var cnt = headTr.querySelector(".grp-count"); if(cnt) cnt.textContent = checkedAll+"/"+rows.length; // отмечено / всего строк в блоке
       syncGroupDate(headTr, rows, headTr._grpMonth, "Месяц");
       syncGroupDate(headTr, rows, headTr._grpYear, "Год");
     }
@@ -2012,15 +2129,21 @@ document.addEventListener("DOMContentLoaded", function () {
       // Область клика = чекбокс + промежуток + текст: название/счётчик — <label for> чекбокса (отступ слева — внутри
       // label); клик по всей ячейке чекбокса — общий обработчик таблицы (см. «ячейка с чекбоксом»).
       chk.id = "grpchk-" + (++grpSeq);
-      // Раскладка по колонкам (визуально — одна строка, без вертикальных границ): название — от «№» до колонки
-      // перед датой; контрол месяц+год — ровно в колонке «Дата изготовления»; хвост — остальные колонки;
-      // «✕» «Удалить блок» — в колонке крестиков строк.
-      var di=order.indexOf("data");
-      var td=document.createElement("td"); td.className="grp-name"; td.colSpan=2+di; // №, Превью + колонки order до даты
+      // Раскладка по колонкам (визуально — одна строка, без вертикальных границ): пусто над «№»/«Превью»;
+      // кнопка «SVG на блок» — в колонке «Иконка»; название — от «Названия» до колонки перед датой; контрол
+      // месяц+год — ровно в колонке «Дата изготовления»; хвост — остальные колонки; «⋯» — в колонке действий строк.
+      var di=order.indexOf("data"), ii=order.indexOf("icon"); // «Иконка» — перед датой (order[0])
+      var lead=document.createElement("td"); lead.className="grp-lead"; lead.colSpan=2+ii; // №, Превью (+ колонки order до «Иконки»)
+      // Счётчик «N/M» — в этой ячейке по левому краю; тоже <label for> чекбокса (клик отмечает группу).
+      var cntLbl=document.createElement("label"); cntLbl.htmlFor=chk.id;
+      var cnt=document.createElement("span"); cnt.className="grp-count";
+      cntLbl.appendChild(cnt); lead.appendChild(cntLbl);
+      tr.appendChild(lead);
+      tr.appendChild(makeGroupIconCell(tr));
+      var td=document.createElement("td"); td.className="grp-name"; td.colSpan=di-ii-1; // колонки order после «Иконки» до даты
       var lbl=document.createElement("label"); lbl.className="grp-label"; lbl.htmlFor=chk.id;
       var nm=document.createElement("span"); nm.className="grp-title"; nm.textContent=name;
-      var cnt=document.createElement("span"); cnt.className="grp-count";
-      lbl.appendChild(cnt); lbl.appendChild(document.createTextNode(" ")); lbl.appendChild(nm); td.appendChild(lbl);
+      lbl.appendChild(nm); td.appendChild(lbl);
       tr.appendChild(td);
       var dateTd=document.createElement("td"); dateTd.className="grp-date col-data";
       var my=makeMonthYear("", ""); dateTd.appendChild(my.box); tr.appendChild(dateTd);
@@ -2114,7 +2237,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // «Добавлено вручную» / пустая строка в пустой таблице).
     function dropUndo(head){
       if (undoHeads.indexOf(head) < 0) return;
-      forgetUndo(head); head._deletedRows = null; head.remove();
+      forgetUndo(head); head._deletedRows = null; dropGroupIcon(head); head.remove();
       pruneEmptyGroups();
       if (!tbody.querySelector("tr:not(.grp)")) addRow();
       renumber(); updateCheckAll();
@@ -2218,12 +2341,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // Клик по своей же «⋯» не закрываем здесь — её click сам переключит меню.
     function onActMenuDown(e){ if (!actMenu.contains(e.target) && !(actMenuBtn && actMenuBtn.contains(e.target))) closeActMenu(); }
     function onActMenuKey(e){ if (e.key === "Escape"){ var b = actMenuBtn; e.preventDefault(); closeActMenu(); if (b) b.focus(); } }
-    // Проверка контрольной цифры кода ШК: невалидно = непустое значение и normalizeBarcode вернул valid:false
-    // (неверная контрольная у 14 цифр или длина не 14). Текст ошибки — в err.dataset.msg (мгновенный тултип).
+    // Проверка контрольной цифры кода ШК (ITF-14 / EAN-13): невалидно = непустое значение и нормализатор колонки
+    // (BC_NORM) вернул valid:false (неверная контрольная или не та длина). Текст ошибки — в err.dataset.msg (мгновенный тултип).
     function validateBc(inp, wrap, err){
       var v = (inp.value || "").trim();
       if (!v){ wrap.classList.remove("invalid"); delete err.dataset.msg; hideBcTip(); return; }
-      var r = normalizeBarcode(v);
+      var r = BC_NORM[inp.dataset.col](v);
       if (r.valid){ wrap.classList.remove("invalid"); delete err.dataset.msg; hideBcTip(); }
       else { wrap.classList.add("invalid"); err.dataset.msg = r.msg || "Некорректный штрих-код"; }
     }
@@ -2335,7 +2458,7 @@ document.addEventListener("DOMContentLoaded", function () {
           td.addEventListener("mouseenter", function(){ showIconCard(td); });
           td.addEventListener("mouseleave", scheduleHideIconCard);
           thumb.addEventListener("click", function(){ pickRowIcon(tr); }); // клик по иконке → сразу выбор SVG для строки
-        } else if (id === "barcode"){
+        } else if (BC_NORM[id]){ // ITF-14 и EAN-13
           var wrap = document.createElement("div"); wrap.className = "bc-wrap";
           var err = document.createElement("span"); err.className = "bc-err"; err.textContent = "!";
           wrap.appendChild(inp); wrap.appendChild(err); td.appendChild(wrap);
@@ -2390,7 +2513,7 @@ document.addEventListener("DOMContentLoaded", function () {
         var s = tr.querySelector('td.col-data select[aria-label="'+p[1]+'"]');
         if (s && !s.value){ s.value = v; s.dispatchEvent(new Event("change", { bubbles: true })); }
       });
-      renumber(); updateRowState(tr); updateCheckAll();
+      renumber(); updateRowState(tr); updateIconThumb(tr.querySelector("td.iconcell")); refreshRowPreview(tr); updateCheckAll(); // в группе может быть SVG блока
       return tr;
     }
     // Удаление строки (пункт «Удалить строку» в меню «⋯»).
@@ -2605,8 +2728,9 @@ document.addEventListener("DOMContentLoaded", function () {
       data:   ["дата","изготов","производ","mfg","manufact","дата изг"],
       srok:   ["срок","годн","годен","expiry","expire","shelf","best before"],
       icon:   ["изображен","иконка","картинк","рисун","svg","image","icon","pic"],
-      barcode:["itf"]
-      // barcode:["шк короба","штрих","штрихкод","штрих-код","штрих код","barcode","bar code","ean","gtin","itf","код шк","код для шк","шк"]
+      itf14:  ["itf"],
+      ean13:  ["ean"]
+      // itf14:["шк короба","штрих","штрихкод","штрих-код","штрих код","barcode","bar code","ean","gtin","itf","код шк","код для шк","шк"]
     };
     var importFileInput = document.getElementById("import-file");
     var importMap = document.getElementById("importMap");
