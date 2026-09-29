@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="142 · 29.09.2026 19:22">
+<meta name="build" content="146 · 29.09.2026 21:46">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
@@ -91,6 +91,14 @@
   #bulk-search{width:240px;padding:7px 10px 7px 30px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;
     background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa1ab' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 10px 50%}
   #bulk-search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.18)}
+  /* Подсказка Cmd/Ctrl+K справа в поле: только в покое и пустом поле (в фокусе/с текстом — скрыта, место отдаём тексту
+     и нативному ✕). Текст «⌘K» на Mac ставит JS (initBulk), по умолчанию «Ctrl K». */
+  .search-wrap{position:relative;display:inline-flex}
+  #bulk-search:placeholder-shown:not(:focus){padding-right:58px}
+  .search-kbd{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;font:inherit;font-size:11px;
+    line-height:1;padding:3px 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;background:#f6f7f9;
+    color:#6b7280;white-space:nowrap}
+  #bulk-search:focus + .search-kbd, #bulk-search:not(:placeholder-shown) + .search-kbd{display:none}
   /* Фильтр: несовпавшие строки/заголовки групп скрыты (данные остаются в DOM, отметки сохраняются). */
   #bulk-table tbody tr.is-filtered{display:none}
   /* «Сгенерировать всё» при активном поиске заблокирована; тултип — на обёртке (disabled-кнопка не получает мышь). */
@@ -146,6 +154,13 @@
   .bc-wrap.invalid .bc-err{display:block}
   .bc-wrap.invalid input{padding-right:26px}
   .bc-tip{position:fixed;z-index:1000;max-width:280px;white-space:pre-line;background:#1f2430;color:#fff;font:12px/1.35 system-ui,sans-serif;padding:6px 8px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none}
+  /* Тултип со ссылкой (повтор ШК/EAN/артикула → «Перейти к строке N») ловит мышь; остальные — нет. */
+  .bc-tip.has-go{pointer-events:auto}
+  .bc-go{color:#9cc0ff;border-bottom:1px dashed currentColor;cursor:pointer}
+  .bc-go:hover{color:#c6dbff}
+  /* Вспышка ячейки, к которой перешли по ссылке из подсказки о повторе. */
+  @keyframes cell-flash{0%,40%{box-shadow:0 0 0 3px #f2c14e}100%{box-shadow:0 0 0 3px rgba(242,193,78,0)}}
+  #bulk-table td input.cell-flash{animation:cell-flash 1.2s ease-out}
   #bulk-table td.sel,#bulk-table th.sel{text-align:center;width:34px;min-width:34px}
   #bulk-table td.sel input,#bulk-table th.sel input{display:block;width:auto;min-width:0;margin:0 auto;cursor:pointer}
   #bulk-table td.sel input:disabled{cursor:not-allowed}
@@ -341,7 +356,10 @@
   <div class="bulk-head">
     <h2 style="padding-left:24px;">Каждая строка = стикер</h2>
     <!-- <button id="bulk-back">← Одиночный режим</button> -->
-    <input type="search" id="bulk-search" placeholder="Поиск по названию" aria-label="Поиск по названию товара" autocomplete="off" spellcheck="false">
+    <span class="search-wrap">
+      <input type="search" id="bulk-search" placeholder="Поиск по названию" aria-label="Поиск по названию товара" aria-keyshortcuts="Meta+K Control+K" autocomplete="off" spellcheck="false">
+      <kbd class="search-kbd" aria-hidden="true">Ctrl K</kbd>
+    </span>
   </div>
   <div class="bulk-toolbar">
     <button id="bulk-add" style="margin-right:10px">+ Строка</button>
@@ -418,8 +436,8 @@
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 142 · 29.09.2026 19:22</footer>
-<script>console.info("edda sticker generator — сборка 142 · 29.09.2026 19:22");</script>
+<footer class="build-info">сборка 146 · 29.09.2026 21:46</footer>
+<script>console.info("edda sticker generator — сборка 146 · 29.09.2026 21:46");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -1937,11 +1955,12 @@ document.addEventListener("DOMContentLoaded", function () {
     function markDup(inp, tr, map){
       if (inp === document.activeElement) return;
       var col = inp.dataset.col;
-      inp._softDup = null;
+      inp._softDup = null; inp._dupRows = null;
       var k = dupKey(inp.value);
       if (k && !fieldError(col, inp.value)){
         var others = ((map || dupMap(col))[k] || []).filter(function(r){ return r !== tr; });
         if (others.length){
+          inp._dupRows = others; // строки, а не номера (номера меняет renumber) — для ссылки «Перейти…» в тултипе
           var nums = others.map(function(r){ var x = r.querySelector("td.idx"); return x ? x.textContent : "?"; });
           inp._softDup = DUP_COLS[col] + " повторяется в " + (nums.length > 1 ? "строках " : "строке ") + nums.join(", ") + ".";
         }
@@ -2279,17 +2298,60 @@ document.addEventListener("DOMContentLoaded", function () {
     // Используется для ШК (el.dataset.msg) и для ячеек с ошибкой (передаём msg явно, напр. невалидное kolvo).
     var bcTip = document.createElement("div"); bcTip.className = "bc-tip"; bcTip.hidden = true;
     document.body.appendChild(bcTip);
+    // Тултип со ссылкой (go) ловит мышь и закрывается с задержкой — чтобы успеть перейти на него с ячейки
+    // (как карточка иконки, ICON_CARD_HIDE_MS). Без ссылки — прежний: pointer-events:none, закрывается сразу.
+    var bcTipTimer = 0;
+    bcTip.addEventListener("mouseenter", function(){ clearTimeout(bcTipTimer); });
+    bcTip.addEventListener("mouseleave", hideBcTip);
     // По умолчанию левый край тултипа = левый край элемента; alignRight — по правому (иконка «!» ШК у правого края ячейки).
-    function showBcTip(el, msg, alignRight){
+    // go {label, fn} — ссылка после пустой строки (подсказка о повторе → «Перейти к строке N»).
+    function showBcTip(el, msg, alignRight, go){
       var m = (msg != null) ? msg : el.dataset.msg; if (!m) return;
+      clearTimeout(bcTipTimer);
       bcTip.textContent = m; bcTip.hidden = false;
+      bcTip.classList.toggle("has-go", !!go);
+      if (go){
+        var a = document.createElement("span"); a.className = "bc-go"; a.textContent = go.label;
+        // mousedown не забирает фокус: иначе blur текущей ячейки (пересчёт строки) закрывает тултип до click
+        a.addEventListener("mousedown", function(e){ e.preventDefault(); });
+        a.addEventListener("click", function(){ hideBcTip(); go.fn(); });
+        bcTip.appendChild(document.createTextNode("\n\n")); bcTip.appendChild(a);
+      }
       bcTip.style.left = "0px"; // мерить ширину не со старой позиции: у правого края окна тултип сжимается и переносит текст
       var r = el.getBoundingClientRect(), t = bcTip.getBoundingClientRect();
       var left = Math.max(6, Math.min(alignRight ? r.right - t.width : r.left, window.innerWidth - t.width - 6));
       var top = r.top - t.height - 6; if (top < 6) top = r.bottom + 6; // не влезает сверху → снизу
       bcTip.style.left = left + "px"; bcTip.style.top = top + "px";
     }
-    function hideBcTip(){ bcTip.hidden = true; }
+    function hideBcTip(){ clearTimeout(bcTipTimer); bcTip.hidden = true; }
+    // Уход мыши с элемента: тултип со ссылкой — с задержкой (мышь может идти на него), остальные — сразу.
+    function hideBcTipSoon(){
+      clearTimeout(bcTipTimer);
+      if (bcTip.classList.contains("has-go") && !bcTip.hidden) bcTipTimer = setTimeout(hideBcTip, ICON_CARD_HIDE_MS);
+      else hideBcTip();
+    }
+    // Ссылка для тултипа ячейки с повтором (markDup → inp._dupRows): один повтор — «Перейти к строке N», несколько —
+    // «Перейти к первому повтору» (первый по порядку в таблице). Только когда ячейка горит янтарным и повтор ещё есть.
+    function dupGo(inp){
+      if (!inp._softDup || !inp._dupRows || !inp.classList.contains("cell-soft")) return null;
+      var rows = inp._dupRows.filter(function(r){ return r.parentNode === tbody; }); if (!rows.length) return null;
+      var n = rows[0].querySelector("td.idx");
+      return {
+        label: rows.length > 1 ? "Перейти к первому повтору" : "Перейти к строке " + (n ? n.textContent : ""),
+        fn: function(){ goToDup(rows[0], inp.dataset.col); }
+      };
+    }
+    // Переход к строке-повтору: скрыта поиском → показать (поиск остаётся, _searchKeep до следующей правки запроса);
+    // прокрутка в центр, фокус в ту же колонку, короткая вспышка ячейки.
+    function goToDup(tr, col){
+      if (tr.classList.contains("is-filtered")){ tr._searchKeep = true; applySearch(false); }
+      var inp = tr.querySelector('input[data-col="'+col+'"]'); if (!inp) return;
+      tr.scrollIntoView({ block: "center" });
+      inp.focus({ preventScroll: true });
+      inp.classList.remove("cell-flash"); void inp.offsetWidth; // перезапуск анимации при повторном переходе
+      inp.classList.add("cell-flash");
+      inp.addEventListener("animationend", function(){ inp.classList.remove("cell-flash"); }, { once: true });
+    }
 
     // --- Меню действий «⋯» (строка / заголовок группы) ---
     // Один общий список на страницу, position:fixed (не режется прокруткой таблицы). Удаление живёт только здесь —
@@ -2424,8 +2486,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Всю строку (и чекбокс) пересчитываем лишь при уходе фокуса из строки (focusout ниже).
         inp.addEventListener("focus", function(){ clearCell(inp); });
         inp.addEventListener("blur", function(){ validateCell(inp, tr); });
-        inp.addEventListener("mouseenter", function(){ if (inp.dataset.err) showBcTip(inp, inp.dataset.err); });
-        inp.addEventListener("mouseleave", hideBcTip);
+        inp.addEventListener("mouseenter", function(){ if (inp.dataset.err) showBcTip(inp, inp.dataset.err, false, dupGo(inp)); });
+        inp.addEventListener("mouseleave", hideBcTipSoon);
         // Enter — в ячейку той же колонки строкой ниже (нет строки → создать новую, ручную); Shift+Enter — строкой выше.
         // Заголовки групп пропускаются: с последней строки группы — в первую строку следующей.
         inp.addEventListener("keydown", function(e){
@@ -2652,7 +2714,18 @@ document.addEventListener("DOMContentLoaded", function () {
     if (searchInp){
       searchInp.addEventListener("input", function(){ applySearch(true); });
       searchInp.addEventListener("keydown", function(e){
-        if (e.key === "Escape" && searchInp.value){ e.preventDefault(); searchInp.value = ""; applySearch(true); }
+        if (e.key !== "Escape") return;
+        e.preventDefault(); // 1-й Esc — очистить запрос (фокус остаётся), 2-й (поле пустое) — убрать фокус
+        if (searchInp.value){ searchInp.value = ""; applySearch(true); } else searchInp.blur();
+      });
+      // Cmd/Ctrl+K — фокус в поиск (и из ячеек таблицы), запрос выделяется. e.code, а не e.key: на русской раскладке key = «л».
+      // preventDefault — иначе в Chrome/Firefox на Windows Ctrl+K уводит в адресную строку.
+      var isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+      var kbd = document.querySelector(".search-kbd");
+      if (kbd && isMac) kbd.textContent = "⌘K";
+      document.addEventListener("keydown", function(e){
+        if (e.code !== "KeyK" || !(isMac ? e.metaKey : e.ctrlKey) || e.shiftKey || e.altKey) return;
+        e.preventDefault(); searchInp.focus(); searchInp.select();
       });
     }
 
