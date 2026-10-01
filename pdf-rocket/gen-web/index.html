@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="151 · 01.10.2026 00:54">
+<meta name="build" content="164 · 01.10.2026 14:27">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
@@ -101,7 +101,7 @@
   #bulk-search:focus + .search-kbd, #bulk-search:not(:placeholder-shown) + .search-kbd{display:none}
   /* Фильтр: несовпавшие строки/заголовки групп скрыты (данные остаются в DOM, отметки сохраняются). */
   #bulk-table tbody tr.is-filtered{display:none}
-  /* «Сгенерировать всё» при активном поиске заблокирована; тултип — на обёртке (disabled-кнопка не получает мышь). */
+  /* «Сохранить отмеченное» при активном поиске заблокирована; тултип — на обёртке (disabled-кнопка не получает мышь). */
   .gen-wrap{display:inline-flex}
   .gen-wrap button:disabled{pointer-events:none}
   .bulk-empty{padding:18px 8px;text-align:center;color:var(--muted);font-size:13px}
@@ -174,6 +174,7 @@
   #bulk-table td.idx{text-align:center;color:var(--muted);min-width:28px}
   #bulk-table td.prev,#bulk-table th.prev{text-align:center;width:64px;min-width:64px;padding:3px}
   #bulk-table td.prev canvas{display:block;margin:0 auto;border:1px solid var(--line);border-radius:3px;cursor:zoom-in}
+  #bulk-table td.prev .prev-ph{margin:0 auto;border:1px solid var(--line);border-radius:3px;background:#fff} /* заглушка до рендера — размер ставит JS */
   #bulk-table td.iconcell{vertical-align:middle;text-align:center}
   #bulk-table td.iconcell .icon-thumb{width:56px;height:44px;margin:0 auto;display:flex;align-items:center;justify-content:center;cursor:pointer}
   #bulk-table td.iconcell .icon-thumb canvas,#bulk-table td.iconcell .icon-thumb svg{max-width:56px;max-height:44px;display:block}
@@ -224,6 +225,11 @@
   .grp-icon-btn.has-icon{border-style:solid;border-color:var(--line);background:#fff}
   .grp-icon-btn canvas{display:block;background:#fff}
   #bulk-table tr.grp .dd.dd-mixed .dd-label{color:var(--muted);} /* «—» — у строк группы значения расходятся */
+  /* Строка «Вся таблица» — вторая строка шапки: общая дата изготовления над колонкой даты, вид как у заголовка
+     группы; подпись — вплотную слева от контрола (в своей ячейке по правому краю, колонка даты не шире). */
+  #bulk-table tr.all-row td{background:#eef1f5;border-top:2px solid var(--line)}
+  #bulk-table tr.all-row td + td{border-left-style:hidden}
+  #bulk-table tr.all-row td.all-row-lbl{text-align:right;padding-right:10px;color:var(--muted);white-space:nowrap}
   /* заголовок группы: кликабельны чекбокс, промежуток и текст (label for); промежуток — padding-left у label */
   #bulk-table td.sel,#bulk-table th.sel{cursor:pointer;user-select:none} /* вся ячейка с чекбоксом кликабельна */
   #bulk-table td.sel:has(input:disabled),#bulk-table th.sel:has(input:disabled){cursor:default}
@@ -247,11 +253,34 @@
   /* только что созданный дубль — короткая подсветка */
   #bulk-table tr.row-new > td{animation:rowNew 1.2s ease-out}
   @keyframes rowNew{from{background:var(--accent-weak)}to{background:transparent}}
-  /* низ таблицы: строка-кнопка «+ строка» и блок «Сгенерировать всё» */
+  /* низ таблицы: строка-кнопка «+ строка» и блок «Сохранить отмеченное» */
   #bulk-table tfoot td{padding:0}
   .row-add{display:block;width:100%;height:50px;border:none;border-radius:0;background:transparent;color:var(--muted);text-align:center;font-size:14px;padding:0 12px}
   .row-add:hover{background:#f7f8fa;color:var(--ink)}
-  .bulk-foot{display:flex;align-items:center;gap:10px;margin-top:14px;justify-content:end}
+  /* Нижний блок «Сохранить отмеченное» (#bulk-foot) — sticky: пока до конца таблицы далеко, прилипает к низу окна
+     (плавает у правого края, с тенью); докрутили — стоит на своём месте в углу карточки. Лежит вне .bulk-wrap (там
+     overflow-x → sticky клеился бы к ней, не к окну). Две строки: ↑ ↓ + «X из Y», ошибки, кнопка во всю ширину —
+     одинаково в обоих состояниях. Состояния ставит JS: is-float (не на месте), is-hidden (виден верхний тулбар, а блок
+     не на месте). Размер блока от состояния не зависит — иначе на границе состояния переключались бы по кругу. */
+  .bulk-foot{--foot-mx:14px;--foot-pr:8px;--foot-out:17px; /* поле блока в карточке · отступ справа · отступ карточки 16 + её рамка */
+    position:sticky;bottom:16px;z-index:900;display:grid;grid-template-columns:auto 1fr;align-items:center;row-gap:4px;
+    width:max-content;margin:0 var(--foot-mx) 0 auto;
+    padding:6px var(--foot-pr) 8px 6px;background:#fff;border:1px solid transparent;border-radius:11px;transition:opacity .15s,visibility .15s}
+  .foot-sentinel{height:14px} /* отступ под блоком и «датчик» места: его верх = низ блока на своём месте */
+  /* Плавает: блок выдвинут вплотную к краю окна, а отступ справа больше ровно на это выдвижение — содержимое (кнопка)
+     по x на том же месте, что и на своём месте в карточке. */
+  .bulk-foot.is-float{margin-right:calc(-1 * var(--foot-out));padding-right:calc(var(--foot-pr) + var(--foot-mx) + var(--foot-out));
+    border-color:var(--line);border-right-color:transparent;border-radius:11px 0 0 11px;box-shadow:0 12px 34px rgba(0,0,0,.16)}
+  .bulk-foot.is-hidden{visibility:hidden;opacity:0}
+  .bulk-foot .bulk-errors{grid-column:1 / -1;justify-self:end;padding-right:2px;margin-top:-4px;font-size:12px}
+  .bulk-foot .bulk-errors::before{content:none}
+  .bulk-foot .gen-wrap{grid-column:1 / -1;display:flex}
+  .bulk-foot .gen-wrap button{flex:1;white-space:nowrap}
+  .fn-arrows{display:flex}
+  .fn-btn{border:none;background:transparent;color:var(--ink);line-height:0;padding:6px;border-radius:7px}
+  .fn-btn:hover{background:#f1f3f7}
+  .bulk-foot:not(.is-float) #fn-down, .bulk-foot.is-top #fn-up{visibility:hidden} /* место держат — размер блока не меняется */
+  .fn-count{justify-self:end;padding-right:2px;font-size:13px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
   .row-del{border:none;background:transparent;color:#b91c1c;cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
   .row-del:hover{background:#fee2e2;border-radius:5px}
   #bulk-table tr.grp .grp-undo{display:none}
@@ -389,7 +418,7 @@
     <span class="bulk-gen-group">
       <span id="bulk-count" class="bulk-count" data-bulk-count></span>
       <span id="bulk-errors" class="bulk-errors" data-bulk-errors hidden></span>
-      <span class="gen-wrap"><button class="primary" id="bulk-generate">Сгенерировать всё</button></span>
+      <span class="gen-wrap"><button class="primary" id="bulk-generate">Сохранить отмеченное</button></span>
     </span>
   </div>
   <div id="importMap" class="import-map" hidden>
@@ -422,7 +451,7 @@
           <th class="col-artikul">Артикул</th>
           <th class="col-kolvo">Кол-во</th>
           <th>Дата изготовления</th>
-          <th class="col-weight">Вес брутто</th>
+          <th class="col-weight">Брутто, кг</th>
           <th class="col-srok">Срок годности</th>
           <th>Код ШК ITF-14</th>
           <th>Код ШК EAN-13</th>
@@ -436,17 +465,24 @@
       </tfoot>
     </table>
     <div id="bulk-empty" class="bulk-empty" hidden>Ничего не найдено</div>
-    <div class="bulk-foot">
-      <span class="bulk-count" data-bulk-count></span>
-      <span class="bulk-errors" data-bulk-errors hidden></span>
-      <span class="gen-wrap"><button class="primary" id="bulk-generate-bottom">Сгенерировать всё</button></span>
-    </div>
   </div>
+  <!-- Нижний блок (sticky, вне .bulk-wrap): плавает у низа окна, в конце таблицы встаёт на место. Состояния — initBulk.
+       Счётчик здесь короткий «X из Y» (.fn-count), длинный «…строк отмечено» — только в верхнем тулбаре. -->
+  <div class="bulk-foot is-top is-hidden" id="bulk-foot" role="toolbar" aria-label="Сохранение и навигация по таблице">
+    <span class="fn-arrows">
+      <button type="button" class="fn-btn" id="fn-up" aria-label="Наверх"></button>
+      <button type="button" class="fn-btn" id="fn-down" aria-label="В конец таблицы"></button>
+    </span>
+    <span class="fn-count" id="fn-count"></span>
+    <span class="bulk-errors" data-bulk-errors hidden></span>
+    <span class="gen-wrap"><button class="primary" id="bulk-generate-bottom">Сохранить отмеченное</button></span>
+  </div>
+  <div class="foot-sentinel" id="foot-sentinel"></div>
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 151 · 01.10.2026 00:54</footer>
-<script>console.info("edda sticker generator — сборка 151 · 01.10.2026 00:54");</script>
+<footer class="build-info">сборка 164 · 01.10.2026 14:27</footer>
+<script>console.info("edda sticker generator — сборка 164 · 01.10.2026 14:27");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -1623,14 +1659,13 @@ document.addEventListener("DOMContentLoaded", function () {
     // ячейка с иконкой «!» (validateBc).
     var BC_NORM = { itf14: normalizeItf14, ean13: normalizeEan13 };
     // Поля, участвующие в СОПОСТАВЛЕНИИ ИМПОРТА (и подстановке значений из файла). Дату изготовления
-    // (`data`) и вес брутто (`weight`) не импортируем — по решению пользователя; колонки в таблице остаются (order).
+    // (`data`) и вес брутто (`weight`) не импортируем; колонки в таблице остаются (order).
     var importOrder = order.filter(function(id){ return id !== "data" && id !== "weight"; });
     var checkAll = document.getElementById("bulk-check-all");
     // Ключ: показывать колонку-зеркало чекбоксов в конце таблицы (фича на пробу, пока только разметка).
     // false → колонки нет нигде (шапка, строки, заголовки групп).
     var SEL_MIRROR = false;
-    if (!SEL_MIRROR){ var mth = document.querySelector("#bulk-table th.sel-mirror"); if (mth) mth.remove(); }
-    // Ячейка с чекбоксом кликабельна целиком (строки, заголовки групп, «выбрать все» в шапке): клик мимо квадратика
+    if (!SEL_MIRROR){ var mth = document.querySelector("#bulk-table th.sel-mirror"); if (mth) mth.remove(); }    // Ячейка с чекбоксом кликабельна целиком (строки, заголовки групп, «выбрать все» в шапке): клик мимо квадратика
     // → click() по чекбоксу (он сам шлёт change — вся логика как при клике по чекбоксу). Один делегат на таблицу.
     document.getElementById("bulk-table").addEventListener("click", function(e){
       var cell = e.target.closest("td.sel, th.sel"); if (!cell) return;
@@ -1670,6 +1705,14 @@ document.addEventListener("DOMContentLoaded", function () {
       if (v && ii.dataset.manual) return "Иконка «"+v+"» не найдена в наборе";
       if (v) return n ? ("Нет иконки по названию «"+n+"», и «"+v+"» не найдена в наборе") : ("Иконка «"+v+"» не найдена в наборе");
       return n ? ("Иконка для «"+n+"» не найдена в наборе") : "Нет иконки: укажите название товара или имя SVG";
+    }
+    // Заглушка миниатюры до ленивого рендера — того же размера, что холст (THUMB_W × пропорция страницы, та же рамка):
+    // строка сразу своей высоты. Иначе строки росли бы на 16 px, подъезжая к экрану, и прокрутка к посчитанной
+    // позиции (↓ нижнего блока, «Перейти к строке N») не доезжала бы.
+    function previewPlaceholder(){
+      var pg = window.EDDA_FIELDS.page, ph = document.createElement("div"); ph.className = "prev-ph";
+      ph.style.width = THUMB_W + "px"; ph.style.height = (THUMB_W * pg.height / pg.width) + "px";
+      return ph;
     }
     function renderPreviewCell(prevTd){
       var tr = prevTd.parentNode; if (!tr) return;
@@ -2108,17 +2151,21 @@ document.addEventListener("DOMContentLoaded", function () {
       checkAll.checked = enabled > 0 && checked === enabled;
       checkAll.indeterminate = checked > 0 && checked < enabled;
       updateAllGroupHeads();
+      syncAllDate();
       updateCount();
     }
-    // Счётчик «X из Y строк отмечено для генерации» (X — отмеченные, Y — все строки).
-    // Счётчиков два (у верхней и нижней «Сгенерировать всё») — обновляем все по data-атрибутам.
+    // Счётчик «X из Y строк отмечено» (X — отмеченные, Y — все строки).
+    // Длинный — в верхнем тулбаре (по data-атрибуту), у нижнего блока — короткий «X из Y».
     function updateCount(){
       var total = tbody.querySelectorAll("input.rowchk").length;
       var checked = tbody.querySelectorAll("input.rowchk:checked").length;
-      var countText = checked + " из " + total + " строк отмечено для генерации";
+      var countText = checked + " из " + total + " строк отмечено";
       // Поиск активен → сколько строк видно (отмеченные скрытые строки всё равно идут в генерацию).
       if (searchQuery()) countText += " · показано " + tbody.querySelectorAll("tr:not(.grp):not(.is-filtered)").length + " из " + total;
       Array.prototype.forEach.call(document.querySelectorAll("[data-bulk-count]"), function(el){ el.textContent = countText; });
+      // Нижний блок — коротко «X из Y».
+      var fnCount = document.getElementById("fn-count");
+      if (fnCount) fnCount.textContent = checked + " из " + total;
       // Подсказка о строках с ошибками: непустые строки, которые не пройдут в генерацию.
       var errors = 0;
       Array.prototype.forEach.call(tbody.rows, function(tr){ if (rowAnyFilled(tr) && !rowComplete(tr)) errors++; });
@@ -2199,6 +2246,23 @@ document.addEventListener("DOMContentLoaded", function () {
       if (hsel.__dd) hsel.__dd.classList.toggle("dd-mixed", v === GRP_MIXED);
     }
     function updateAllGroupHeads(){ Array.prototype.forEach.call(tbody.querySelectorAll("tr.grp"), updateGroupHead); }
+    // Служебная скрытая опция «—» в месяце/году (заголовок группы, «Вся таблица») — показывается, когда у строк значения
+    // расходятся (выбрать её нельзя); по ховеру — мгновенный тултип с пояснением.
+    function addMixedOption(my, tip){
+      [my.msel, my.ysel].forEach(function(s){
+        var o=document.createElement("option"); o.value=GRP_MIXED; o.textContent="—"; o.hidden=true; s.appendChild(o);
+        s.__dd.addEventListener("mouseenter", function(){ if (s.value===GRP_MIXED) showBcTip(s.__dd, tip); });
+        s.__dd.addEventListener("mouseleave", hideBcTip);
+      });
+    }
+    // «Вся таблица»: строки → общий контрол (как syncGroupDate, но по всем строкам-данным таблицы; строки удалённых
+    // блоков вынуты из DOM — не учитываются). allDate создаётся ниже (makeAllRow) — до этого пропускаем.
+    function syncAllDate(){
+      if (!allDate) return;
+      var rows = Array.prototype.slice.call(tbody.querySelectorAll("tr:not(.grp)"));
+      syncGroupDate(null, rows, allDate.msel, "Месяц");
+      syncGroupDate(null, rows, allDate.ysel, "Год");
+    }
     // Заголовок группы: чекбокс (колонка выбора) + название жирным со счётчиком «(N)».
     // kind — тип группы: "import" (товар из файла, по умолчанию) | "noname" («Без названия») | "manual»
     // («Добавлено вручную»); служебные группы узнаём по типу, НЕ по названию (товар из файла может называться так же).
@@ -2234,19 +2298,13 @@ document.addEventListener("DOMContentLoaded", function () {
       tr.appendChild(td);
       var dateTd=document.createElement("td"); dateTd.className="grp-date col-data";
       var my=makeMonthYear("", ""); dateTd.appendChild(my.box); tr.appendChild(dateTd);
-      // Служебная скрытая опция «—» — показывается, когда у строк группы значения расходятся (выбрать её нельзя);
-      // по ховеру — мгновенный тултип с пояснением.
-      [my.msel, my.ysel].forEach(function(s){
-        var o=document.createElement("option"); o.value=GRP_MIXED; o.textContent="—"; o.hidden=true; s.appendChild(o);
-        s.__dd.addEventListener("mouseenter", function(){ if (s.value===GRP_MIXED) showBcTip(s.__dd, "Разные значения в строках группы"); });
-        s.__dd.addEventListener("mouseleave", hideBcTip);
-      });
+      addMixedOption(my, "Разные значения в строках группы");
       tr._grpMonth=my.msel; tr._grpYear=my.ysel;
       // Связка заголовок → строки: месяц и год — НЕЗАВИСИМО (смена месяца не трогает год строк и наоборот),
       // применяется ко ВСЕМ строкам группы (в т.ч. неполным/неотмеченным).
       my.msel.addEventListener("change", function(){ applyGroupDate(tr, "Месяц", my.msel.value); });
       my.ysel.addEventListener("change", function(){ applyGroupDate(tr, "Год", my.ysel.value); });
-      // Вес брутто блока — ровно над колонкой «Вес брутто» (она сразу после даты). Заголовок → строки: по change
+      // Вес брутто блока — ровно над колонкой «Брутто, кг». Заголовок → строки: по change
       // (Enter / уход из поля); пустое значение строки не очищает. Строки → заголовок — syncGroupWeight.
       var wi=order.indexOf("weight"), afterDate=di;
       if (wi === di+1){
@@ -2533,6 +2591,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (ysel.__dd) ysel.__dd.classList.add("year-dd");
       return { box: box, msel: msel, ysel: ysel };
     }
+    var dateHold = false; // идёт запись общей даты во все строки (applyAllDate) — без пересчёта счётчиков на каждой строке
     function makeDateCell(initial){
       var td=document.createElement("td"); td.className="cell col-data";
       var hid=document.createElement("input"); hid.type="hidden"; hid.dataset.col="data";
@@ -2549,7 +2608,8 @@ document.addEventListener("DOMContentLoaded", function () {
         var s = e && e.target; if (s && s.value && s.__dd) s.__dd.classList.remove("dd-empty");
         // Чекбокс строки и счётчики — тоже сразу (фокус после выбора остаётся на дропдауне); updateCheckAll
         // заодно пересчитывает заголовки групп (дата группы).
-        if (td.parentNode){ updateRowCheck(td.parentNode); updateCheckAll(); }
+        // При массовой записи («Вся таблица») счётчики пересчитываются один раз в конце (dateHold).
+        if (td.parentNode && !dateHold){ updateRowCheck(td.parentNode); updateCheckAll(); }
       }
       msel.addEventListener("change", onChange); ysel.addEventListener("change", onChange);
       td.appendChild(hid); td.appendChild(my.box);
@@ -2573,7 +2633,7 @@ document.addEventListener("DOMContentLoaded", function () {
       chk.addEventListener("change", updateCheckAll);
       selTd.appendChild(chk); tr.appendChild(selTd);
       var idx = document.createElement("td"); idx.className="idx"; tr.appendChild(idx);
-      var prevTd = document.createElement("td"); prevTd.className="prev"; tr.appendChild(prevTd);
+      var prevTd = document.createElement("td"); prevTd.className="prev"; prevTd.appendChild(previewPlaceholder()); tr.appendChild(prevTd);
       prevTd.addEventListener("mouseenter", function(){ if (prevTd._rendered) showPreviewPopup(prevTd); });
       prevTd.addEventListener("mouseleave", hidePreviewPopup);
       order.forEach(function(id){
@@ -2660,21 +2720,36 @@ document.addEventListener("DOMContentLoaded", function () {
     //  • группа «Добавлено вручную» есть → в её конец (даже если она в середине таблицы — порядок групп хронологический);
     //  • её нет, но есть другие группы → создаём её в конце таблицы;
     //  • групп нет → плоская таблица, как раньше.
-    // В группе новая строка берёт дату из заголовка (месяц/год по отдельности; «—»/пусто → не трогаем).
+    // Дата новой строки: месяц/год по отдельности — из заголовка группы, а если там пусто/«—» (или группы нет) — из
+    // «Вся таблица»; там тоже пусто/«—» → не трогаем. Читать ДО вставки строки: change её селекта пересчитывает
+    // заголовок и общий контрол (стали бы «—»).
+    function newRowDate(mh){
+      return [["Месяц", mh && mh._grpMonth, allDate && allDate.msel], ["Год", mh && mh._grpYear, allDate && allDate.ysel]].map(function(p){
+        var v = p[1] && p[1].value; if (!v || v === GRP_MIXED) v = p[2] && p[2].value;
+        return [p[0], (v && v !== GRP_MIXED) ? v : ""];
+      });
+    }
+    function setNewRowDate(tr, hv){
+      hv.forEach(function(p){
+        if (!p[1]) return;
+        var s = tr.querySelector('td.col-data select[aria-label="'+p[0]+'"]');
+        if (s && !s.value){ s.value = p[1]; s.dispatchEvent(new Event("change", { bubbles: true })); }
+      });
+    }
     function addManualRow(values){
       var mh = manualHead();
-      if (!mh && !hasRealGroups()) return addRow(values);
+      if (!mh && !hasRealGroups()){ // плоская таблица — дата из «Вся таблица»
+        var fv = newRowDate(null), ft = addRow(values);
+        setNewRowDate(ft, fv); updateRowState(ft); refreshRowPreview(ft); updateCheckAll();
+        return ft;
+      }
+      var av = mh ? null : newRowDate(null); // новая ручная группа — заголовок пуст, дата из «Вся таблица» (до вставки)
       if (!mh) mh = addGroupHead(MANUAL_GROUP_NAME, "manual");
       var rows = groupRows(mh), after = rows.length ? rows[rows.length-1] : mh;
-      // Дату заголовка читаем ДО вставки: change селекта строки пересчитывает заголовок (год стал бы «—»).
-      var hv = [[mh._grpMonth && mh._grpMonth.value, "Месяц"], [mh._grpYear && mh._grpYear.value, "Год"]];
+      var hv = av || newRowDate(mh);
       var tr = addRow(values, after.nextElementSibling);
       tr.classList.add("in-grp");
-      hv.forEach(function(p){
-        var v = p[0]; if (!v || v === GRP_MIXED) return;
-        var s = tr.querySelector('td.col-data select[aria-label="'+p[1]+'"]');
-        if (s && !s.value){ s.value = v; s.dispatchEvent(new Event("change", { bubbles: true })); }
-      });
+      setNewRowDate(tr, hv);
       renumber(); updateRowState(tr); updateIconThumb(tr.querySelector("td.iconcell")); refreshRowPreview(tr); updateCheckAll(); // в группе может быть SVG блока
       return tr;
     }
@@ -2802,9 +2877,9 @@ document.addEventListener("DOMContentLoaded", function () {
       updateCheckAll(); // состояние «Выделить все»/групп и «показано N из M» зависят от видимости
       syncGenBlocked();
     }
-    // При активном поиске «Сгенерировать всё» (обе) заблокирована — по решению пользователя, чтобы не выгрузить
+    // При активном поиске «Сохранить отмеченное» (обе) заблокирована — по решению пользователя, чтобы не выгрузить
     // скрытые отмеченные строки незаметно. Подсказка — тёмный тултип на обёртке .gen-wrap.
-    var GEN_SEARCH_TIP = "Генерация недоступна при активном поиске\nОчистите поиск, чтобы сгенерировать";
+    var GEN_SEARCH_TIP = "Сохранение недоступно при активном поиске\nОчистите поиск, чтобы сохранить";
     var genBusy = false; // идёт генерация — кнопки держит onBulkGenerate
     function syncGenBlocked(){
       if (!genBtns || genBusy) return;
@@ -2851,7 +2926,48 @@ document.addEventListener("DOMContentLoaded", function () {
     var addTd = document.getElementById("bulk-add-td");
     addTd.colSpan = document.querySelector("#bulk-table thead tr").cells.length;
 
-    // «Сгенерировать всё» — сверху (тулбар) и снизу (под таблицей); на время генерации блокируются обе.
+    // --- Строка «Вся таблица»: общая дата изготовления (месяц+год) для всех строк ---
+    // Вторая строка шапки (не tbody: его читают readRows/renumber/счётчики). Раскладка как у addGroupHead: пусто над
+    // выбором/№/Превью/Иконкой; подпись «Вся таблица» — по правому краю ячейки «Название»…(колонка перед датой), то
+    // есть вплотную к контролу; контрол — в колонке даты (тот же makeMonthYear); хвост — остальные колонки, действия.
+    // Связка — как у даты группы: контрол → строки (applyAllDate), строки → контрол (syncAllDate из updateCheckAll).
+    function makeAllRow(){
+      var di = order.indexOf("data"), ii = order.indexOf("icon");
+      var tr = document.createElement("tr"); tr.className = "all-row";
+      function cell(span, cls){ var td = document.createElement("td"); if (span > 1) td.colSpan = span; if (cls) td.className = cls; tr.appendChild(td); return td; }
+      cell(1); cell(3 + ii);                                       // выбор · №, Превью, Иконка
+      cell(di - ii - 1, "all-row-lbl").textContent = "Вся таблица"; // от «Названия» до колонки перед датой
+      var my = makeMonthYear("", ""); cell(1, "col-data").appendChild(my.box);
+      cell(order.length - di - 1); cell(1);                        // колонки после даты · действия
+      if (SEL_MIRROR) cell(1);
+      document.querySelector("#bulk-table thead").appendChild(tr);
+      addMixedOption(my, "Разные значения в строках таблицы");
+      my.msel.addEventListener("change", function(){ applyAllDate("Месяц", my.msel.value); });
+      my.ysel.addEventListener("change", function(){ applyAllDate("Год", my.ysel.value); });
+      return my;
+    }
+    // Общая дата → месяц или год (part, независимо) во ВСЕ строки-данные таблицы (все группы, скрытые поиском,
+    // неполные/неотмеченные; строки удалённых блоков вынуты из DOM — не трогаем). change строки пересобирает её дату и
+    // снимает подсветку пустого месяца/года; дата влияет только на полноту строки → updateRowCheck (не полный
+    // updateRowState: 270 строк — 0.44 с против 0.04 с). Счётчики, заголовки групп и контрол — один раз в конце
+    // (dateHold), иначе на 270 строках квадратично (1.3 с).
+    function applyAllDate(part, value){
+      if (!value || value === GRP_MIXED) return;
+      dateHold = true;
+      try {
+        Array.prototype.forEach.call(tbody.querySelectorAll("tr:not(.grp)"), function(r){
+          var s = r.querySelector('td.col-data select[aria-label="'+part+'"]');
+          if (!s || s.value === value) return;
+          s.value = value; s.dispatchEvent(new Event("change", { bubbles: true }));
+          updateRowCheck(r); refreshRowPreview(r);
+        });
+      } finally { dateHold = false; }
+      updateCheckAll();
+    }
+    var allDate = makeAllRow();
+    syncAllDate();
+
+    // «Сохранить отмеченное» — сверху (тулбар) и снизу (под таблицей); на время генерации блокируются обе.
     var genBtns = [document.getElementById("bulk-generate"), document.getElementById("bulk-generate-bottom")];
     async function onBulkGenerate(){
       if (searchQuery()) return; // при активном поиске генерация недоступна (кнопки и так disabled)
@@ -2860,7 +2976,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var upper = document.getElementById("bulk-upper").checked;
       var outType = (document.querySelector('input[name="bulk-out"]:checked')||{}).value || "zip";
       var old = genBtns[0].textContent;
-      genBusy = true; genBtns.forEach(function(b){ b.disabled=true; b.textContent="Генерация…"; });
+      genBusy = true; genBtns.forEach(function(b){ b.disabled=true; b.textContent="Сохранение…"; });
       try {
         if (rows.length === 1){
           var bytes = await generateSinglePdf(rows[0], upper);
@@ -2880,7 +2996,7 @@ document.addEventListener("DOMContentLoaded", function () {
           var blob = await zip.generateAsync({type:"blob"});
           downloadBlob(blob, "edda-labels-"+rows.length+".zip");
         }
-      } catch(e){ alert("Ошибка генерации: "+e.message); console.error(e); }
+      } catch(e){ alert("Ошибка сохранения: "+e.message); console.error(e); }
       finally { genBusy = false; genBtns.forEach(function(b){ b.disabled=false; b.textContent=old; }); syncGenBlocked(); }
     }
     genBtns.forEach(function(b){
@@ -2890,6 +3006,43 @@ document.addEventListener("DOMContentLoaded", function () {
       w.addEventListener("mouseenter", function(){ if (searchQuery() && !genBusy){ bcTip.style.maxWidth = "none"; showBcTip(w, GEN_SEARCH_TIP, true); } });
       w.addEventListener("mouseleave", function(){ hideBcTip(); bcTip.style.maxWidth = ""; });
     });
+
+    // --- Нижний блок #bulk-foot: плавает у низа окна / стоит на своём месте (sticky) ---
+    // Состояние — два IntersectionObserver: виден ли верхний тулбар (footTop) и «датчик» под блоком (footDocked: верх
+    // датчика = низ блока на своём месте; поднялся выше «низ окна − FOOT_GAP» → sticky его уже не держит). Вид — CSS
+    // по классам (см. .bulk-foot). ↑ — к началу страницы (видна, пока тулбар за краем окна); ↓ — только у плавающего
+    // блока: прокрутка до его места (блок в окне не сдвигается — таблица доезжает под него).
+    var fnUp = document.getElementById("fn-up"), fnDown = document.getElementById("fn-down");
+    var ICON_UP = '<svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg>';
+    var ICON_DOWN = '<svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v10M3.5 8.5 8 13l4.5-4.5"/></svg>';
+    fnUp.innerHTML = ICON_UP; fnDown.innerHTML = ICON_DOWN;
+    btnTip(fnUp, "Наверх"); btnTip(fnDown, "В конец таблицы");
+    var bulkToolbar = bulkView.querySelector(".bulk-toolbar");
+    var bulkFoot = document.getElementById("bulk-foot"), footSentinel = document.getElementById("foot-sentinel");
+    var FOOT_GAP = 16; // = bottom у .bulk-foot в CSS
+    var footTop = true, footDocked = false;
+    function paintFoot(){
+      var float = !footDocked, hidden = footTop && !footDocked, cl = bulkFoot.classList;
+      // стрелка/блок под мышью исчезает → mouseleave не придёт, тултип гасим сами
+      if ((cl.contains("is-float") !== float || cl.contains("is-hidden") !== hidden || cl.contains("is-top") !== footTop) && bulkFoot.matches(":hover")) hideBcTip();
+      cl.toggle("is-top", footTop);
+      cl.toggle("is-float", float);
+      cl.toggle("is-hidden", hidden);
+    }
+    fnUp.addEventListener("click", function(){ hideBcTip(); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    fnDown.addEventListener("click", function(){
+      hideBcTip();
+      // верх датчика — на 1 px выше «низа окна − FOOT_GAP»: блок встаёт на место ровно там, где плавал
+      var y = window.scrollY + footSentinel.getBoundingClientRect().top - (window.innerHeight - FOOT_GAP) + 1;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    });
+    if ("IntersectionObserver" in window){
+      new IntersectionObserver(function(es){ es.forEach(function(e){ footTop = e.isIntersecting; }); paintFoot(); }).observe(bulkToolbar);
+      // не isIntersecting: датчик может уйти и за верх окна — блок тогда тоже на месте
+      new IntersectionObserver(function(es){ es.forEach(function(e){
+        footDocked = e.boundingClientRect.top <= (e.rootBounds ? e.rootBounds.bottom : window.innerHeight - FOOT_GAP);
+      }); paintFoot(); }, { rootMargin: "0px 0px -" + FOOT_GAP + "px 0px" }).observe(footSentinel);
+    } else { footTop = false; footDocked = true; paintFoot(); }
 
     // --- Импорт CSV/Excel ---
     var labels = {}; (window.EDDA_FIELDS.fields||[]).forEach(function(f){ labels[f.id]=f.label; });
