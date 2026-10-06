@@ -3,12 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="164 · 01.10.2026 14:27">
+<meta name="build" content="180 · 06.10.2026 14:29">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
     --bg:#f4f5f7; --panel:#ffffff; --ink:#1c1f24; --muted:#6b7280; --secondary-text:#aaaaaa;
     --line:#e3e6ea; --accent:#2563eb; --accent-weak:#dbe4ff;
+    /* светлая серо-голубая заливка: заголовки групп, «Вся таблица», блок импорта, ховер кнопок, сегменты .seg */
+    --fill-soft:#eef1f5;
     --bottom-space: 60vh;
   }
   *{box-sizing:border-box}
@@ -76,16 +78,16 @@
   .actions{display:flex;gap:10px;margin-top:4px}
   button{padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;font:inherit;cursor:pointer;transition:background .12s,filter .12s}
   button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-  button:hover{background:#eef1f5}                 /* обычные кнопки — заливка при ховере */
+  button:hover{background:var(--fill-soft)}                 /* обычные кнопки — заливка при ховере */
   button.primary:hover{background:var(--accent);filter:brightness(.94)}  /* основная — тот же акцент, чуть темнее */
   button:disabled{opacity:.5;cursor:not-allowed}
   .stub{font-size:13px;color:#9aa1ab;font-style:italic}
   /* массовый режим */
-  #bulkView{margin:16px}
+  #bulkView{margin:16px;padding-top:10px}
   /* Отступ-«подвал» снизу (--bottom-space в :root) — только если строк-данных ≥ 10 (заголовки групп не считаются).
      Порог N — число в nth-child(10 …): CSS-переменную туда подставить нельзя, менять вручную. */
   #bulkView:has(#bulk-tbody > tr:nth-child(10 of :not(.grp))){margin-bottom:var(--bottom-space)}
-  .bulk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-right:14px}
+  .bulk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:14px}
   .bulk-head h2{border-bottom:none;padding-right:8px}
   /* Поиск по названию (справа в строке заголовка). Иконка-лупа — фон инпута; крестик очистки — нативный type=search. */
   #bulk-search{width:240px;padding:7px 10px 7px 30px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;
@@ -99,8 +101,33 @@
     line-height:1;padding:3px 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;background:#f6f7f9;
     color:#6b7280;white-space:nowrap}
   #bulk-search:focus + .search-kbd, #bulk-search:not(:placeholder-shown) + .search-kbd{display:none}
+  /* Фильтр по статусу строк (слева от поиска): сегменты .seg (как режим импорта); число строк — .seg-n. */
+  .bulk-head-r{display:flex;align-items:center;gap:10px}
+  /* Сегменты .seg — общий вид фильтра строк (#bulk-filter) и режима импорта (#import-mode): серый трек, активный
+     пункт — белая плашка с тенью (выбран из вариантов вживую). Без ховера (решение пользователя): все пункты сразу
+     тёмным текстом. Размер сегментов от активности НЕ меняется: у фильтра .seg-l резервирует ширину жирного
+     начертания (невидимая жирная копия ::after), число .seg-n — всегда 400; у импорта — min-width в px (ниже). */
+  .seg{display:inline-flex;border-radius:9px;background:var(--fill-soft);padding:3px;align-items:stretch}
+  .seg-btn, .seg-btn:hover{padding:5px 10px;font:inherit;font-size:13px;line-height:18px;white-space:nowrap;color:#1f2937;cursor:pointer;
+    font-weight:400;background:transparent;border:none;border-radius:7px;transition:none;display:inline-flex;align-items:center}
+  .seg-btn.is-active{font-weight:600;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.16),0 0 0 0px rgba(0,0,0,.05)}
+  /* Режим импорта: ширина пунктов фиксирована (решение пользователя) = замер жирного (600) + запас ≈5 px; замер
+     2026-10-06, -apple-system 13px: «Заменить таблицу» 130.7 / 138.8, «Добавить в конец» 126.5 / 135.5 (400 / 600, с полями).
+     Новая подпись или шрифт шире — перемерить. */
+  #import-mode .seg-btn{box-sizing:border-box;justify-content:center}
+  /* Цвета инвертированы относительно фильтра (выбрано по мокапу): блок импорта серый → белый трек, серая плашка без тени. */
+  #import-mode{background:#fff}
+  #import-mode .seg-btn.is-active{background:var(--fill-soft);box-shadow:none}
+  #import-mode .seg-btn[data-replace="1"]{min-width:144px}
+  #import-mode .seg-btn[data-replace="0"]{min-width:140px}
+  .seg-l{display:inline-flex;flex-direction:column;align-items:center}
+  .seg-l::after{content:attr(data-t);font-weight:600;height:0;visibility:hidden;overflow:hidden}
+  .seg-n{margin-left:5px;color:#4b5563;font-weight:400;font-variant-numeric:tabular-nums}
+  .seg-n.is-err{color:#c0392b}
   /* Фильтр: несовпавшие строки/заголовки групп скрыты (данные остаются в DOM, отметки сохраняются). */
-  #bulk-table tbody tr.is-filtered{display:none}
+  /* visibility:collapse, не display:none — скрытые строки продолжают задавать ширины колонок (иначе при пустом
+     результате колонки сжимаются по заголовкам). Высота 0; миниатюры в них не рисуются — см. prevObserver/setFiltered. */
+  #bulk-table tbody tr.is-filtered{visibility:collapse}
   /* «Сохранить отмеченное» при активном поиске заблокирована; тултип — на обёртке (disabled-кнопка не получает мышь). */
   .gen-wrap{display:inline-flex}
   .gen-wrap button:disabled{pointer-events:none}
@@ -118,7 +145,7 @@
   .bulk-count{font-size:13px;color:var(--muted)}
   .bulk-errors{font-size:13px;color:#c0392b}
   .bulk-errors::before{content:"·";margin-right:10px} /* справа = gap контейнера слева → точка посередине */
-  .bulk-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:20px 14px 12px;border-bottom:0px solid var(--line)}
+  .bulk-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:10px 14px 12px;border-bottom:0px solid var(--line)}
   .bulk-toolbar .sep{width:1px;align-self:stretch;background:var(--line)}
   .bulk-wrap{overflow-x:auto;padding:8px 14px 14px}
   table#bulk-table{border-collapse:collapse;width:100%;font-size:13px}
@@ -208,7 +235,7 @@
   /* пустой обязательный контрол даты (месяц/год отдельно) — красный при потере фокуса строки */
   #bulk-table .cell-date .dd.dd-empty .dd-btn{background:#fdecec;border-color:#e39a9a}
   #bulk-table .cell-date .dd.dd-empty.year-dd .dd-btn{border-left:0}
-  #bulk-table tr.grp td{background:#eef1f5;border-top:2px solid var(--line)}
+  #bulk-table tr.grp td{background:var(--fill-soft);border-top:2px solid var(--line)}
   /* заголовок группы разбит на ячейки (контрол даты над колонкой даты), но визуально — одна строка */
   #bulk-table tr.grp td + td{border-left-style:hidden} /* hidden (не none/transparent) — в border-collapse гасит общую границу */
   #bulk-table tr.grp td.grp-date{padding:0}
@@ -227,7 +254,7 @@
   #bulk-table tr.grp .dd.dd-mixed .dd-label{color:var(--muted);} /* «—» — у строк группы значения расходятся */
   /* Строка «Вся таблица» — вторая строка шапки: общая дата изготовления над колонкой даты, вид как у заголовка
      группы; подпись — вплотную слева от контрола (в своей ячейке по правому краю, колонка даты не шире). */
-  #bulk-table tr.all-row td{background:#eef1f5;border-top:2px solid var(--line)}
+  #bulk-table tr.all-row td{background:var(--fill-soft);border-top:2px solid var(--line)}
   #bulk-table tr.all-row td + td{border-left-style:hidden}
   #bulk-table tr.all-row td.all-row-lbl{text-align:right;padding-right:10px;color:var(--muted);white-space:nowrap}
   /* заголовок группы: кликабельны чекбокс, промежуток и текст (label for); промежуток — padding-left у label */
@@ -294,9 +321,10 @@
   .grp-undo-bar button:hover{background:rgba(255,255,255,.14)}
   .grp-undo-bar .undo-restore{font-weight:600;color:#8fe3b0}
   .grp-undo-bar .undo-close{color:#c3c8d2;font-size:16px;line-height:1}
-  .import-map{border-bottom:1px solid var(--line);padding:32px 14px;background:#eff1f5}
-  .import-map-head{font-size:13px;font-weight:600;margin-bottom:10px;padding-left:13px}
-  .import-map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .import-map{border-bottom:1px solid var(--line);padding:20px 14px;background:var(--fill-soft)}
+  /* Заголовок: текст слева, переключатель режима импорта #import-mode — в правом верхнем углу блока. */
+  .import-map-head{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:13px;font-weight:600;margin-bottom:20px;padding-left:13px}
+  .import-map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
   .import-map-grid .mrow label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px;padding:0 11px}
   .import-map-grid .mrow select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
   .ima-date-lbl{font-size:12px;color:var(--muted)}
@@ -306,14 +334,10 @@
   /* месяц+год — единый кнопочный блок */
   .import-map-actions .date-row .dd:first-child .dd-btn{border-radius:8px 0 0 8px}
   .import-map-actions .date-row .dd.year-dd .dd-btn{border-left:0;border-radius:0 8px 8px 0}
-  .import-map-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px;flex-wrap:wrap}
+  .import-map-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;margin-top:20px;flex-wrap:wrap}
   .ima-actions{display:flex;align-items:center;gap:10px}
   button.ghost{background:transparent;border-color:transparent;color:var(--muted)}
   button.ghost:hover{background:#dce1e8;color:var(--ink)}
-  .seg{display:inline-flex;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff}
-  .seg-btn{border:none;border-radius:0;background:#fff;color:var(--muted);padding:8px 18px;font:inherit;cursor:pointer}
-  .seg-btn+.seg-btn{border-left:1px solid var(--line)}
-  .seg-btn.is-active{background:var(--accent);color:#fff;font-weight:600}
 </style>
 </head>
 <body>
@@ -393,9 +417,17 @@
   <div class="bulk-head">
     <h2 style="padding-left:24px;">Каждая строка = стикер</h2>
     <!-- <button id="bulk-back">← Одиночный режим</button> -->
+    <span class="bulk-head-r">
+    <div class="seg" id="bulk-filter" role="group" aria-label="Показать строки">
+      <button type="button" class="seg-btn is-active" data-filter="all" aria-pressed="true"><span class="seg-l" data-t="Всё">Всё</span><span class="seg-n"></span></button>
+      <button type="button" class="seg-btn" data-filter="checked" aria-pressed="false"><span class="seg-l" data-t="Отмеченное">Отмеченное</span><span class="seg-n"></span></button>
+      <button type="button" class="seg-btn" data-filter="unchecked" aria-pressed="false"><span class="seg-l" data-t="Неотмеченное">Неотмеченное</span><span class="seg-n"></span></button>
+      <button type="button" class="seg-btn" data-filter="errors" aria-pressed="false"><span class="seg-l" data-t="Ошибки">Ошибки</span><span class="seg-n"></span></button>
+    </div>
     <span class="search-wrap">
       <input type="search" id="bulk-search" placeholder="Поиск по названию" aria-label="Поиск по названию товара" aria-keyshortcuts="Meta+K Control+K" autocomplete="off" spellcheck="false">
       <kbd class="search-kbd" aria-hidden="true">Ctrl K</kbd>
+    </span>
     </span>
   </div>
   <div class="bulk-toolbar">
@@ -422,13 +454,15 @@
     </span>
   </div>
   <div id="importMap" class="import-map" hidden>
-    <div class="import-map-head">Сопоставьте колонки файла с полями <span id="import-info" class="stub"></span></div>
+    <div class="import-map-head">
+      <span>Сопоставьте колонки файла с полями <span id="import-info" class="stub"></span></span>
+      <div class="seg" id="import-mode" role="group" aria-label="Режим импорта">
+        <button type="button" class="seg-btn is-active" data-replace="1" aria-pressed="true">Заменить таблицу</button>
+        <button type="button" class="seg-btn" data-replace="0" aria-pressed="false">Добавить в конец</button>
+      </div>
+    </div>
     <div class="import-map-grid" id="import-map-grid"></div>
     <div class="import-map-actions">
-      <div class="seg" id="import-mode" role="group" aria-label="Режим импорта">
-        <button type="button" class="seg-btn is-active" data-replace="1">Заменить таблицу</button>
-        <button type="button" class="seg-btn" data-replace="0">Добавить в конец</button>
-      </div>
       <input type="checkbox" id="import-replace" checked hidden>
       <div class="ima-actions">
         <span class="ima-date-lbl">Дата изготовления:</span>
@@ -481,8 +515,8 @@
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 164 · 01.10.2026 14:27</footer>
-<script>console.info("edda sticker generator — сборка 164 · 01.10.2026 14:27");</script>
+<footer class="build-info">сборка 180 · 06.10.2026 14:29</footer>
+<script>console.info("edda sticker generator — сборка 180 · 06.10.2026 14:29");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -562,7 +596,7 @@
     },
     {
       "id": "kolvo",
-      "label": "Количество упаковок в коробке",
+      "label": "Количество упаковок",
       "sample": "8",
       "box": [273.95, 291.82, 486.26, 347.39],
       "align": "center",
@@ -1258,10 +1292,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   // --- Сопоставление иконки по НАЗВАНИЮ товара (точное, после нормализации) ---
   // Ключ: NFC, нижний регистр, ё→е, пробелы схлопнуты, без «.svg» и без точек/пробелов по краям
-  // («…2 шт.» = файл «…2 шт.svg»). Дефис значим: «Погремушка кольцо» ≠ «Погремушка-кольцо».
+  // («…2 шт.» = файл «…2 шт.svg»), двоеточия удаляются везде («Миска: Пломбир» = «Миска Пломбир.svg»).
+  // Дефис значим: «Погремушка кольцо» ≠ «Погремушка-кольцо».
   function iconNameKey(s){
     return String(s == null ? "" : s).normalize("NFC").split(/[\\/]/).pop().toLowerCase()
-      .replace(/ё/g, "е").replace(/\.svg$/, "").replace(/\s+/g, " ").replace(/^[\s.]+|[\s.]+$/g, "");
+      .replace(/ё/g, "е").replace(/\.svg$/, "").replace(/:/g, "").replace(/\s+/g, " ").replace(/^[\s.]+|[\s.]+$/g, "");
   }
   // Индекс нормализованное имя → ключ ICONS. Неоднозначные ключи (несколько файлов) → null: по названию
   // не сопоставляем, строка уходит на запасной вариант (колонка). Перестраивается из ICONS целиком.
@@ -1729,7 +1764,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // Ленивый рендер: рисуем миниатюру, только когда строка попадает в видимую область.
     var prevObserver = ("IntersectionObserver" in window) ? new IntersectionObserver(function(entries){
-      entries.forEach(function(e){ if (e.isIntersecting && !e.target._rendered) renderPreviewCell(e.target); });
+      // Скрытая фильтром строка (visibility:collapse, высота 0) тоже «пересекается» — её не рисуем; при показе
+      // ячейка заново ставится под наблюдение (setFiltered).
+      entries.forEach(function(e){ if (e.isIntersecting && !e.target._rendered && !e.target.closest("tr.is-filtered")) renderPreviewCell(e.target); });
     }, { rootMargin: "200px 0px" }) : null;
     if (previewImg) previewImg.addEventListener("load", refreshAllPreviews);
     if (previewImgNoCircle) previewImgNoCircle.addEventListener("load", refreshAllPreviews);
@@ -1780,7 +1817,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function refreshIconCells(){ Array.prototype.forEach.call(tbody.querySelectorAll("td.iconcell"), updateIconThumb); }
 
     // Большое превью в попапе при наведении на миниатюру (рендерится на лету, position:fixed — не обрезается).
-    var PREV_BIG_W = 400;
+    var PREV_BIG_W = 650;
     var prevPop = document.createElement("div"); prevPop.className = "prev-pop"; prevPop.hidden = true;
     document.body.appendChild(prevPop);
     function showPreviewPopup(prevTd){
@@ -1956,7 +1993,7 @@ document.addEventListener("DOMContentLoaded", function () {
         var idx = tr.querySelector("td.idx"); if (idx) idx.textContent = (++n);
       });
       refreshDupes(); // состав/порядок строк изменился → пары повторов и номера строк в подсказках тоже
-      if (!searchHold && searchQuery()) applySearch(); // и видимость/подсветка при активном поиске
+      if (!searchHold && viewFiltered()) applySearch(); // и видимость/подсветка при активном поиске/фильтре
     }
     // Форматные правила полей. Возвращает текст ошибки для НЕПУСТОГО значения или null, если валидно.
     // kolvo, weight — целое > 0; artikul — латиница/цифры/дефис; itf14 — длина ровно 14 (≠14 → ошибка;
@@ -1964,7 +2001,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function fieldError(id, v){
       v = String(v).trim();
       // icon — не здесь: зависит от названия строки, проверяется iconError(tr).
-      if (id === "name"){var s = cleanString(v); const regexName = /^[а-яА-ЯёЁa-zA-Z0-9 .,\u00AB\u00BB-]+$/; if (!regexName.test(v)) return "Разрешённые символы: русские и английские буквы, цифры, пробел, точка, запятая, дефис, кавычки «»";}
+      if (id === "name"){var s = cleanString(v); const regexName = /^[а-яА-ЯёЁa-zA-Z0-9 .,:\u00AB\u00BB-]+$/; if (!regexName.test(v)) return "Разрешённые символы: русские и английские буквы, цифры, пробел, точка, запятая, двоеточие, дефис, кавычки «»";}
       if ((id === "kolvo" || id === "weight") && !(/^\d+$/.test(v) && +v > 0)) return "Целое число больше 0";
       if (id === "artikul" && !/^[A-Za-z0-9-]+$/.test(v))   return "Только латинские буквы, цифры и дефис";
       if (id === "srok" && /^0+(?:[.,]0+)?(?![.,]?\d)/.test(v)) return "Срок годности не может быть 0"; // «0», «0 лет», «0,0»; «0,5 года»/«05 лет» — не ошибка
@@ -2160,8 +2197,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var total = tbody.querySelectorAll("input.rowchk").length;
       var checked = tbody.querySelectorAll("input.rowchk:checked").length;
       var countText = checked + " из " + total + " строк отмечено";
-      // Поиск активен → сколько строк видно (отмеченные скрытые строки всё равно идут в генерацию).
-      if (searchQuery()) countText += " · показано " + tbody.querySelectorAll("tr:not(.grp):not(.is-filtered)").length + " из " + total;
+      // Поиск/фильтр активен → сколько строк видно (отмеченные скрытые строки всё равно идут в генерацию).
+      if (viewFiltered()) countText += " · показано " + tbody.querySelectorAll("tr:not(.grp):not(.is-filtered)").length + " из " + total;
       Array.prototype.forEach.call(document.querySelectorAll("[data-bulk-count]"), function(el){ el.textContent = countText; });
       // Нижний блок — коротко «X из Y».
       var fnCount = document.getElementById("fn-count");
@@ -2172,6 +2209,13 @@ document.addEventListener("DOMContentLoaded", function () {
       var errText = errors + " " + pluralRu(errors, ["строка","строки","строк"]) + " с ошибками";
       Array.prototype.forEach.call(document.querySelectorAll("[data-bulk-errors]"), function(el){
         el.textContent = errText; el.hidden = !(errors > 0);
+      });
+      // Числа на сегментах фильтра — по всей таблице (как «X из Y»), без учёта поиска.
+      var segN = { all: total, checked: checked, unchecked: total - checked, errors: errors };
+      Array.prototype.forEach.call(document.querySelectorAll("#bulk-filter .seg-btn"), function(b){
+        var n = b.querySelector(".seg-n"); if (!n) return;
+        n.textContent = segN[b.dataset.filter];
+        n.classList.toggle("is-err", b.dataset.filter === "errors" && errors > 0);
       });
     }
     // --- Группировка строк по названию (строка-заголовок группы + групповой чекбокс) ---
@@ -2708,7 +2752,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Уход фокуса из строки наружу → полная валидация строки + пересчёт чекбокса/счётчика + обновление превью.
       tr.addEventListener("focusout", function(e){
         if (!tr.contains(e.relatedTarget)){ updateRowState(tr); updateCheckAll(); refreshRowPreview(tr); updateIconThumb(tr.querySelector("td.iconcell")); // название могло поменять иконку
-          if (searchQuery()) applySearch(); } // название могло перестать подходить под поиск — скрываем только после ухода из строки
+          if (viewFiltered()) applySearch(); } // название могло перестать подходить под поиск — скрываем только после ухода из строки
         else { updateRowCheck(tr); updateCheckAll(); } // переход между контролами строки → чекбокс и счётчики сразу
       });
       tbody.insertBefore(tr, before || null); renumber();
@@ -2819,6 +2863,8 @@ document.addEventListener("DOMContentLoaded", function () {
     var searchInp = document.getElementById("bulk-search");
     var searchEmpty = document.getElementById("bulk-empty");
     function searchQuery(){ return searchNorm(searchInp ? searchInp.value : "").s.trim(); }
+    // Видимость строк ограничена поиском или фильтром по статусу (rowFilter объявлен ниже — до него undefined).
+    function viewFiltered(){ return !!searchQuery() || (!!rowFilter && rowFilter !== "all"); }
     // Нормализация с картой позиций: map[i] — индекс символа исходной строки для i-го символа результата
     // (нужно, чтобы подсветить найденное в исходном тексте).
     function searchNorm(text){
@@ -2848,32 +2894,69 @@ document.addEventListener("DOMContentLoaded", function () {
     // (правка названия не прячет её посреди ввода — только после ухода из строки, см. focusout в addRow).
     var searchHold = false; // true — во время импорта (фильтр пересчитается один раз в конце)
     function searchKeep(tr){ return tr._searchKeep || tr.contains(document.activeElement); }
+    // --- Фильтр по статусу строк «Всё / Отмеченное / Неотмеченное / Ошибки» (сегменты слева от поиска) ---
+    // Работает вместе с поиском (строка видна, если подходит под оба). «Ошибки» — как счётчик «N строк с ошибками».
+    // Строка, переставшая подходить (сняли отметку, исправили ошибку), НЕ прячется до смены фильтра/запроса:
+    // результат фильтра запоминается в tr._filterHit и пересчитывается только при applySearch(true).
+    var rowFilter = "all";
+    var filterSeg = document.getElementById("bulk-filter");
+    function filterMatch(tr){
+      if (rowFilter === "all") return true;
+      var c = tr.querySelector("input.rowchk"), on = !!(c && c.checked);
+      if (rowFilter === "checked") return on;
+      if (rowFilter === "unchecked") return !on;
+      return rowAnyFilled(tr) && !rowComplete(tr); // errors
+    }
+    function filterHit(tr){ return tr._filterHit === undefined ? filterMatch(tr) : tr._filterHit; }
+    function setRowFilter(f){
+      rowFilter = f;
+      if (filterSeg) Array.prototype.forEach.call(filterSeg.querySelectorAll(".seg-btn"), function(b){
+        var on = b.dataset.filter === f; b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    }
+    if (filterSeg) filterSeg.addEventListener("click", function(e){
+      var b = e.target.closest(".seg-btn"); if (!b) return;
+      setRowFilter(b.dataset.filter); applySearch(true); // клик по активному — обновить список (убрать исправленные и т. п.)
+    });
+    // Единственное место, где строка скрывается/показывается фильтром. Показали строку с ненарисованной миниатюрой →
+    // заново observe: у строки высотой 0 пересечение уже было, без этого колбэк не придёт и превью не дорисуется.
+    function setFiltered(tr, on){
+      var was = tr.classList.contains("is-filtered");
+      tr.classList.toggle("is-filtered", on);
+      if (was && !on && prevObserver){
+        var p = tr.querySelector("td.prev:not(.iconcell)");
+        if (p && !p._rendered){ prevObserver.unobserve(p); prevObserver.observe(p); }
+      }
+    }
     function applySearch(fromQuery){
-      var q = searchQuery(), any = false;
-      if (fromQuery) Array.prototype.forEach.call(tbody.rows, function(tr){ tr._searchKeep = false; });
+      var q = searchQuery(), any = false, on = viewFiltered();
+      if (fromQuery) Array.prototype.forEach.call(tbody.rows, function(tr){
+        tr._searchKeep = false;
+        tr._filterHit = tr.classList.contains("grp") ? undefined : filterMatch(tr);
+      });
       Array.prototype.forEach.call(tbody.rows, function(tr){
         if (tr.classList.contains("grp")){
           var title = tr.querySelector(".grp-title");
           if (title){ var t = title.textContent; title.innerHTML = hlHtml(t, q); }
-          if (tr.classList.contains("grp-deleted")){ tr.classList.remove("is-filtered"); return; }
+          if (tr.classList.contains("grp-deleted")){ setFiltered(tr, false); return; }
           var rows = groupRows(tr), headHit = !!q && searchMatch(title ? title.textContent : "", q);
           var shown = 0;
           rows.forEach(function(r){
             var ni = r.querySelector('input[data-col="name"]');
-            var hit = headHit || searchKeep(r) || searchMatch(ni ? ni.value : "", q);
-            r.classList.toggle("is-filtered", !hit); if (hit) shown++;
+            var hit = searchKeep(r) || ((headHit || searchMatch(ni ? ni.value : "", q)) && filterHit(r)); // совпавший заголовок — только про поиск
+            setFiltered(r, !hit); if (hit) shown++;
           });
-          tr.classList.toggle("is-filtered", !!q && !shown);
+          setFiltered(tr, on && !shown);
           if (shown) any = true;
           return;
         }
         var ni = tr.querySelector('input[data-col="name"]');
         paintNameHl(ni);
         if (tr.classList.contains("in-grp")) return; // видимость строк группы — выше, по заголовку
-        var hit = searchKeep(tr) || searchMatch(ni ? ni.value : "", q);
-        tr.classList.toggle("is-filtered", !hit); if (hit) any = true;
+        var hit = searchKeep(tr) || (searchMatch(ni ? ni.value : "", q) && filterHit(tr));
+        setFiltered(tr, !hit); if (hit) any = true;
       });
-      if (searchEmpty) searchEmpty.hidden = !q || any;
+      if (searchEmpty) searchEmpty.hidden = !on || any;
       updateCheckAll(); // состояние «Выделить все»/групп и «показано N из M» зависят от видимости
       syncGenBlocked();
     }
@@ -3163,7 +3246,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var sels = importGrid.querySelectorAll("select[data-field]");
       var colFor={}; Array.prototype.forEach.call(sels,function(s){ colFor[s.dataset.field]=parseInt(s.value,10); });
       var replace = document.getElementById("import-replace").checked;
-      if(replace){ tbody.innerHTML=""; clearUndo(); if (searchInp) searchInp.value = ""; } // новая таблица — поиск сбрасываем
+      if(replace){ tbody.innerHTML=""; clearUndo(); if (searchInp) searchInp.value = ""; setRowFilter("all"); } // новая таблица — поиск и фильтр сбрасываем
       searchHold = true; // без пересчёта фильтра на каждой строке импорта — один раз в конце
       // Стартовая/пустые строки-данные мешают группировке — убираем полностью пустые (в обоих режимах).
       Array.prototype.forEach.call(tbody.querySelectorAll("tr:not(.grp)"), function(tr){ if(!rowAnyFilled(tr)) tr.remove(); });
@@ -3244,7 +3327,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!seg || !flag) return;
       seg.addEventListener("click", function(e){
         var b = e.target.closest(".seg-btn"); if (!b) return;
-        Array.prototype.forEach.call(seg.querySelectorAll(".seg-btn"), function(x){ x.classList.toggle("is-active", x===b); });
+        Array.prototype.forEach.call(seg.querySelectorAll(".seg-btn"), function(x){
+          x.classList.toggle("is-active", x===b); x.setAttribute("aria-pressed", x===b ? "true" : "false");
+        });
         flag.checked = (b.dataset.replace === "1");
       });
     })();
