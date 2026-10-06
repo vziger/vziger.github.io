@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="180 · 06.10.2026 14:29">
+<meta name="build" content="184 · 06.10.2026 14:57">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
     --bg:#f4f5f7; --panel:#ffffff; --ink:#1c1f24; --muted:#6b7280; --secondary-text:#aaaaaa;
+    --search-w:300px; /* ширина поля поиска = ширина переключателя импорта #import-mode */
     --line:#e3e6ea; --accent:#2563eb; --accent-weak:#dbe4ff;
     /* светлая серо-голубая заливка: заголовки групп, «Вся таблица», блок импорта, ховер кнопок, сегменты .seg */
     --fill-soft:#eef1f5;
@@ -90,13 +91,15 @@
   .bulk-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:14px}
   .bulk-head h2{border-bottom:none;padding-right:8px}
   /* Поиск по названию (справа в строке заголовка). Иконка-лупа — фон инпута; крестик очистки — нативный type=search. */
-  #bulk-search{width:240px;padding:7px 10px 7px 30px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;
+  #bulk-search{width:var(--search-w);flex-shrink:0;padding:7px 10px 7px 30px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;
     background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa1ab' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 10px 50%}
   #bulk-search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.18)}
   /* Подсказка Cmd/Ctrl+K справа в поле: только в покое и пустом поле (в фокусе/с текстом — скрыта, место отдаём тексту
      и нативному ✕). Текст «⌘K» на Mac ставит JS (initBulk), по умолчанию «Ctrl K». */
-  .search-wrap{position:relative;display:inline-flex}
-  #bulk-search:placeholder-shown:not(:focus){padding-right:58px}
+  .search-wrap{position:relative;display:inline-flex;flex-shrink:0}
+  /* Резерв под подсказку = её фактическая ширина (+8 отступ справа +8 зазор до текста): «⌘K» ≈30px, «Ctrl K» ≈40px.
+     --kbd-w ставит JS после выбора текста подсказки; фолбэк 42px — на «Ctrl K». */
+  #bulk-search:placeholder-shown:not(:focus){padding-right:calc(var(--kbd-w, 42px) + 16px)}
   .search-kbd{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;font:inherit;font-size:11px;
     line-height:1;padding:3px 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;background:#f6f7f9;
     color:#6b7280;white-space:nowrap}
@@ -118,8 +121,9 @@
   /* Цвета инвертированы относительно фильтра (выбрано по мокапу): блок импорта серый → белый трек, серая плашка без тени. */
   #import-mode{background:#fff}
   #import-mode .seg-btn.is-active{background:var(--fill-soft);box-shadow:none}
-  #import-mode .seg-btn[data-replace="1"]{min-width:144px}
-  #import-mode .seg-btn[data-replace="0"]{min-width:140px}
+  /* Ширина = поле поиска (--search-w), пункты поровну: 147 px > жирного 138.8 / 135.5 — без прыжков. */
+  #import-mode{box-sizing:border-box;width:var(--search-w)}
+  #import-mode .seg-btn{flex:1 1 0;min-width:0}
   .seg-l{display:inline-flex;flex-direction:column;align-items:center}
   .seg-l::after{content:attr(data-t);font-weight:600;height:0;visibility:hidden;overflow:hidden}
   .seg-n{margin-left:5px;color:#4b5563;font-weight:400;font-variant-numeric:tabular-nums}
@@ -132,11 +136,11 @@
   .gen-wrap{display:inline-flex}
   .gen-wrap button:disabled{pointer-events:none}
   .bulk-empty{padding:18px 8px;text-align:center;color:var(--muted);font-size:13px}
-  /* Подсветка найденного: в заголовке группы — <mark>; в инпуте «Название» — подложка-зеркало .hl-mirror под
+  /* Подсветка найденного: в заголовке группы — <mark>; в инпутах колонок поиска — подложка-зеркало .hl-mirror под
      прозрачным инпутом (внутри <input> разметку не вставить). На фокусе инпут белый — подложка не видна. */
   mark.hl{background:#ffe58a;color:inherit;padding:0;border-radius:2px}
-  #bulk-table td.col-name{position:relative}
-  #bulk-table td.col-name input{position:relative}
+  #bulk-table td.col-name,#bulk-table td.col-circle,#bulk-table td.col-artikul{position:relative} /* = SEARCH_COLS */
+  #bulk-table td.col-name input,#bulk-table td.col-circle input,#bulk-table td.col-artikul input{position:relative}
   .hl-mirror{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);padding:0 7px;font:inherit;white-space:pre;overflow:hidden;color:transparent;pointer-events:none}
   #bulk-back{padding:2px 0;border:none;border-radius:0;background:transparent;color:var(--muted);
     text-decoration:underline dashed 1px;text-underline-offset:0.3em}
@@ -425,7 +429,7 @@
       <button type="button" class="seg-btn" data-filter="errors" aria-pressed="false"><span class="seg-l" data-t="Ошибки">Ошибки</span><span class="seg-n"></span></button>
     </div>
     <span class="search-wrap">
-      <input type="search" id="bulk-search" placeholder="Поиск по названию" aria-label="Поиск по названию товара" aria-keyshortcuts="Meta+K Control+K" autocomplete="off" spellcheck="false">
+      <input type="search" id="bulk-search" placeholder="Поиск: название, цвет, артикул" aria-label="Поиск по названию, цвету и артикулу" aria-keyshortcuts="Meta+K Control+K" autocomplete="off" spellcheck="false">
       <kbd class="search-kbd" aria-hidden="true">Ctrl K</kbd>
     </span>
     </span>
@@ -515,8 +519,8 @@
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 180 · 06.10.2026 14:29</footer>
-<script>console.info("edda sticker generator — сборка 180 · 06.10.2026 14:29");</script>
+<footer class="build-info">сборка 184 · 06.10.2026 14:57</footer>
+<script>console.info("edda sticker generator — сборка 184 · 06.10.2026 14:57");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -1685,6 +1689,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!layout || !bulkView || !tbody) return;
     // icon — первым: первая order-ячейка идёт сразу за «Превью» (нужное место колонки «Иконка»).
     var order = ["icon","name","circle","artikul","kolvo","data","weight","srok","itf14","ean13"];
+    // Колонки, по которым ищет поле поиска (и где подсвечивается найденное). Новая колонка — одной записью.
+    var SEARCH_COLS = ["name","circle","artikul"];
     var placeholders = {name:"Название товара",circle:"Цвет",artikul:"AAA-000000",kolvo:"0",data:"Октябрь 2026",weight:"0",srok:"Срок",itf14:"00000000000000",ean13:"0000000000000"};
     var mapLabels = {itf14:"Код ШК ITF-14",ean13:"Код ШК EAN-13",icon:"Иконка (имя SVG)"}; // подпись селекта в сопоставлении
 
@@ -2706,8 +2712,9 @@ document.addEventListener("DOMContentLoaded", function () {
           var next = target.querySelector('input[data-col="'+col+'"]');
           if (next){ next.focus(); next.select(); }
         });
-        if (id === "name"){
-          inp.addEventListener("input", function(){ syncIconByName(tr); paintNameHl(inp); });
+        if (id === "name") inp.addEventListener("input", function(){ syncIconByName(tr); });
+        if (SEARCH_COLS.indexOf(id) >= 0){
+          inp.addEventListener("input", function(){ paintHl(inp); });
           var mir = document.createElement("div"); mir.className = "hl-mirror"; mir.setAttribute("aria-hidden", "true");
           td.appendChild(mir); inp._hl = mir; // подложка подсветки поиска — под инпутом (см. .hl-mirror)
         }
@@ -2856,8 +2863,9 @@ document.addEventListener("DOMContentLoaded", function () {
       updateCheckAll();
     });
 
-    // --- Поиск по названию товара (фильтр строк) ---
-    // Совпадение — вхождение подстроки после нормализации (NFC, регистр, ё→е, пробелы схлопнуты). Несовпавшие строки
+    // --- Поиск по названию, цвету и артикулу (фильтр строк) ---
+    // Запрос — слова; каждое должно найтись подстрокой в одной из колонок SEARCH_COLS (после нормализации: NFC,
+    // регистр, ё→е, пробелы схлопнуты). Несовпавшие строки
     // получают is-filtered (скрыты, данные и отметки на месте). Заголовок группы виден, если совпал сам (тогда видны
     // все его строки) или совпала хоть одна его строка. Плашки удалённых блоков видны всегда.
     var searchInp = document.getElementById("bulk-search");
@@ -2877,19 +2885,35 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       return { text: text, s: s, map: map };
     }
-    function searchMatch(text, q){ return !q || searchNorm(text).s.indexOf(q) >= 0; }
-    // HTML текста с <mark class="hl"> на всех вхождениях q (пустой q → просто экранированный текст).
+    // Запрос — слова через пробел; каждое слово должно найтись (подстрокой) хоть где-то.
+    function searchWords(q){ return q ? q.split(" ").filter(Boolean) : []; }
+    // Текст содержит ВСЕ слова запроса (для заголовка группы).
+    function searchMatch(text, q){ var s = searchNorm(text).s; return searchWords(q).every(function(w){ return s.indexOf(w) >= 0; }); }
+    // Строка: каждое слово нашлось хотя бы в одной из колонок SEARCH_COLS (слова могут быть в разных колонках).
+    function rowSearchHit(tr, q){
+      var ws = searchWords(q); if (!ws.length) return true;
+      var vals = SEARCH_COLS.map(function(c){ var i = tr.querySelector('input[data-col="'+c+'"]'); return searchNorm(i ? i.value : "").s; });
+      return ws.every(function(w){ return vals.some(function(v){ return v.indexOf(w) >= 0; }); });
+    }
+    // HTML текста с <mark class="hl"> на всех вхождениях всех слов q (пересечения склеены; пустой q → просто текст).
     function hlHtml(text, q){
-      var n = searchNorm(text), out = "", last = 0, from = 0, k;
+      var n = searchNorm(text), rs = [], out = "", last = 0;
       function esc(t){ return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-      if (q) while ((k = n.s.indexOf(q, from)) >= 0){
-        var a = n.map[k], b = n.map[k + q.length - 1] + 1;
-        out += esc(n.text.slice(last, a)) + '<mark class="hl">' + esc(n.text.slice(a, b)) + "</mark>";
-        last = b; from = k + q.length;
-      }
+      searchWords(q).forEach(function(w){
+        for (var k = n.s.indexOf(w); k >= 0; k = n.s.indexOf(w, k + 1)) rs.push([n.map[k], n.map[k + w.length - 1] + 1]);
+      });
+      rs.sort(function(x, y){ return x[0] - y[0]; });
+      rs.forEach(function(r){
+        if (r[1] <= last) return;                       // целиком внутри уже отмеченного
+        var a = Math.max(r[0], last);
+        if (a === last && out.slice(-7) === "</mark>") out = out.slice(0, -7); // вплотную/пересекается — продлеваем
+        else out += esc(n.text.slice(last, a)) + '<mark class="hl">';
+        out += esc(n.text.slice(a, r[1])) + "</mark>"; last = r[1];
+      });
       return out + esc(n.text.slice(last));
     }
-    function paintNameHl(inp){ if (inp && inp._hl) inp._hl.innerHTML = hlHtml(inp.value, searchQuery()); }
+    function paintHl(inp){ if (inp && inp._hl) inp._hl.innerHTML = hlHtml(inp.value, searchQuery()); }
+    function paintRowHl(tr){ SEARCH_COLS.forEach(function(c){ paintHl(tr.querySelector('input[data-col="'+c+'"]')); }); }
     // fromQuery — изменился сам запрос: снимаем «липкость» новых строк (_searchKeep). Строка с фокусом не скрывается
     // (правка названия не прячет её посреди ввода — только после ухода из строки, см. focusout в addRow).
     var searchHold = false; // true — во время импорта (фильтр пересчитается один раз в конце)
@@ -2942,18 +2966,16 @@ document.addEventListener("DOMContentLoaded", function () {
           var rows = groupRows(tr), headHit = !!q && searchMatch(title ? title.textContent : "", q);
           var shown = 0;
           rows.forEach(function(r){
-            var ni = r.querySelector('input[data-col="name"]');
-            var hit = searchKeep(r) || ((headHit || searchMatch(ni ? ni.value : "", q)) && filterHit(r)); // совпавший заголовок — только про поиск
+            var hit = searchKeep(r) || ((headHit || rowSearchHit(r, q)) && filterHit(r)); // совпавший заголовок — только про поиск
             setFiltered(r, !hit); if (hit) shown++;
           });
           setFiltered(tr, on && !shown);
           if (shown) any = true;
           return;
         }
-        var ni = tr.querySelector('input[data-col="name"]');
-        paintNameHl(ni);
+        paintRowHl(tr);
         if (tr.classList.contains("in-grp")) return; // видимость строк группы — выше, по заголовку
-        var hit = searchKeep(tr) || (searchMatch(ni ? ni.value : "", q) && filterHit(tr));
+        var hit = searchKeep(tr) || (rowSearchHit(tr, q) && filterHit(tr));
         setFiltered(tr, !hit); if (hit) any = true;
       });
       if (searchEmpty) searchEmpty.hidden = !on || any;
@@ -2981,6 +3003,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
       var kbd = document.querySelector(".search-kbd");
       if (kbd && isMac) kbd.textContent = "⌘K";
+      // Ширина подсказки разная на Mac/Windows → резерв справа в поле по факту (0 — поле не отрисовано: остаётся фолбэк CSS).
+      if (kbd && kbd.offsetWidth) kbd.parentNode.style.setProperty("--kbd-w", Math.ceil(kbd.offsetWidth) + "px");
       document.addEventListener("keydown", function(e){
         if (e.code !== "KeyK" || !(isMac ? e.metaKey : e.ctrlKey) || e.shiftKey || e.altKey) return;
         e.preventDefault(); searchInp.focus(); searchInp.select();
