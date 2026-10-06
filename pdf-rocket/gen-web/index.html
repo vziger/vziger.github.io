@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="184 · 06.10.2026 14:57">
+<meta name="build" content="185 · 06.10.2026 17:39">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
@@ -519,8 +519,8 @@
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 184 · 06.10.2026 14:57</footer>
-<script>console.info("edda sticker generator — сборка 184 · 06.10.2026 14:57");</script>
+<footer class="build-info">сборка 185 · 06.10.2026 17:39</footer>
+<script>console.info("edda sticker generator — сборка 185 · 06.10.2026 17:39");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -2223,6 +2223,7 @@ document.addEventListener("DOMContentLoaded", function () {
         n.textContent = segN[b.dataset.filter];
         n.classList.toggle("is-err", b.dataset.filter === "errors" && errors > 0);
       });
+      syncGenBlocked(); // 0 отмеченных → «Сохранить отмеченное» неактивна
     }
     // --- Группировка строк по названию (строка-заголовок группы + групповой чекбокс) ---
     // Ключ группы: нормализованное название (trim, схлопнутые пробелы, регистронезависимо).
@@ -2984,11 +2985,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     // При активном поиске «Сохранить отмеченное» (обе) заблокирована — по решению пользователя, чтобы не выгрузить
     // скрытые отмеченные строки незаметно. Подсказка — тёмный тултип на обёртке .gen-wrap.
+    // Нет отмеченных строк (по всей таблице, как readRows) — тоже заблокирована, тот же вид, без подсказки.
     var GEN_SEARCH_TIP = "Сохранение недоступно при активном поиске\nОчистите поиск, чтобы сохранить";
     var genBusy = false; // идёт генерация — кнопки держит onBulkGenerate
     function syncGenBlocked(){
       if (!genBtns || genBusy) return;
-      var on = !!searchQuery();
+      var on = !!searchQuery() || !tbody.querySelector("input.rowchk:checked");
       genBtns.forEach(function(b){ b.disabled = on; });
     }
     if (searchInp){
@@ -3113,6 +3115,7 @@ document.addEventListener("DOMContentLoaded", function () {
       w.addEventListener("mouseenter", function(){ if (searchQuery() && !genBusy){ bcTip.style.maxWidth = "none"; showBcTip(w, GEN_SEARCH_TIP, true); } });
       w.addEventListener("mouseleave", function(){ hideBcTip(); bcTip.style.maxWidth = ""; });
     });
+    syncGenBlocked(); // стартовое состояние: updateCount уже отработал до объявления genBtns
 
     // --- Нижний блок #bulk-foot: плавает у низа окна / стоит на своём месте (sticky) ---
     // Состояние — два IntersectionObserver: виден ли верхний тулбар (footTop) и «датчик» под блоком (footDocked: верх
