@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="185 · 06.10.2026 17:39">
+<meta name="build" content="188 · 06.10.2026 19:54">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
@@ -82,6 +82,12 @@
   button:hover{background:var(--fill-soft)}                 /* обычные кнопки — заливка при ховере */
   button.primary:hover{background:var(--accent);filter:brightness(.94)}  /* основная — тот же акцент, чуть темнее */
   button:disabled{opacity:.5;cursor:not-allowed}
+  /* Кнопка в работе (импорт): заблокирована, но не бледная — спиннер + текст; ширина фиксируется из JS */
+  button.is-busy, button.is-busy:disabled{opacity:1;cursor:progress}
+  button.primary.is-busy:hover{filter:none}
+  .btn-spin{display:inline-block;width:14px;height:14px;margin-right:8px;vertical-align:-2px;box-sizing:border-box;
+    border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:btn-spin .7s linear infinite}
+  @keyframes btn-spin{to{transform:rotate(360deg)}}
   .stub{font-size:13px;color:#9aa1ab;font-style:italic}
   /* массовый режим */
   #bulkView{margin:16px;padding-top:10px}
@@ -519,8 +525,8 @@
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 185 · 06.10.2026 17:39</footer>
-<script>console.info("edda sticker generator — сборка 185 · 06.10.2026 17:39");</script>
+<footer class="build-info">сборка 188 · 06.10.2026 19:54</footer>
+<script>console.info("edda sticker generator — сборка 188 · 06.10.2026 19:54");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -2642,6 +2648,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (ysel.__dd) ysel.__dd.classList.add("year-dd");
       return { box: box, msel: msel, ysel: ysel };
     }
+    var importHold = false; // идёт applyImport — addRow не пересчитывает всю таблицу на каждой строке (один раз в конце)
     var dateHold = false; // идёт запись общей даты во все строки (applyAllDate) — без пересчёта счётчиков на каждой строке
     function makeDateCell(initial){
       var td=document.createElement("td"); td.className="cell col-data";
@@ -2763,8 +2770,11 @@ document.addEventListener("DOMContentLoaded", function () {
           if (viewFiltered()) applySearch(); } // название могло перестать подходить под поиск — скрываем только после ухода из строки
         else { updateRowCheck(tr); updateCheckAll(); } // переход между контролами строки → чекбокс и счётчики сразу
       });
-      tbody.insertBefore(tr, before || null); renumber();
-      updateRowState(tr); updateCheckAll();
+      tbody.insertBefore(tr, before || null);
+      // Импорт (importHold): номера/повторы и счётчики/заголовки групп — по всей таблице, на каждой строке это O(N²);
+      // applyImport пересчитает их один раз в конце. Строку саму проверяем сразу.
+      if (!importHold) renumber();
+      updateRowState(tr); if (!importHold) updateCheckAll();
       if (prevObserver) prevObserver.observe(prevTd); else renderPreviewCell(prevTd); // ленивый рендер / фолбэк
       return tr;
     }
@@ -3275,6 +3285,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var replace = document.getElementById("import-replace").checked;
       if(replace){ tbody.innerHTML=""; clearUndo(); if (searchInp) searchInp.value = ""; setRowFilter("all"); } // новая таблица — поиск и фильтр сбрасываем
       searchHold = true; // без пересчёта фильтра на каждой строке импорта — один раз в конце
+      importHold = true; // и без renumber/updateCheckAll на каждой строке (addRow) — тоже один раз в конце
       // Стартовая/пустые строки-данные мешают группировке — убираем полностью пустые (в обоих режимах).
       Array.prototype.forEach.call(tbody.querySelectorAll("tr:not(.grp)"), function(tr){ if(!rowAnyFilled(tr)) tr.remove(); });
       pruneEmptyGroups();
@@ -3306,8 +3317,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (noName.length){ addGroupHead("Без названия", "noname"); noName.forEach(function(v){ addRow(v).classList.add("in-grp"); }); }
       if(!tbody.querySelector("tr:not(.grp)")) addRow();
       pruneEmptyGroups();
-      searchHold = false;
+      searchHold = false; importHold = false;
       renumber();
+      updateCheckAll(); // счётчики, заголовки групп, «Вся таблица» — после всех строк
       applySearch(true); // «Добавить в конец» при активном поиске — фильтр и к новым строкам
       importMap.hidden=true; parsed=null;
     }
@@ -3360,7 +3372,35 @@ document.addEventListener("DOMContentLoaded", function () {
         flag.checked = (b.dataset.replace === "1");
       });
     })();
-    document.getElementById("import-apply").addEventListener("click", applyImport);
+    // «Импортировать»: сразу спиннер «Импорт…» и блокировка (повторное нажатие, «Отменить»), сам импорт — после
+    // отрисовки кадра (applyImport синхронный — иначе браузер не успел бы показать спиннер). finally — кнопка и флаги
+    // назад даже при ошибке (иначе поднятые searchHold/importHold остановили бы пересчёты таблицы).
+    var importBusy = false;
+    function runImport(){
+      if (importBusy || !parsed) return;
+      var btn = document.getElementById("import-apply"), cancel = document.getElementById("import-cancel");
+      var oldHtml = btn.innerHTML;
+      importBusy = true;
+      btn.style.width = btn.offsetWidth + "px"; // ширина как была — без прыжка при смене текста
+      btn.disabled = true; cancel.disabled = true;
+      btn.classList.add("is-busy"); btn.setAttribute("aria-busy", "true");
+      btn.innerHTML = '<span class="btn-spin" aria-hidden="true"></span>Импорт…';
+      // Кадр в скрытой вкладке не приходит (ушли на другую сразу после клика) → запасной таймер; started — один запуск.
+      var started = false;
+      function start(){ if (started) return; started = true; setTimeout(run, 0); }
+      function run(){
+        try { applyImport(); }
+        catch(e){ alert("Не удалось импортировать: " + e.message); console.error(e); }
+        finally {
+          searchHold = false; importHold = false; importBusy = false;
+          btn.disabled = false; cancel.disabled = false;
+          btn.classList.remove("is-busy"); btn.removeAttribute("aria-busy");
+          btn.style.width = ""; btn.innerHTML = oldHtml;
+        }
+      }
+      requestAnimationFrame(start); setTimeout(start, 100);
+    }
+    document.getElementById("import-apply").addEventListener("click", runImport);
     document.getElementById("import-cancel").addEventListener("click", function(){ importMap.hidden=true; parsed=null; });
 
     window.eddaBulkAddRow = addRow; // для проверки/импорта
