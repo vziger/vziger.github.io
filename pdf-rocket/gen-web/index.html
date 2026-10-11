@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="188 · 06.10.2026 19:54">
+<meta name="build" content="211 · 11.10.2026 14:15">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
@@ -12,6 +12,8 @@
     --line:#e3e6ea; --accent:#2563eb; --accent-weak:#dbe4ff;
     /* светлая серо-голубая заливка: заголовки групп, «Вся таблица», блок импорта, ховер кнопок, сегменты .seg */
     --fill-soft:#eef1f5;
+    /* незаполненные обязательные данные (не ошибка формата): сиреневый — ячейки .cell-empty / dd-empty и счётчик */
+    --miss-bg:#f1edfd; --miss-line:#b9a8ec; --miss-ink:#6b4fc4;
     --bottom-space: 60vh;
   }
   *{box-sizing:border-box}
@@ -138,9 +140,13 @@
   /* visibility:collapse, не display:none — скрытые строки продолжают задавать ширины колонок (иначе при пустом
      результате колонки сжимаются по заголовкам). Высота 0; миниатюры в них не рисуются — см. prevObserver/setFiltered. */
   #bulk-table tbody tr.is-filtered{visibility:collapse}
-  /* «Сохранить отмеченное» при активном поиске заблокирована; тултип — на обёртке (disabled-кнопка не получает мышь). */
+  /* «Сгенерировать отмеченное» при активном поиске заблокирована */
   .gen-wrap{display:inline-flex}
   .gen-wrap button:disabled{pointer-events:none}
+  /* Ширина кнопки не зависит от текста: невидимая копия названия из data-t нулевой высоты
+     держит ширину, как .seg-l. Меняете название — меняйте и data-t. */
+  .gen-wrap button{display:inline-flex;flex-direction:column;align-items:center}
+  .gen-wrap button::after{content:attr(data-t);height:0;visibility:hidden;overflow:hidden}
   .bulk-empty{padding:18px 8px;text-align:center;color:var(--muted);font-size:13px}
   /* Подсветка найденного: в заголовке группы — <mark>; в инпутах колонок поиска — подложка-зеркало .hl-mirror под
      прозрачным инпутом (внутри <input> разметку не вставить). На фокусе инпут белый — подложка не видна. */
@@ -154,7 +160,11 @@
   .bulk-gen-group{display:inline-flex;align-items:center;gap:10px;margin-left:auto} /* прижата вправо, как .bulk-foot */
   .bulk-count{font-size:13px;color:var(--muted)}
   .bulk-errors{font-size:13px;color:#c0392b}
-  .bulk-errors::before{content:"·";margin-right:10px} /* справа = gap контейнера слева → точка посередине */
+  .bulk-missing{font-size:13px;color:var(--miss-ink)}
+  /* Тулбар: «ошибки · незаполненные · X из Y отмечено» — точка только между видимыми фразами (ошибки/незаполненные
+     скрыты при 0). Справа = gap контейнера слева → точка посередине. */
+  .bulk-gen-group .bulk-errors:not([hidden]) ~ .bulk-missing::before,
+  .bulk-gen-group :is(.bulk-errors,.bulk-missing):not([hidden]) ~ .bulk-count::before{content:"·";margin-right:10px}
   .bulk-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:10px 14px 12px;border-bottom:0px solid var(--line)}
   .bulk-toolbar .sep{width:1px;align-self:stretch;background:var(--line)}
   .bulk-wrap{overflow-x:auto;padding:8px 14px 14px}
@@ -175,7 +185,8 @@
   #bulk-table td input[data-col="kolvo"],
   #bulk-table td input[data-col="weight"],
   #bulk-table td input[data-col="srok"]{min-width:0}
-  #bulk-table td input.cell-empty,#bulk-table td input.cell-invalid{background:#fdecec;border-color:#e39a9a}
+  #bulk-table td input.cell-invalid{background:#fdecec;border-color:#e39a9a}
+  #bulk-table td input.cell-empty{background:var(--miss-bg);border-color:var(--miss-line)} /* пусто — не ошибка, а «не заполнено» */
   #bulk-table td input.cell-empty:focus,#bulk-table td input.cell-invalid:focus{border-color:var(--accent);background:#fff}
   /* Мягкая подсказка (не ошибка): пустой «Цвет» в непустой строке → «проверьте на всякий случай». */
   input.input-soft{background:#fff7e0;border-color:#e8c56a}
@@ -183,9 +194,10 @@
   .soft-hint{margin-top:4px;font-size:12px;line-height:1.35;color:#8a6412;white-space:pre-line}
   #bulk-table td input.cell-soft{background:#fff7e0;border-color:#e8c56a}
   #bulk-table td input.cell-soft:focus{border-color:var(--accent);background:#fff}
-  /* Иконка не загружена (нет в наборе) или пустое обязательное → красим ВСЮ ячейку. */
-  #bulk-table td.iconcell:has(.icon-input.cell-invalid),
-  #bulk-table td.iconcell:has(.icon-input.cell-empty){background:#fdecec;box-shadow:inset 0 0 0 1.5px #e39a9a;border-radius:4px}
+  /* Иконка не найдена: имя в ячейке есть, файла нет → красная; ячейка пустая и по названию не нашлась → сиреневая
+     («не заполнено»). Красим ВСЮ ячейку. */
+  #bulk-table td.iconcell:has(.icon-input.cell-invalid){background:#fdecec;box-shadow:inset 0 0 0 1.5px #e39a9a;border-radius:4px}
+  #bulk-table td.iconcell:has(.icon-input.cell-empty){background:var(--miss-bg);box-shadow:inset 0 0 0 1.5px var(--miss-line);border-radius:4px}
   #bulk-table td.iconcell:has(.icon-input.cell-invalid) .icon-input,
   #bulk-table td.iconcell:has(.icon-input.cell-empty) .icon-input{background:transparent;border-color:transparent}
   .bc-wrap{position:relative;display:block;width:100%;height:100%}
@@ -203,11 +215,13 @@
   #bulk-table td.sel,#bulk-table th.sel{text-align:center;width:34px;min-width:34px}
   #bulk-table td.sel input,#bulk-table th.sel input{display:block;width:auto;min-width:0;margin:0 auto;cursor:pointer}
   #bulk-table td.sel input:disabled{cursor:not-allowed}
-  /* отмеченная строка — светло-голубой фон (заголовки групп не красим) */
-  #bulk-table tbody tr:not(.grp):has(input.rowchk:checked) > td{background:#dfeafe}
-  /* ховер строки: неотмеченная — нейтральный серый, отмеченная — голубой на тон темнее выделения */
+  /* Отмеченная строка: мятный фон, сетка в тон и синяя полоса слева (заголовки групп не красим). Цвета — переменными на таблице. */
+  #bulk-table{--sel-bg:#dbf2e4;--sel-hov:#c4e8d2;--sel-line:#b5dcc4;--sel-bar:var(--accent);--sel-grp:#b3dfc4}
+  #bulk-table tbody tr:not(.grp):has(input.rowchk:checked) > td{background:var(--sel-bg);border-color:var(--sel-line)}
+  #bulk-table tbody tr:not(.grp):has(input.rowchk:checked) > td:first-child{box-shadow:inset 3px 0 0 var(--sel-bar)}
+  /* ховер строки: неотмеченная — нейтральный серый, отмеченная — тот же оттенок на тон темнее */
   #bulk-table tbody tr:not(.grp):hover > td{background:#f2f3f5}
-  #bulk-table tbody tr:not(.grp):has(input.rowchk:checked):hover > td{background:#cddcfb}
+  #bulk-table tbody tr:not(.grp):has(input.rowchk:checked):hover > td{background:var(--sel-hov)}
   #bulk-table td.idx{text-align:center;color:var(--muted);min-width:28px}
   #bulk-table td.prev,#bulk-table th.prev{text-align:center;width:64px;min-width:64px;padding:3px}
   #bulk-table td.prev canvas{display:block;margin:0 auto;border:1px solid var(--line);border-radius:3px;cursor:zoom-in}
@@ -242,10 +256,13 @@
   #bulk-table .cell-date .dd.year-dd{flex:none;width:82px}
   #bulk-table .cell-date .dd:first-child .dd-btn{border-radius:8px 0 0 8px}
   #bulk-table .cell-date .dd.year-dd .dd-btn{border-left:0;border-radius:0 8px 8px 0}
-  /* пустой обязательный контрол даты (месяц/год отдельно) — красный при потере фокуса строки */
-  #bulk-table .cell-date .dd.dd-empty .dd-btn{background:#fdecec;border-color:#e39a9a}
+  /* пустой обязательный контрол даты (месяц/год отдельно) — «не заполнено» (сиреневый) при потере фокуса строки */
+  #bulk-table .cell-date .dd.dd-empty .dd-btn{background:var(--miss-bg);border-color:var(--miss-line)}
   #bulk-table .cell-date .dd.dd-empty.year-dd .dd-btn{border-left:0}
   #bulk-table tr.grp td{background:var(--fill-soft);border-top:2px solid var(--line)}
+  /* группа отмечена целиком (галочка, не «минус» — как чекбокс группы) → мятный темнее ховера строки + та же синяя полоса */
+  #bulk-table tr.grp:has(input.grpchk:checked:not(:indeterminate)) > td{background:var(--sel-grp);border-color:var(--sel-line)}
+  #bulk-table tr.grp:has(input.grpchk:checked:not(:indeterminate)) > td:first-child{box-shadow:inset 3px 0 0 var(--sel-bar)}
   /* заголовок группы разбит на ячейки (контрол даты над колонкой даты), но визуально — одна строка */
   #bulk-table tr.grp td + td{border-left-style:hidden} /* hidden (не none/transparent) — в border-collapse гасит общую границу */
   #bulk-table tr.grp td.grp-date{padding:0}
@@ -281,7 +298,6 @@
   /* действия строки/группы: ⧉ «Дублировать» + «⋯» (меню с «Удалить») */
   .row-act{border:none;background:transparent;color:var(--muted);cursor:pointer;line-height:0;border-radius:5px;vertical-align:middle;padding:8px 9px}
   .row-act:hover,.row-act.open{background:rgba(0,0,0,.07);color:var(--ink)}
-  .row-act.dup:hover{background:var(--accent-weak);color:var(--accent)}
   .act-menu{position:fixed;z-index:1003;min-width:170px;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 12px 34px rgba(0,0,0,.16);padding:6px}
   .act-item{display:block;width:100%;text-align:left;border:none;border-radius:8px;background:transparent;padding:9px 12px;font:inherit;color:var(--ink);cursor:pointer;white-space:nowrap}
   .act-item:hover,.act-item:focus-visible{background:#f1f3f7;outline:none}
@@ -290,16 +306,17 @@
   /* только что созданный дубль — короткая подсветка */
   #bulk-table tr.row-new > td{animation:rowNew 1.2s ease-out}
   @keyframes rowNew{from{background:var(--accent-weak)}to{background:transparent}}
-  /* низ таблицы: строка-кнопка «+ строка» и блок «Сохранить отмеченное» */
+  /* низ таблицы: строка-кнопка «+ строка» и блок «Сгенерировать отмеченное» */
   #bulk-table tfoot td{padding:0}
   .row-add{display:block;width:100%;height:50px;border:none;border-radius:0;background:transparent;color:var(--muted);text-align:center;font-size:14px;padding:0 12px}
   .row-add:hover{background:#f7f8fa;color:var(--ink)}
-  /* Нижний блок «Сохранить отмеченное» (#bulk-foot) — sticky: пока до конца таблицы далеко, прилипает к низу окна
+  /* Нижний блок «Сгенерировать отмеченное» (#bulk-foot) — sticky: пока до конца таблицы далеко, прилипает к низу окна
      (плавает у правого края, с тенью); докрутили — стоит на своём месте в углу карточки. Лежит вне .bulk-wrap (там
      overflow-x → sticky клеился бы к ней, не к окну). Две строки: ↑ ↓ + «X из Y», ошибки, кнопка во всю ширину —
      одинаково в обоих состояниях. Состояния ставит JS: is-float (не на месте), is-hidden (виден верхний тулбар, а блок
      не на месте). Размер блока от состояния не зависит — иначе на границе состояния переключались бы по кругу. */
-  .bulk-foot{--foot-mx:14px;--foot-pr:8px;--foot-out:17px; /* поле блока в карточке · отступ справа · отступ карточки 16 + её рамка */
+  /* --foot-mx 5 = поле тулбара 14 − рамка блока 1 − --foot-pr 8 → правый край нижней кнопки = правому краю верхней */
+  .bulk-foot{--foot-mx:5px;--foot-pr:8px;--foot-out:17px; /* поле блока в карточке · отступ справа · отступ карточки 16 + её рамка */
     position:sticky;bottom:16px;z-index:900;display:grid;grid-template-columns:auto 1fr;align-items:center;row-gap:4px;
     width:max-content;margin:0 var(--foot-mx) 0 auto;
     padding:6px var(--foot-pr) 8px 6px;background:#fff;border:1px solid transparent;border-radius:11px;transition:opacity .15s,visibility .15s}
@@ -309,8 +326,12 @@
   .bulk-foot.is-float{margin-right:calc(-1 * var(--foot-out));padding-right:calc(var(--foot-pr) + var(--foot-mx) + var(--foot-out));
     border-color:var(--line);border-right-color:transparent;border-radius:11px 0 0 11px;box-shadow:0 12px 34px rgba(0,0,0,.16)}
   .bulk-foot.is-hidden{visibility:hidden;opacity:0}
-  .bulk-foot .bulk-errors{grid-column:1 / -1;justify-self:end;padding-right:2px;margin-top:-4px;font-size:12px}
-  .bulk-foot .bulk-errors::before{content:none}
+  /* ошибки и незаполненные — друг под другом (в одну строку блок расширялся бы), по левому краю кнопки — и когда
+     подпись одна; без точек; обе скрыты → строки нет */
+  .bulk-foot .fn-issues{grid-column:1 / -1;justify-self:start;display:flex;flex-direction:column;align-items:flex-start;margin-top:-4px;white-space:nowrap}
+  .bulk-foot .fn-issues:not(:has(> :not([hidden]))){display:none}
+  .bulk-foot .fn-issues > span{font-size:12px}
+  .bulk-foot .bulk-errors::before,.bulk-foot .bulk-missing::before{content:none}
   .bulk-foot .gen-wrap{grid-column:1 / -1;display:flex}
   .bulk-foot .gen-wrap button{flex:1;white-space:nowrap}
   .fn-arrows{display:flex}
@@ -331,9 +352,26 @@
   .grp-undo-bar button:hover{background:rgba(255,255,255,.14)}
   .grp-undo-bar .undo-restore{font-weight:600;color:#8fe3b0}
   .grp-undo-bar .undo-close{color:#c3c8d2;font-size:16px;line-height:1}
-  .import-map{border-bottom:1px solid var(--line);padding:20px 14px;background:var(--fill-soft)}
-  /* Заголовок: текст слева, переключатель режима импорта #import-mode — в правом верхнем углу блока. */
-  .import-map-head{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:13px;font-weight:600;margin-bottom:20px;padding-left:13px}
+  .import-map{border-bottom:1px solid var(--line);padding:10px 14px;background:var(--fill-soft)}
+  .import-map.is-open{padding-bottom:20px}
+  /* Полоска: «Импортировано N строк из файла» слева, «Сопоставление колонок» справа (сворачивает/разворачивает блок). */
+  .import-map-head{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:13px;padding-left:13px;min-height:28px}
+  .import-map.is-open .import-map-head{margin-bottom:20px}
+  #import-info b{font-weight:600}
+  #import-info .imp-file{color:var(--muted)}
+  #import-info .imp-miss{color:#b45309}
+  /* Как #bulk-back: без рамки, серый текст, тонкое пунктирное подчёркивание. */
+  .import-toggle{padding:2px 0;border:none;border-radius:0;background:transparent;color:var(--muted);white-space:nowrap;
+    text-decoration:underline dashed 1px;text-underline-offset:0.3em}
+  .import-toggle:hover{background:transparent;filter:none;color:var(--ink)}
+  .import-toggle-chev{display:inline-block;text-decoration:none;margin-left:2px}
+  /* Переназначенная колонка (будет импортирована заново) — акцентная рамка; не найденная обязательная — янтарная. */
+  .import-map-grid .mrow.is-pending .dd-btn{border-color:var(--accent);background:var(--accent-weak)}
+  .import-map-grid .mrow.is-pending label{color:var(--accent)}
+  .import-map-grid .mrow.is-missing .dd-btn{border-color:#e8c56a;background:#fff7e0}
+  .import-map-grid .mrow.is-missing label{color:#b45309}
+  /* Спиннер на обычной (белой) кнопке — тёмный. */
+  button:not(.primary) .btn-spin{border-color:rgba(0,0,0,.15);border-top-color:var(--ink)}
   .import-map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
   .import-map-grid .mrow label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px;padding:0 11px}
   .import-map-grid .mrow select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
@@ -458,27 +496,37 @@
     <label class="check" hidden><input type="radio" name="bulk-out" value="multipage"> Один многостраничный PDF</label>
     <span class="sep" hidden></span>
     <span class="bulk-gen-group">
-      <span id="bulk-count" class="bulk-count" data-bulk-count></span>
       <span id="bulk-errors" class="bulk-errors" data-bulk-errors hidden></span>
-      <span class="gen-wrap"><button class="primary" id="bulk-generate">Сохранить отмеченное</button></span>
+      <span id="bulk-missing" class="bulk-missing" data-bulk-missing hidden></span>
+      <span id="bulk-count" class="bulk-count" data-bulk-count></span>
+      <span class="gen-wrap"><button class="primary" id="bulk-generate" data-t="Сгенерировать отмеченное">Сгенерировать отмеченное</button></span>
     </span>
   </div>
+  <!-- Импорт таблицы: файл импортируется сразу (автосопоставление), здесь — полоска «Импортировано N строк» и
+       сворачиваемое сопоставление колонок для переназначения отдельных колонок (см. applyImportColumns). -->
   <div id="importMap" class="import-map" hidden>
     <div class="import-map-head">
-      <span>Сопоставьте колонки файла с полями <span id="import-info" class="stub"></span></span>
+      <span id="import-info"></span>
+      <button type="button" class="import-toggle" id="import-toggle" aria-expanded="false" aria-controls="import-map-body">Сопоставление колонок <span class="import-toggle-chev" aria-hidden="true">▸</span></button>
+      <!-- Режим импорта — пока убран (импорт всегда заменяет таблицу; #import-replace ниже остаётся checked), возможно удалим:
       <div class="seg" id="import-mode" role="group" aria-label="Режим импорта">
         <button type="button" class="seg-btn is-active" data-replace="1" aria-pressed="true">Заменить таблицу</button>
         <button type="button" class="seg-btn" data-replace="0" aria-pressed="false">Добавить в конец</button>
       </div>
+      -->
     </div>
-    <div class="import-map-grid" id="import-map-grid"></div>
-    <div class="import-map-actions">
-      <input type="checkbox" id="import-replace" checked hidden>
-      <div class="ima-actions">
-        <span class="ima-date-lbl">Дата изготовления:</span>
-        <div class="date-row" id="import-date"></div>
-        <button class="ghost" id="import-cancel">Отменить</button>
-        <button class="primary" id="import-apply">Импортировать</button>
+    <div id="import-map-body" hidden>
+      <div class="import-map-grid" id="import-map-grid"></div>
+      <div class="import-map-actions">
+        <input type="checkbox" id="import-replace" checked hidden>
+        <div class="ima-actions">
+          <!-- Дата изготовления из блока импорта убрана: строкам не подставляется, выбирают в «Вся таблица»/заголовках групп.
+          <span class="ima-date-lbl">Дата изготовления:</span>
+          <div class="date-row" id="import-date"></div>
+          <button class="ghost" id="import-cancel">Отменить</button>
+          -->
+          <button class="primary" id="import-apply" disabled>Импортировать колонку</button>
+        </div>
       </div>
     </div>
   </div>
@@ -491,7 +539,7 @@
           <th class="prev">Превью</th>
           <th class="prev">Иконка</th>
           <th class="col-name">Название товара</th>
-          <th>Цвет</th>
+          <th>Цвет / Дизайн</th>
           <th class="col-artikul">Артикул</th>
           <th class="col-kolvo">Кол-во</th>
           <th>Дата изготовления</th>
@@ -518,15 +566,15 @@
       <button type="button" class="fn-btn" id="fn-down" aria-label="В конец таблицы"></button>
     </span>
     <span class="fn-count" id="fn-count"></span>
-    <span class="bulk-errors" data-bulk-errors hidden></span>
-    <span class="gen-wrap"><button class="primary" id="bulk-generate-bottom">Сохранить отмеченное</button></span>
+    <span class="fn-issues"><span class="bulk-errors" data-bulk-errors hidden></span><span class="bulk-missing" data-bulk-missing hidden></span></span>
+    <span class="gen-wrap"><button class="primary" id="bulk-generate-bottom" data-t="Сгенерировать отмеченное">Сгенерировать отмеченное</button></span>
   </div>
   <div class="foot-sentinel" id="foot-sentinel"></div>
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 188 · 06.10.2026 19:54</footer>
-<script>console.info("edda sticker generator — сборка 188 · 06.10.2026 19:54");</script>
+<footer class="build-info">сборка 211 · 11.10.2026 14:15</footer>
+<script>console.info("edda sticker generator — сборка 211 · 11.10.2026 14:15");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -579,6 +627,8 @@
       "centerY": 412.41,
       "lineLeading": 8.49,
       "split": "words",
+      "bigMinWidth": 40,
+      "bigScale": 1.15,
       "color": { "c": 0, "m": 0, "y": 0, "k": 0 }
     },
     {
@@ -929,7 +979,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function valueForField(f) {
     var inp = inputFor(f.id);
-    var v = inp ? inp.value : "";
+    var v = inp ? inp.value.trim() : ""; // пробелы по краям не рисуем
     if (f.id === "name") {
       var up = document.getElementById("name-upper");
       if (up && up.checked) v = v.toUpperCase();
@@ -1023,6 +1073,15 @@ document.addEventListener("DOMContentLoaded", function () {
     return out;
   }
 
+  // Длинный «Цвет» (самая широкая строка > f.bigMinWidth pt) → радиус увеличенного круга
+  // (R·f.bigScale, центр тот же — f.circleCenter), иначе 0. Круг шаблона остаётся под ним.
+  function circleBigR(f, text, font, capRatio) {
+    if (f.split !== "words" || !f.bigMinWidth || !f.bigScale || !f.circleCenter) return 0;
+    var sizePt = f.capHeight / capRatio;
+    var maxW = circleWords(text).reduce(function (m, w) { return Math.max(m, font.getAdvanceWidth(w, sizePt)); }, 0);
+    return maxW > f.bigMinWidth ? (f.box[2] - f.box[0]) / 2 * f.bigScale : 0;
+  }
+
   // Общая отрисовка значений контурами на произвольный ctx (превью, не PDF).
   // getVal(f) -> строка значения поля f; sPx — pt→device-px; H — высота страницы (pt); top-origin.
   function drawValuesToCtx(ctx, getVal, sPx, H, font, capRatio) {
@@ -1048,6 +1107,11 @@ document.addEventListener("DOMContentLoaded", function () {
       if (f.suffix) text = String(text).trim() + f.suffix; // «40» → «40 kg» (зона weight)
       var fontSizePx = (f.capHeight * sPx) / capRatio;      // кегль так, чтобы капитель = f.capHeight pt
       var fill = cmykToRgb(f.color || { k: 1 });
+      var bigR = circleBigR(f, text, font, capRatio);
+      if (bigR) { // увеличенный круг под длинный «Цвет» (K100, как круг шаблона)
+        ctx.fillStyle = cmykToRgb({ k: 1 });
+        ctx.beginPath(); ctx.arc(f.circleCenter[0] * sPx, (H - f.circleCenter[1]) * sPx, bigR * sPx, 0, 2 * Math.PI); ctx.fill();
+      }
       layoutLines(text, f, font, capRatio, shift).forEach(function (ln) {
         if (!ln.text) return;
         var baseY = (H - ln.baseline) * sPx;                 // базовая линия в device px (top-origin)
@@ -1115,7 +1179,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var upperCb = document.getElementById("bulk-upper");
       var upper = upperCb ? upperCb.checked : true;
       var getVal = function (f) {
-        var v = (values && values[f.id] != null) ? String(values[f.id]) : "";
+        var v = (values && values[f.id] != null) ? String(values[f.id]).trim() : ""; // пробелы по краям не рисуем
         if (f.id === "name" && upper) v = v.toUpperCase();
         if (f.id === "circle") v = v.toUpperCase(); // цвет — всегда заглавными
         if (f.id === "data" || f.id === "srok") v = ucFirst(v); // дата/срок — первая буква заглавная
@@ -1165,7 +1229,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // --- Генерация PDF в кривых ---
   // Рисуем значения контурами через pdf-lib drawSvgPath, цвет CMYK. Текст НЕ встраивается как шрифт.
   function resolveText(f, values, upperName) {
-    var v = (values && values[f.id] != null) ? String(values[f.id]) : "";
+    var v = (values && values[f.id] != null) ? String(values[f.id]).trim() : ""; // пробелы по краям не рисуем
     if (f.id === "name" && upperName) v = v.toUpperCase();
     if (f.id === "circle") v = v.toUpperCase(); // цвет — всегда заглавными
     if (f.id === "data" || f.id === "srok") v = ucFirst(v); // дата/срок — первая буква заглавная
@@ -1387,7 +1451,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function _svgStyle(attrs, cssMap){
     var st={};
     (attrs['class']||'').split(/\s+/).filter(Boolean).forEach(function(cls){ Object.assign(st, cssMap['.'+cls]||{}); });
-    ['fill','stroke','stroke-width'].forEach(function(k){ if(attrs[k]!=null) st[k]=attrs[k]; });
+    ['fill','stroke','stroke-width','stroke-linecap','stroke-linejoin','stroke-miterlimit','clip-path','clip-rule'].forEach(function(k){ if(attrs[k]!=null) st[k]=attrs[k]; });
     if (attrs['style']) attrs['style'].split(';').forEach(function(d){ var c=d.indexOf(':'); if(c>0) st[d.slice(0,c).trim().toLowerCase()]=d.slice(c+1).trim(); });
     return st;
   }
@@ -1406,7 +1470,16 @@ document.addEventListener("DOMContentLoaded", function () {
   function _shapeCmds(tag,a){
     if (tag==='line') return [{c:'M',p:[_svgNum(a.x1),_svgNum(a.y1)]},{c:'L',p:[_svgNum(a.x2),_svgNum(a.y2)]}];
     if (tag==='rect'){ var x=_svgNum(a.x),y=_svgNum(a.y),w=_svgNum(a.width),h=_svgNum(a.height); if(!w||!h) return null;
-      return [{c:'M',p:[x,y]},{c:'L',p:[x+w,y]},{c:'L',p:[x+w,y+h]},{c:'L',p:[x,y+h]},{c:'Z'}]; }
+      // Скругление по правилам SVG: задан один радиус → второй такой же; < 0 → 0; не больше половины стороны.
+      var qx=a.rx!=null?Math.max(0,_svgNum(a.rx)):null, qy=a.ry!=null?Math.max(0,_svgNum(a.ry)):null;
+      if (qx==null) qx=qy||0; if (qy==null) qy=qx;
+      qx=Math.min(qx,w/2); qy=Math.min(qy,h/2);
+      if (!qx||!qy) return [{c:'M',p:[x,y]},{c:'L',p:[x+w,y]},{c:'L',p:[x+w,y+h]},{c:'L',p:[x,y+h]},{c:'Z'}];
+      var kx=qx*_KAPPA, ky=qy*_KAPPA, r=x+w, b=y+h;   // углы — четверти эллипса Безье, как в _ellipseCmds
+      return [ {c:'M',p:[x+qx,y]}, {c:'L',p:[r-qx,y]}, {c:'C',p:[r-qx+kx,y, r,y+qy-ky, r,y+qy]},
+        {c:'L',p:[r,b-qy]}, {c:'C',p:[r,b-qy+ky, r-qx+kx,b, r-qx,b]},
+        {c:'L',p:[x+qx,b]}, {c:'C',p:[x+qx-kx,b, x,b-qy+ky, x,b-qy]},
+        {c:'L',p:[x,y+qy]}, {c:'C',p:[x,y+qy-ky, x+qx-kx,y, x+qx,y]}, {c:'Z'} ]; }
     if (tag==='circle'){ var r=_svgNum(a.r); if(!r) return null; return _ellipseCmds(_svgNum(a.cx),_svgNum(a.cy),r,r); }
     if (tag==='ellipse'){ var rx=_svgNum(a.rx),ry=_svgNum(a.ry); if(!rx||!ry) return null; return _ellipseCmds(_svgNum(a.cx),_svgNum(a.cy),rx,ry); }
     if (tag==='polyline'||tag==='polygon'){
@@ -1443,27 +1516,54 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
   function _cmdsToD(cmds){ return cmds.map(function(cm){ return cm.c + (cm.p?cm.p.map(function(n){return +n.toFixed(3);}).join(','):''); }).join(''); }
+  // Фигура → d: path как есть, примитивы → Безье + их transform. null — рисовать нечего.
+  function _elemD(tag, attrs, warnings){
+    if (tag==='path'){ var d=attrs['d']||''; if(d && attrs['transform']) warnings.push('path-transform'); return d||null; }
+    var cmds=_shapeCmds(tag, attrs); if(!cmds) return null;
+    if (attrs['transform']) cmds=_applyMatCmds(cmds, _parseTransform(attrs['transform']));
+    return _cmdsToD(cmds);
+  }
+  function _clipRef(st){ var m=String(st['clip-path']||'').match(/url\(\s*['"]?#([^'")\s]+)/); return m?m[1]:null; }
   function parseSvgIcon(svg){
     var vbm=svg.match(/viewBox\s*=\s*"([^"]+)"/i);
     if (!vbm) throw new Error('SVG без viewBox');
     var vb=vbm[1].trim().split(/[\s,]+/).map(Number);
-    var cssMap=_svgCss(svg), warnings=[];
-    ['text','image','linearGradient','radialGradient','use','clipPath','mask','filter'].forEach(function(t){ if(new RegExp('<'+t+'[\\s>]','i').test(svg)) warnings.push(t); });
+    var cssMap=_svgCss(svg), warnings=[], SHAPES='path|line|rect|circle|ellipse|polyline|polygon';
+    ['text','image','linearGradient','radialGradient','use','mask','filter'].forEach(function(t){ if(new RegExp('<'+t+'[\\s>]','i').test(svg)) warnings.push(t); });
     if (/<g\b[^>]*\btransform\s*=/i.test(svg)) warnings.push('group-transform'); // трансформы групп не применяются
+    // Обрезки <clipPath id>: контур = все фигуры внутри (список d), правило — clip-rule первой фигуры.
+    // Блоки вырезаем из текста — их фигуры не рисуются.
+    var clips={};
+    svg=svg.replace(/<clipPath\b([^>]*)>([\s\S]*?)<\/clipPath>/gi, function(_, ca, body){
+      var a=_svgAttrs(ca), ds=[], rule=null, mm, rc=new RegExp('<('+SHAPES+')\\b([^>]*?)\\/?>','gi');
+      if (/objectBoundingBox/i.test(a.clippathunits||'')){ warnings.push('clip-units'); return ''; }
+      if (a.transform) warnings.push('clip-transform');
+      while((mm=rc.exec(body))){
+        var at=_svgAttrs(mm[2]), dd=_elemD(mm[1].toLowerCase(), at, warnings); if(!dd) continue;
+        ds.push(dd); if(rule==null) rule=String(_svgStyle(at, cssMap)['clip-rule']||'').trim().toLowerCase();
+      }
+      if (a.id && ds.length) clips[a.id]={ ds:ds, rule: rule==='evenodd'?'evenodd':'nonzero' };
+      return '';
+    });
     // Берём path И примитивы (line/rect/circle/ellipse/polyline/polygon) — иначе теряются рёбра/точки/детали.
     // Примитивы → Безье-команды; их transform (translate/rotate/scale/matrix) применяем матрицей (эллипсы с поворотом).
-    var paths=[], re=/<(path|line|rect|circle|ellipse|polyline|polygon)\b([^>]*?)\/?>/gi, m;
+    // <g>…</g> — только ради clip-path: стек обрезок групп (вложенные складываются).
+    var paths=[], stack=[], re=new RegExp('<(/?g|'+SHAPES+')\\b([^>]*?)(/?)>','gi'), m;
     while((m=re.exec(svg))){
-      var tag=m[1].toLowerCase(), attrs=_svgAttrs(m[2]), st=_svgStyle(attrs, cssMap), d;
-      if (tag==='path'){ d=attrs['d']||''; if(!d) continue; if(attrs['transform']) warnings.push('path-transform'); }
-      else {
-        var cmds=_shapeCmds(tag, attrs); if(!cmds) continue;
-        if (attrs['transform']) cmds=_applyMatCmds(cmds, _parseTransform(attrs['transform']));
-        d=_cmdsToD(cmds);
-      }
+      var tag=m[1].toLowerCase();
+      if (tag==='/g'){ stack.pop(); continue; }
+      var attrs=_svgAttrs(m[2]), st=_svgStyle(attrs, cssMap), cid=_clipRef(st), clip=null;
+      if (cid){ clip=clips[cid]||null; if(!clip) warnings.push('clip-missing'); } // нет такой обрезки → рисуем без неё
+      if (tag==='g'){ if(!m[3]) stack.push(clip); continue; }
+      var d=_elemD(tag, attrs, warnings); if(!d) continue;
+      var cl=stack.filter(Boolean); if(clip) cl.push(clip);
       if ((tag==='line'||tag==='polyline') && st.fill==null) st.fill='none'; // открытые фигуры не заливаем по умолчанию
       if (st.fill==null && st.stroke==null) st.fill='black';
-      paths.push({ d:d, fill:st.fill, stroke:st.stroke, sw:parseFloat(st['stroke-width'])||0 });
+      // Концы/углы линий — из SVG, по умолчанию как в стандарте SVG (butt / miter / предел 4).
+      var cap=String(st['stroke-linecap']||'').trim().toLowerCase(), join=String(st['stroke-linejoin']||'').trim().toLowerCase(), ml=parseFloat(st['stroke-miterlimit']);
+      paths.push({ d:d, fill:st.fill, stroke:st.stroke, sw:parseFloat(st['stroke-width'])||0,
+        cap: (cap==='round'||cap==='square')?cap:'butt', join: (join==='round'||join==='bevel')?join:'miter', ml: ml>=1?ml:4,
+        clips: cl });
     }
     return { vb:vb, paths:paths, warnings:warnings };
   }
@@ -1506,12 +1606,35 @@ document.addEventListener("DOMContentLoaded", function () {
     var ox=(boxW-vb[2]*s)/2, oy=(boxH-vb[3]*s)/2;
     var optsX=box[0]+ox - vb[0]*s, optsY=(box[3]-oy) + vb[1]*s; // drawSvgPath флипает Y
     var INK=PDFLib.cmyk(0,0,0,1), PAPER=PDFLib.cmyk(0,0,0,0);
+    var CAP={butt:PDFLib.LineCapStyle.Butt, round:PDFLib.LineCapStyle.Round, square:PDFLib.LineCapStyle.Projecting};
+    var JOIN={miter:PDFLib.LineJoinStyle.Miter, round:PDFLib.LineJoinStyle.Round, bevel:PDFLib.LineJoinStyle.Bevel};
+    var PATH_OPS={m:1, l:1, c:1, v:1, y:1, h:1, re:1};
+    // Обрезка (clipPath): контур строим разбором путей pdf-lib (его drawSvgPath-операторы, берём только
+    // построение пути) в системе координат фигуры (та же матрица, что у drawSvgPath), W n, затем обратная
+    // матрица — фигура дальше рисуется как обычно. Действует до своего Q.
+    function clipOps(c){
+      var ops=[PDFLib.concatTransformationMatrix(s,0,0,-s,optsX,optsY)];
+      c.ds.forEach(function(d){ PDFLib.drawSvgPath(d, {x:0, y:0, scale:1}).forEach(function(o){ if(PATH_OPS[o.name]) ops.push(o); }); });
+      return ops.concat([c.rule==='evenodd'?PDFLib.clipEvenOdd():PDFLib.clip(), PDFLib.endPath(),
+        PDFLib.concatTransformationMatrix(1/s,0,0,-1/s,-optsX/s,optsY/s)]);
+    }
     pi.paths.forEach(function(p){
       var fk=_svgPaint(p.fill), sk=_svgPaint(p.stroke), opt={x:optsX,y:optsY,scale:s};
       if(fk) opt.color = (fk==='paper')?PAPER:INK;
-      if(sk && p.sw>0){ opt.borderColor=(sk==='paper')?PAPER:INK; opt.borderWidth=p.sw*s; }
+      // Толщина — в единицах SVG: drawSvgPath сам масштабирует её на scale (×s ещё раз давало sw·s²).
+      if(sk && p.sw>0){ opt.borderColor=(sk==='paper')?PAPER:INK; opt.borderWidth=p.sw; opt.borderLineCap=CAP[p.cap]; }
       if(!opt.color && !opt.borderColor) return;
-      page.drawSvgPath(p.d, opt);
+      var clipped=p.clips && p.clips.length;
+      if(clipped){ var cops=[PDFLib.pushGraphicsState()]; p.clips.forEach(function(c){ cops=cops.concat(clipOps(c)); }); page.pushOperators.apply(page, cops); }
+      if(!opt.borderColor) page.drawSvgPath(p.d, opt);
+      else {
+        // Углы и предел острия у drawSvgPath опциями не задаются → ставим в своём q…Q вокруг (внутри он их наследует).
+        page.pushOperators(PDFLib.pushGraphicsState(), PDFLib.setLineJoin(JOIN[p.join]),
+          PDFLib.PDFOperator.of(PDFLib.PDFOperatorNames.SetLineMiterLimit, [PDFLib.asPDFNumber(p.ml)]));
+        page.drawSvgPath(p.d, opt);
+        page.pushOperators(PDFLib.popGraphicsState());
+      }
+      if(clipped) page.pushOperators(PDFLib.popGraphicsState());
     });
   }
   // Отрисовка иконки на канве (top-origin, SVG уже y-вниз → без флипа). Бокс в device-px.
@@ -1521,9 +1644,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var offX=x0+(wpx-dw)/2 - vb[0]*s, offY=y0+(hpx-dh)/2 - vb[1]*s;
     ctx.save(); ctx.translate(offX, offY); ctx.scale(s, s);
     pi.paths.forEach(function(p){
-      var fk=_svgPaint(p.fill), sk=_svgPaint(p.stroke), path=new Path2D(p.d);
+      var fk=_svgPaint(p.fill), sk=_svgPaint(p.stroke), path=new Path2D(p.d), clipped=p.clips && p.clips.length;
+      if(clipped){ ctx.save(); p.clips.forEach(function(c){ var cp=new Path2D(); c.ds.forEach(function(d){ cp.addPath(new Path2D(d)); }); ctx.clip(cp, c.rule); }); }
       if(fk){ ctx.fillStyle=(fk==='paper')?'#fff':'#000'; ctx.fill(path); }
-      if(sk && p.sw>0){ ctx.strokeStyle=(sk==='paper')?'#fff':'#000'; ctx.lineWidth=p.sw; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.stroke(path); }
+      if(sk && p.sw>0){ ctx.strokeStyle=(sk==='paper')?'#fff':'#000'; ctx.lineWidth=p.sw; ctx.lineJoin=p.join; ctx.lineCap=p.cap; ctx.miterLimit=p.ml; ctx.stroke(path); }
+      if(clipped) ctx.restore();
     });
     ctx.restore();
   }
@@ -1585,6 +1710,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var fontSizePt = f.capHeight / capRatio;
       var col = f.color || { k: 1 };
       var color = PDFLib.cmyk(col.c||0, col.m||0, col.y||0, col.k||0);
+      var bigR = circleBigR(f, text, font, capRatio);
+      if (bigR) page.drawCircle({ x: f.circleCenter[0], y: f.circleCenter[1], size: bigR, color: PDFLib.cmyk(0, 0, 0, 1) }); // увеличенный круг (K100, как круг шаблона)
       layoutLines(text, f, font, capRatio, shift).forEach(function (ln) {
         if (!ln.text) return;
         var x;
@@ -1697,7 +1824,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var order = ["icon","name","circle","artikul","kolvo","data","weight","srok","itf14","ean13"];
     // Колонки, по которым ищет поле поиска (и где подсвечивается найденное). Новая колонка — одной записью.
     var SEARCH_COLS = ["name","circle","artikul"];
-    var placeholders = {name:"Название товара",circle:"Цвет",artikul:"AAA-000000",kolvo:"0",data:"Октябрь 2026",weight:"0",srok:"Срок",itf14:"00000000000000",ean13:"0000000000000"};
+    var placeholders = {name:"Название товара",circle:"Цвет / Дизайн",artikul:"AAA-000000",kolvo:"0",data:"Октябрь 2026",weight:"0",srok:"Срок",itf14:"00000000000000",ean13:"0000000000000"};
     var mapLabels = {itf14:"Код ШК ITF-14",ean13:"Код ШК EAN-13",icon:"Иконка (имя SVG)"}; // подпись селекта в сопоставлении
 
     // Обязательные поля для включения строки в генерацию (Цвет — необязателен).
@@ -1707,7 +1834,8 @@ document.addEventListener("DOMContentLoaded", function () {
     var BC_NORM = { itf14: normalizeItf14, ean13: normalizeEan13 };
     // Поля, участвующие в СОПОСТАВЛЕНИИ ИМПОРТА (и подстановке значений из файла). Дату изготовления
     // (`data`) и вес брутто (`weight`) не импортируем; колонки в таблице остаются (order).
-    var importOrder = order.filter(function(id){ return id !== "data" && id !== "weight"; });
+    // «Иконка (имя SVG)» в сопоставлении — последней, после «Код ШК EAN-13» (в таблице колонка на прежнем месте).
+    var importOrder = order.filter(function(id){ return id !== "data" && id !== "weight" && id !== "icon"; }).concat("icon");
     var checkAll = document.getElementById("bulk-check-all");
     // Ключ: показывать колонку-зеркало чекбоксов в конце таблицы (фича на пробу, пока только разметка).
     // false → колонки нет нигде (шапка, строки, заголовки групп).
@@ -2030,6 +2158,24 @@ document.addEventListener("DOMContentLoaded", function () {
         var v = inp.value.trim();
         if (v === "") return false;
         return !fieldError(id, v);
+      }) && !pairError(tr); // ITF-14 ≠ EAN-13 — критическая ошибка, строку не генерируем
+    }
+    // Два вида проблем неполной строки (оба блокируют; строка может попасть в оба счётчика):
+    //  • ошибка — непустое значение не проходит правило (формат, связка ITF-14 ↔ EAN-13, иконки по имени нет в наборе);
+    //  • незаполненные данные — пустое обязательное поле (дата: не выбран месяц или год; иконка: ячейка пустая и по
+    //    названию не нашлась). Вместе с rowComplete покрывают все его отказы.
+    function rowHasErrors(tr){
+      return required.some(function(id){
+        var inp = tr.querySelector('input[data-col="'+id+'"]'), v = inp ? inp.value.trim() : "";
+        if (v === "") return false;
+        return id === "icon" ? !!iconError(tr) : !!fieldError(id, v);
+      }) || !!pairError(tr);
+    }
+    function rowHasMissing(tr){
+      return required.some(function(id){
+        var inp = tr.querySelector('input[data-col="'+id+'"]');
+        if (!inp || inp.value.trim() !== "") return false;
+        return id === "icon" ? !!iconError(tr) : true;
       });
     }
     // В строке есть хотя бы одно непустое значение.
@@ -2066,18 +2212,18 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       if (v === ""){ inp.classList.remove("cell-soft"); if (rowAnyFilled(tr)) inp.classList.add("cell-empty"); return; }
-      var err = fieldError(id, v);
+      var err = fieldError(id, v) || ((id === "itf14" || id === "ean13") ? pairError(tr) : null);
       if (err){ inp.classList.add("cell-invalid"); inp.dataset.err = err; inp.classList.remove("cell-soft"); } // ошибка важнее повтора
       else paintSoft(inp);
     }
-    // Мягкие подсказки ячейки (.cell-soft): не блокируют, в счётчик ошибок не входят. Хранятся на инпуте отдельно —
-    // inp._softDup (повтор) и inp._softPair (ITF-14 ≠ EAN-13) — и рисуются одним тултипом с общей строкой
-    // «Проверьте на всякий случай». Считают их markDup/markPair; paintSoft только рисует. Ячейку в фокусе и
-    // ячейку с ошибкой (пусто/формат — важнее) не красим: на blur markCellValidity нарисует заново.
+    // Мягкая подсказка ячейки (.cell-soft): не блокирует, в счётчик ошибок не входит. Хранится на инпуте —
+    // inp._softDup (повтор) — и рисуется тултипом со строкой «Проверьте на всякий случай». Считает markDup;
+    // paintSoft только рисует. Ячейку в фокусе и ячейку с ошибкой (пусто/формат/связка ШК — важнее) не красим:
+    // на blur markCellValidity нарисует заново.
     function paintSoft(inp){
       if (inp === document.activeElement) return;
       if (inp.classList.contains("cell-empty") || inp.classList.contains("cell-invalid")){ inp.classList.remove("cell-soft"); return; }
-      var msgs = [inp._softDup, inp._softPair].filter(Boolean);
+      var msgs = [inp._softDup].filter(Boolean);
       inp.classList.toggle("cell-soft", msgs.length > 0);
       if (msgs.length) inp.dataset.err = msgs.join("\n") + "\nПроверьте на всякий случай"; else delete inp.dataset.err;
     }
@@ -2110,17 +2256,23 @@ document.addEventListener("DOMContentLoaded", function () {
       paintSoft(inp);
     }
     // ITF-14 короба строится из EAN-13 товара: индикатор + первые 12 цифр EAN + своя контрольная. Если оба кода
-    // строки сами по себе валидны, а цифры 2–13 ITF ≠ первым 12 EAN → мягкая подсказка на ОБЕИХ ячейках (неясно,
-    // какой из двух неверен). Не блокирует, чекбокс не трогает. Пересчёт — уход из ячейки ITF/EAN (validateCell)
-    // и полная валидация строки (updateRowState: уход из строки, импорт, дубль, добавление).
-    var PAIR_HINT = "ITF-14 и EAN-13 не совпадают: цифры 2–13 ITF-14 должны повторять первые 12 цифр EAN-13.";
-    function markPair(tr){
+    // строки сами по себе валидны, а цифры 2–13 ITF ≠ первым 12 EAN → КРИТИЧЕСКАЯ ошибка: обе ячейки красные
+    // (неясно, какой из двух неверен), строка неполная (rowComplete) → не отмечается и не генерируется.
+    var PAIR_ERR = "ITF-14 и EAN-13 не совпадают: цифры 2–13 ITF-14 должны повторять первые 12 цифр EAN-13.";
+    function pairError(tr){
       var bc = tr.querySelector('input[data-col="itf14"]'), ean = tr.querySelector('input[data-col="ean13"]');
-      if (!bc || !ean) return;
+      if (!bc || !ean) return null;
       var b = bc.value.trim(), e = ean.value.trim();
       var bad = !!b && !!e && !fieldError("itf14", b) && !fieldError("ean13", e) && b.slice(1, 13) !== e.slice(0, 12);
-      bc._softPair = ean._softPair = bad ? PAIR_HINT : null;
-      paintSoft(bc); paintSoft(ean);
+      return bad ? PAIR_ERR : null;
+    }
+    // Перекраска обеих ячеек связки — после ухода из одной из них (validateCell): исправили один код →
+    // снимается и со второго. Ячейку в фокусе не трогаем (её снял clearCell, нарисует её blur).
+    function markPair(tr){
+      ["itf14", "ean13"].forEach(function(col){
+        var inp = tr.querySelector('input[data-col="'+col+'"]');
+        if (inp && inp !== document.activeElement) markCellValidity(inp, tr);
+      });
     }
     // Когда пересчитываем повторы (по всем строкам таблицы — повтор касается и второй строки):
     //  • col задан — одна колонка: ушли из её ячейки, и значение изменилось (validateCell);
@@ -2150,7 +2302,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (col === "itf14" || col === "ean13") markPair(tr); // ITF-14 ↔ EAN-13 этой строки
     }
     // Сброс подсветки/иконки/тултипа ТОЛЬКО у одной ячейки (при получении ею фокуса).
-    // ШК/EAN/артикул: запоминаем значение — на blur сравним (validateCell). Мягкие подсказки (_softDup/_softPair)
+    // ШК/EAN/артикул: запоминаем значение — на blur сравним (validateCell). Мягкая подсказка о повторе (_softDup)
     // остаются сохранёнными — снимаем только их отображение.
     function clearCell(inp){
       if (DUP_COLS[inp.dataset.col]) inp._dupPrev = { key: dupKey(inp.value) };
@@ -2167,12 +2319,11 @@ document.addEventListener("DOMContentLoaded", function () {
         var inp = tr.querySelector('input[data-col="'+id+'"]');
         if (inp) markCellValidity(inp, tr);
       });
-      // Проверка кодов ШК (иконка «!») и их связки ITF-14 ↔ EAN-13.
+      // Проверка кодов ШК (иконка «!»); связку ITF-14 ↔ EAN-13 уже покрасил markCellValidity выше.
       Object.keys(BC_NORM).forEach(function(col){
         var bcInp = tr.querySelector('input[data-col="'+col+'"]');
         if (bcInp){ var w = bcInp.closest(".bc-wrap"); if (w) validateBc(bcInp, w, w.querySelector(".bc-err")); }
       });
-      markPair(tr);
       markIconSoft(tr); // своя SVG не совпадает с названием → жёлтая подсказка
       updateRowCheck(tr);
     }
@@ -2215,12 +2366,21 @@ document.addEventListener("DOMContentLoaded", function () {
       // Нижний блок — коротко «X из Y».
       var fnCount = document.getElementById("fn-count");
       if (fnCount) fnCount.textContent = checked + " из " + total;
-      // Подсказка о строках с ошибками: непустые строки, которые не пройдут в генерацию.
-      var errors = 0;
-      Array.prototype.forEach.call(tbody.rows, function(tr){ if (rowAnyFilled(tr) && !rowComplete(tr)) errors++; });
+      // Непустые строки, которые не пройдут в генерацию: «N строк с ошибками» и вторым — «M строк с незаполненными
+      // данными» (строка с обоими видами — в обоих счётчиках).
+      var errors = 0, missing = 0;
+      Array.prototype.forEach.call(tbody.rows, function(tr){
+        if (tr.classList.contains("grp") || !rowAnyFilled(tr)) return;
+        if (rowHasErrors(tr)) errors++;
+        if (rowHasMissing(tr)) missing++;
+      });
       var errText = errors + " " + pluralRu(errors, ["строка","строки","строк"]) + " с ошибками";
       Array.prototype.forEach.call(document.querySelectorAll("[data-bulk-errors]"), function(el){
         el.textContent = errText; el.hidden = !(errors > 0);
+      });
+      var missText = missing + " " + pluralRu(missing, ["строка","строки","строк"]) + " с незаполненными данными";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-bulk-missing]"), function(el){
+        el.textContent = missText; el.hidden = !(missing > 0);
       });
       // Числа на сегментах фильтра — по всей таблице (как «X из Y»), без учёта поиска.
       var segN = { all: total, checked: checked, unchecked: total - checked, errors: errors };
@@ -2229,7 +2389,7 @@ document.addEventListener("DOMContentLoaded", function () {
         n.textContent = segN[b.dataset.filter];
         n.classList.toggle("is-err", b.dataset.filter === "errors" && errors > 0);
       });
-      syncGenBlocked(); // 0 отмеченных → «Сохранить отмеченное» неактивна
+      syncGenBlocked(); // 0 отмеченных → «Сгенерировать отмеченное» неактивна
     }
     // --- Группировка строк по названию (строка-заголовок группы + групповой чекбокс) ---
     // Ключ группы: нормализованное название (trim, схлопнутые пробелы, регистронезависимо).
@@ -2930,7 +3090,8 @@ document.addEventListener("DOMContentLoaded", function () {
     var searchHold = false; // true — во время импорта (фильтр пересчитается один раз в конце)
     function searchKeep(tr){ return tr._searchKeep || tr.contains(document.activeElement); }
     // --- Фильтр по статусу строк «Всё / Отмеченное / Неотмеченное / Ошибки» (сегменты слева от поиска) ---
-    // Работает вместе с поиском (строка видна, если подходит под оба). «Ошибки» — как счётчик «N строк с ошибками».
+    // Работает вместе с поиском (строка видна, если подходит под оба). «Ошибки» — как счётчик «N строк с ошибками»
+    // (только ошибки; строки лишь с незаполненными данными сюда не входят).
     // Строка, переставшая подходить (сняли отметку, исправили ошибку), НЕ прячется до смены фильтра/запроса:
     // результат фильтра запоминается в tr._filterHit и пересчитывается только при applySearch(true).
     var rowFilter = "all";
@@ -2940,7 +3101,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var c = tr.querySelector("input.rowchk"), on = !!(c && c.checked);
       if (rowFilter === "checked") return on;
       if (rowFilter === "unchecked") return !on;
-      return rowAnyFilled(tr) && !rowComplete(tr); // errors
+      return rowAnyFilled(tr) && rowHasErrors(tr); // errors
     }
     function filterHit(tr){ return tr._filterHit === undefined ? filterMatch(tr) : tr._filterHit; }
     function setRowFilter(f){
@@ -2993,13 +3154,13 @@ document.addEventListener("DOMContentLoaded", function () {
       updateCheckAll(); // состояние «Выделить все»/групп и «показано N из M» зависят от видимости
       syncGenBlocked();
     }
-    // При активном поиске «Сохранить отмеченное» (обе) заблокирована — по решению пользователя, чтобы не выгрузить
+    // При активном поиске «Сгенерировать отмеченное» (обе) заблокирована — по решению пользователя, чтобы не выгрузить
     // скрытые отмеченные строки незаметно. Подсказка — тёмный тултип на обёртке .gen-wrap.
     // Нет отмеченных строк (по всей таблице, как readRows) — тоже заблокирована, тот же вид, без подсказки.
     var GEN_SEARCH_TIP = "Сохранение недоступно при активном поиске\nОчистите поиск, чтобы сохранить";
-    var genBusy = false; // идёт генерация — кнопки держит onBulkGenerate
+    var genBusy = false; // идёт генерация — повторный клик игнорируется (onBulkGenerate), вид кнопок не меняется
     function syncGenBlocked(){
-      if (!genBtns || genBusy) return;
+      if (!genBtns) return;
       var on = !!searchQuery() || !tbody.querySelector("input.rowchk:checked");
       genBtns.forEach(function(b){ b.disabled = on; });
     }
@@ -3086,7 +3247,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var allDate = makeAllRow();
     syncAllDate();
 
-    // «Сохранить отмеченное» — сверху (тулбар) и снизу (под таблицей); на время генерации блокируются обе.
+    // «Сгенерировать отмеченное» — сверху (тулбар) и снизу (под таблицей); на время генерации повторный клик игнорируется.
     var genBtns = [document.getElementById("bulk-generate"), document.getElementById("bulk-generate-bottom")];
     async function onBulkGenerate(){
       if (searchQuery()) return; // при активном поиске генерация недоступна (кнопки и так disabled)
@@ -3094,8 +3255,10 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!rows.length){ alert("Отметьте хотя бы одну заполненную строку."); return; }
       var upper = document.getElementById("bulk-upper").checked;
       var outType = (document.querySelector('input[name="bulk-out"]:checked')||{}).value || "zip";
-      var old = genBtns[0].textContent;
-      genBusy = true; genBtns.forEach(function(b){ b.disabled=true; b.textContent="Сохранение…"; });
+      // Вид кнопок на время генерации не меняется (решение пользователя: бледность и «Сохранение…» на долю секунды
+      // мигали) — повторный клик просто игнорируется.
+      if (genBusy) return;
+      genBusy = true;
       try {
         if (rows.length === 1){
           var bytes = await generateSinglePdf(rows[0], upper);
@@ -3116,7 +3279,7 @@ document.addEventListener("DOMContentLoaded", function () {
           downloadBlob(blob, "edda-labels-"+rows.length+".zip");
         }
       } catch(e){ alert("Ошибка сохранения: "+e.message); console.error(e); }
-      finally { genBusy = false; genBtns.forEach(function(b){ b.disabled=false; b.textContent=old; }); syncGenBlocked(); }
+      finally { genBusy = false; }
     }
     genBtns.forEach(function(b){
       b.addEventListener("click", onBulkGenerate);
@@ -3182,7 +3345,13 @@ document.addEventListener("DOMContentLoaded", function () {
     var importMap = document.getElementById("importMap");
     var importGrid = document.getElementById("import-map-grid");
     var importInfo = document.getElementById("import-info");
-    var parsed = null; // {headers, rows}
+    var importBody = document.getElementById("import-map-body");
+    var importToggle = document.getElementById("import-toggle");
+    var importApplyBtn = document.getElementById("import-apply");
+    // Последний импорт (пока висит полоска — до следующего импорта): разобранный файл и применённое сопоставление
+    // {поле: индекс колонки файла, -1 — нет}. Строки таблицы из файла помнят свой индекс в rows (tr._srcIdx) —
+    // по нему переназначенная колонка подставляется только в свои ячейки (applyImportColumns).
+    var parsed = null; // {fileName, headers, rows, applied}
 
     function detectDelimiter(sample){
       var cand=[",",";","\t","|"], best=",", bestN=-1;
@@ -3240,48 +3409,93 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       return map;
     }
-    function showMapping(aoa){
+    // Новый файл: запоминаем его и автосопоставление (= применённое), строим селекты сопоставления (блок свёрнут).
+    function prepareImport(aoa, fileName){
       var headers = aoa[0] || [];
       var dataRows = aoa.slice(1);
-      parsed = { headers: headers, rows: dataRows };
-      var auto = autoMatch(headers);
+      parsed = { fileName: fileName, headers: headers, rows: dataRows, applied: autoMatch(headers) };
       importGrid.innerHTML="";
       importOrder.forEach(function(fid){
         var wrap=document.createElement("div"); wrap.className="mrow";
-        var lab=document.createElement("label"); lab.textContent=mapLabels[fid]||labels[fid]||fid; wrap.appendChild(lab);
+        var lab=document.createElement("label"); lab.textContent=mapLabel(fid); wrap.appendChild(lab);
         var sel=document.createElement("select"); sel.dataset.field=fid;
         var none=document.createElement("option"); none.value="-1"; none.textContent="(нет)"; sel.appendChild(none);
         headers.forEach(function(h,hi){
           var o=document.createElement("option"); o.value=String(hi);
           o.textContent=(String(h).trim()||("Колонка "+(hi+1))); sel.appendChild(o);
         });
-        sel.value=String(auto[fid]);
+        sel.value=String(parsed.applied[fid]);
+        sel.addEventListener("change", refreshImportPending);
         wrap.appendChild(sel); importGrid.appendChild(wrap);
         enhanceSelect(sel); // кастомный дропдаун
       });
-      // Дата изготовления — месяц+год в строке действий (не колонкой файла); подставится всем строкам (applyImport).
-      var dbox=document.getElementById("import-date");
-      if (dbox){
-        dbox.innerHTML="";
-        var now=new Date();
-        var msel=document.createElement("select"); msel.id="import-date-month"; msel.setAttribute("aria-label","Месяц");
-        MONTHS_RU.forEach(function(name,i){ var o=document.createElement("option"); o.value=name; o.textContent=name; if(i===now.getMonth()) o.selected=true; msel.appendChild(o); });
-        var ysel=document.createElement("select"); ysel.id="import-date-year"; ysel.setAttribute("aria-label","Год");
-        var cy=now.getFullYear();
-        for (var yy=cy-1; yy<=cy+5; yy++){ var yo=document.createElement("option"); yo.value=String(yy); yo.textContent=String(yy); if(yy===cy) yo.selected=true; ysel.appendChild(yo); }
-        dbox.appendChild(msel); dbox.appendChild(ysel);
-        enhanceSelect(msel); enhanceSelect(ysel);
-        if (ysel.__dd) ysel.__dd.classList.add("year-dd");
-      }
-      importInfo.textContent="· найдено строк данных: "+dataRows.length+", колонок: "+headers.length;
-      document.getElementById("import-apply").textContent =
-        "Импортировать " + dataRows.length + " " + pluralRu(dataRows.length, ["строку","строки","строк"]);
-      importMap.hidden=false;
+      // Дата изготовления в блоке импорта убрана (строкам не подставляется — выбирают в «Вся таблица»/заголовках групп):
+      // var dbox=document.getElementById("import-date");
+      // if (dbox){
+      //   dbox.innerHTML="";
+      //   var now=new Date();
+      //   var msel=document.createElement("select"); msel.id="import-date-month"; msel.setAttribute("aria-label","Месяц");
+      //   MONTHS_RU.forEach(function(name,i){ var o=document.createElement("option"); o.value=name; o.textContent=name; if(i===now.getMonth()) o.selected=true; msel.appendChild(o); });
+      //   var ysel=document.createElement("select"); ysel.id="import-date-year"; ysel.setAttribute("aria-label","Год");
+      //   var cy=now.getFullYear();
+      //   for (var yy=cy-1; yy<=cy+5; yy++){ var yo=document.createElement("option"); yo.value=String(yy); yo.textContent=String(yy); if(yy===cy) yo.selected=true; ysel.appendChild(yo); }
+      //   dbox.appendChild(msel); dbox.appendChild(ysel);
+      //   enhanceSelect(msel); enhanceSelect(ysel);
+      //   if (ysel.__dd) ysel.__dd.classList.add("year-dd");
+      // }
     }
+    function mapLabel(fid){ return mapLabels[fid]||labels[fid]||fid; }
+    // Обязательные поля, для которых колонка файла не нашлась (иконка не в счёт — обычно находится по названию).
+    function importMissing(){
+      return importOrder.filter(function(fid){ return fid !== "icon" && required.indexOf(fid) >= 0 && parsed.applied[fid] < 0; });
+    }
+    // Полоска: «Импортировано N строк из <файл>» (+ «не найдена колонка: …»).
+    function renderImportInfo(){
+      var n = parsed.rows.length, miss = importMissing();
+      importInfo.textContent = "Импортировано ";
+      var b = document.createElement("b"); b.textContent = n + " " + pluralRu(n, ["строка","строки","строк"]); importInfo.appendChild(b);
+      importInfo.appendChild(document.createTextNode(" из "));
+      var f = document.createElement("span"); f.className = "imp-file"; f.textContent = parsed.fileName; importInfo.appendChild(f);
+      if (miss.length){
+        importInfo.appendChild(document.createTextNode(" · "));
+        var m = document.createElement("span"); m.className = "imp-miss";
+        m.textContent = (miss.length > 1 ? "не найдены колонки: " : "не найдена колонка: ") + miss.map(mapLabel).join(", ");
+        importInfo.appendChild(m);
+      }
+    }
+    // Селекты, отличающиеся от применённого сопоставления, → подсветка + текст кнопки «Импортировать колонку «…»».
+    function refreshImportPending(){
+      if (!parsed) return;
+      var pend = [], miss = importMissing();
+      Array.prototype.forEach.call(importGrid.querySelectorAll("select[data-field]"), function(s){
+        var fid = s.dataset.field, row = s.closest(".mrow"), p = parseInt(s.value, 10) !== parsed.applied[fid];
+        if (p) pend.push(fid);
+        row.classList.toggle("is-pending", p);
+        row.classList.toggle("is-missing", !p && miss.indexOf(fid) >= 0);
+      });
+      importApplyBtn.disabled = !pend.length;
+      importApplyBtn.textContent = !pend.length ? "Импортировать колонку"
+        : (pend.length > 1 ? "Импортировать колонки " : "Импортировать колонку ") + pend.map(function(f){ return "«" + mapLabel(f) + "»"; }).join(", ");
+      return pend;
+    }
+    // Свернуть/развернуть сопоставление. При сворачивании непримененные селекты возвращаются к применённым.
+    function setImportOpen(open){
+      importMap.classList.toggle("is-open", open);
+      importBody.hidden = !open;
+      importToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      importToggle.querySelector(".import-toggle-chev").textContent = open ? "▾" : "▸";
+      if (!open && parsed){
+        Array.prototype.forEach.call(importGrid.querySelectorAll("select[data-field]"), function(s){
+          var v = String(parsed.applied[s.dataset.field]);
+          if (s.value !== v){ s.value = v; if (s.__ddSync) s.__ddSync(); }
+        });
+      }
+      refreshImportPending();
+    }
+    importToggle.addEventListener("click", function(){ setImportOpen(importBody.hidden); });
     function applyImport(){
       if(!parsed) return;
-      var sels = importGrid.querySelectorAll("select[data-field]");
-      var colFor={}; Array.prototype.forEach.call(sels,function(s){ colFor[s.dataset.field]=parseInt(s.value,10); });
+      var colFor = parsed.applied;
       var replace = document.getElementById("import-replace").checked;
       if(replace){ tbody.innerHTML=""; clearUndo(); if (searchInp) searchInp.value = ""; setRowFilter("all"); } // новая таблица — поиск и фильтр сбрасываем
       searchHold = true; // без пересчёта фильтра на каждой строке импорта — один раз в конце
@@ -3290,49 +3504,134 @@ document.addEventListener("DOMContentLoaded", function () {
       Array.prototype.forEach.call(tbody.querySelectorAll("tr:not(.grp)"), function(tr){ if(!rowAnyFilled(tr)) tr.remove(); });
       pruneEmptyGroups();
       // Значения строк из файла.
-      var items = parsed.rows.map(function(r){
-        var v={};
-        importOrder.forEach(function(fid){ var ci=colFor[fid]; v[fid]= (ci>=0 && r[ci]!=null)? String(r[ci]) : ""; });
-        v.name = stripBrand(v.name);
-        return v; // `data` заполняется ниже общим значением месяц+год из блока сопоставления
+      var items = parsed.rows.map(function(r, i){
+        var v={ _src: i }; // индекс строки файла → tr._srcIdx (переназначение колонки)
+        importOrder.forEach(function(fid){ v[fid]=importValue(r, fid, colFor[fid]); });
+        return v; // `data` не заполняем — дату выбирают в таблице («Вся таблица»/заголовки групп)
       });
-      // Дата изготовления — общая для всех строк: месяц+год из контролов блока сопоставления («Месяц Год»).
-      var dm=document.getElementById("import-date-month"), dy=document.getElementById("import-date-year");
-      var dateVal = dm ? ((dy && String(dy.value||"").trim()) ? (dm.value+" "+String(dy.value).trim()) : dm.value) : "";
-      items.forEach(function(v){ v.data = dateVal; });
-      // Группировка по названию: порядок групп — по первому появлению, внутри — как в файле.
-      // Строки без названия — отдельной группой «Без названия» (ниже).
-      var groupsOrder=[], groups={}, noName=[];
-      items.forEach(function(v){
-        var k = groupKey(v.name);
-        if(!k){ noName.push(v); return; }
-        if(!groups[k]){ groups[k]={ name:String(v.name).trim(), rows:[] }; groupsOrder.push(k); }
-        groups[k].rows.push(v);
-      });
+      // Дата изготовления из блока импорта убрана — строкам не подставляется:
+      // var dm=document.getElementById("import-date-month"), dy=document.getElementById("import-date-year");
+      // var dateVal = dm ? ((dy && String(dy.value||"").trim()) ? (dm.value+" "+String(dy.value).trim()) : dm.value) : "";
+      // items.forEach(function(v){ v.data = dateVal; });
+      var gr = groupByName(items, function(v){ return v.name; });
       // «Добавить в конец» к плоской таблице (только ручные строки): сначала собираем их в «Добавлено вручную»
       // (группа встаёт первой — хронологически), затем добавляем группы импорта.
-      if (groupsOrder.length || noName.length) wrapFlatIntoManual();
-      groupsOrder.forEach(function(k){ var g=groups[k]; addGroupHead(g.name); g.rows.forEach(function(v){ addRow(v).classList.add("in-grp"); }); });
+      if (gr.order.length || gr.noName.length) wrapFlatIntoManual();
+      function add(v){ var tr = addRow(v); tr.classList.add("in-grp"); tr._srcIdx = v._src; }
+      gr.order.forEach(function(k){ var g=gr.groups[k]; addGroupHead(g.name); g.items.forEach(add); });
       // Строки без названия — своей группой «Без названия» (тип noname) после групп этого импорта.
-      if (noName.length){ addGroupHead("Без названия", "noname"); noName.forEach(function(v){ addRow(v).classList.add("in-grp"); }); }
+      if (gr.noName.length){ addGroupHead("Без названия", "noname"); gr.noName.forEach(add); }
       if(!tbody.querySelector("tr:not(.grp)")) addRow();
       pruneEmptyGroups();
       searchHold = false; importHold = false;
       renumber();
       updateCheckAll(); // счётчики, заголовки групп, «Вся таблица» — после всех строк
       applySearch(true); // «Добавить в конец» при активном поиске — фильтр и к новым строкам
-      importMap.hidden=true; parsed=null;
+    }
+    // Значение поля из строки файла (ci — индекс колонки, -1 — нет). Название — без бренда «edda».
+    function importValue(r, fid, ci){
+      var v = (ci>=0 && r[ci]!=null) ? String(r[ci]) : "";
+      return fid === "name" ? stripBrand(v) : v;
+    }
+    // Группировка по названию: порядок групп — по первому появлению, внутри — как в списке.
+    // Без названия — отдельно (noName, группа «Без названия»).
+    function groupByName(list, nameOf){
+      var order=[], groups={}, noName=[];
+      list.forEach(function(x){
+        var nm = nameOf(x), k = groupKey(nm);
+        if(!k){ noName.push(x); return; }
+        if(!groups[k]){ groups[k]={ name:String(nm).trim(), items:[] }; order.push(k); }
+        groups[k].items.push(x);
+      });
+      return { order: order, groups: groups, noName: noName };
+    }
+    // «Импортировать колонку «…»»: переназначенные колонки подставляются только в строки из файла (tr._srcIdx),
+    // во всех остальных ячейках/строках ничего не меняется (дата, отметки, свои SVG, правки, ручные строки). Ручные
+    // правки в самих этих колонках перезаписываются значением из файла. «Название» → строки перегруппировываются.
+    function applyImportColumns(){
+      var fids = refreshImportPending(); if (!fids || !fids.length) return;
+      Array.prototype.forEach.call(importGrid.querySelectorAll("select[data-field]"), function(s){
+        if (fids.indexOf(s.dataset.field) >= 0) parsed.applied[s.dataset.field] = parseInt(s.value, 10);
+      });
+      var rows = Array.prototype.filter.call(tbody.querySelectorAll("tr:not(.grp)"), function(tr){ return tr._srcIdx != null; });
+      rows.forEach(function(tr){
+        var r = parsed.rows[tr._srcIdx]; if (!r) return;
+        fids.forEach(function(fid){
+          var inp = tr.querySelector('input[data-col="'+fid+'"]'); if (!inp) return;
+          inp.value = importValue(r, fid, parsed.applied[fid]);
+          if (fid === "icon") delete inp.dataset.manual; // значение из файла, не ручное
+        });
+      });
+      if (fids.indexOf("name") >= 0) regroupImported();
+      rows.forEach(function(tr){
+        updateRowState(tr); updateIconThumb(tr.querySelector("td.iconcell")); refreshRowPreview(tr); paintRowHl(tr);
+      });
+      renumber();       // повторы ШК/артикула, видимость при поиске/фильтре
+      updateCheckAll(); // счётчики, заголовки групп
+      renderImportInfo(); refreshImportPending();
+    }
+    // Перегруппировка по названию после импорта колонки «Название»: строки блоков импорта (и «Без названия»)
+    // раскладываются по новым названиям — порядок по файлу; строки без индекса файла (дубли) идут за предыдущей.
+    // Строки переносятся как есть. Блок с тем же названием остаётся тем же заголовком (SVG/дата/вес блока);
+    // исчезнувшие блоки удаляются. «Добавлено вручную» и плашки удалённых блоков не трогаем.
+    function regroupImported(){
+      var heads = Array.prototype.filter.call(tbody.querySelectorAll("tr.grp:not(.grp-deleted)"), function(h){
+        return h.dataset.kind === "import" || h.dataset.kind === "noname";
+      });
+      if (!heads.length) return;
+      var rows = [], last = -1, sub = 0;
+      heads.forEach(function(h){ groupRows(h).forEach(function(r){
+        if (r._srcIdx != null){ last = r._srcIdx; sub = 0; } else sub++;
+        rows.push({ tr: r, pos: last, sub: sub, dom: rows.length });
+      }); });
+      rows.sort(function(a, b){ return (a.pos - b.pos) || (a.sub - b.sub) || (a.dom - b.dom); });
+      var oldByKey = {}, oldNoName = null;
+      heads.forEach(function(h){
+        if (h.dataset.kind === "noname"){ oldNoName = oldNoName || h; return; }
+        var t = h.querySelector(".grp-title"), k = groupKey(t ? t.textContent : "");
+        if (!oldByKey[k]) oldByKey[k] = h;
+      });
+      var marker = document.createComment("regroup"); tbody.insertBefore(marker, heads[0]);
+      heads.forEach(function(h){ h.remove(); });
+      rows.forEach(function(x){ x.tr.remove(); });
+      var gr = groupByName(rows, function(x){ var i = x.tr.querySelector('input[data-col="name"]'); return i ? i.value : ""; });
+      var used = [];
+      function place(head, list){
+        tbody.insertBefore(head, marker); used.push(head);
+        list.forEach(function(x){ x.tr.classList.add("in-grp"); tbody.insertBefore(x.tr, marker); });
+      }
+      gr.order.forEach(function(k){
+        var g = gr.groups[k], h = oldByKey[k];
+        if (h) delete oldByKey[k]; else h = addGroupHead(g.name, "import", marker);
+        place(h, g.items);
+      });
+      if (gr.noName.length) place(oldNoName || addGroupHead("Без названия", "noname", marker), gr.noName);
+      heads.forEach(function(h){ if (used.indexOf(h) < 0) dropGroupIcon(h); }); // исчезнувшие блоки — с их SVG
+      marker.remove();
     }
 
-    document.getElementById("bulk-import").addEventListener("click", function(){ importFileInput.click(); });
+    // Выбор файла → сразу импорт (замена таблицы) по автосопоставлению; над таблицей — полоска «Импортировано N строк»
+    // со свёрнутым сопоставлением. Не нашлась обязательная колонка → сопоставление раскрыто, поле подсвечено.
+    var importBtn = document.getElementById("bulk-import");
+    importBtn.addEventListener("click", function(){ if (!importBusy) importFileInput.click(); });
     importFileInput.addEventListener("change", async function(){
-      var f=importFileInput.files && importFileInput.files[0]; if(!f) return;
+      var f=importFileInput.files && importFileInput.files[0]; if(!f || importBusy) return;
+      importBusy = true;
+      var restore = busyButton(importBtn), aoa = null;
+      function done(){ importBusy = false; restore(); }
       try {
-        var aoa = await parseFile(f);
-        if(!aoa.length){ alert("Файл пустой или не распознан."); return; }
-        showMapping(aoa);
-      } catch(e){ alert("Не удалось прочитать файл: "+e.message); console.error(e); }
+        aoa = await parseFile(f);
+        if(!aoa.length) alert("Файл пустой или не распознан.");
+      } catch(e){ aoa = null; alert("Не удалось прочитать файл: "+e.message); console.error(e); }
       finally { importFileInput.value=""; }
+      if (!aoa || !aoa.length){ done(); return; }
+      prepareImport(aoa, f.name);
+      afterPaint(function(){
+        applyImport();
+        renderImportInfo();
+        importMap.hidden = false;
+        setImportOpen(importMissing().length > 0);
+      }, done);
     });
 
     // --- Импорт SVG-иконок (папка / zip) ---
@@ -3360,48 +3659,54 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("icons-import-zip").addEventListener("click", function(){ iconsZipInput.click(); });
     iconsDirInput.addEventListener("change", function(){ handleIconsInput(iconsDirInput); });
     iconsZipInput.addEventListener("change", function(){ handleIconsInput(iconsZipInput); });
-    // Переключатель режима импорта: «Заменить таблицу» / «Добавить в конец» → синхроним скрытый #import-replace.
-    (function(){
-      var seg = document.getElementById("import-mode"), flag = document.getElementById("import-replace");
-      if (!seg || !flag) return;
-      seg.addEventListener("click", function(e){
-        var b = e.target.closest(".seg-btn"); if (!b) return;
-        Array.prototype.forEach.call(seg.querySelectorAll(".seg-btn"), function(x){
-          x.classList.toggle("is-active", x===b); x.setAttribute("aria-pressed", x===b ? "true" : "false");
-        });
-        flag.checked = (b.dataset.replace === "1");
-      });
-    })();
-    // «Импортировать»: сразу спиннер «Импорт…» и блокировка (повторное нажатие, «Отменить»), сам импорт — после
-    // отрисовки кадра (applyImport синхронный — иначе браузер не успел бы показать спиннер). finally — кнопка и флаги
-    // назад даже при ошибке (иначе поднятые searchHold/importHold остановили бы пересчёты таблицы).
+    // Переключатель режима импорта — пока убран (импорт всегда заменяет таблицу), возможно удалим:
+    // (function(){
+    //   var seg = document.getElementById("import-mode"), flag = document.getElementById("import-replace");
+    //   if (!seg || !flag) return;
+    //   seg.addEventListener("click", function(e){
+    //     var b = e.target.closest(".seg-btn"); if (!b) return;
+    //     Array.prototype.forEach.call(seg.querySelectorAll(".seg-btn"), function(x){
+    //       x.classList.toggle("is-active", x===b); x.setAttribute("aria-pressed", x===b ? "true" : "false");
+    //     });
+    //     flag.checked = (b.dataset.replace === "1");
+    //   });
+    // })();
+    // Кнопка в работе: спиннер + «Импорт…», ширина зафиксирована, повторное нажатие — guard importBusy.
+    // Возвращает функцию «вернуть кнопку как была».
     var importBusy = false;
-    function runImport(){
-      if (importBusy || !parsed) return;
-      var btn = document.getElementById("import-apply"), cancel = document.getElementById("import-cancel");
-      var oldHtml = btn.innerHTML;
-      importBusy = true;
+    function busyButton(btn){
+      var oldHtml = btn.innerHTML, oldDisabled = btn.disabled;
       btn.style.width = btn.offsetWidth + "px"; // ширина как была — без прыжка при смене текста
-      btn.disabled = true; cancel.disabled = true;
+      btn.disabled = true;
       btn.classList.add("is-busy"); btn.setAttribute("aria-busy", "true");
       btn.innerHTML = '<span class="btn-spin" aria-hidden="true"></span>Импорт…';
-      // Кадр в скрытой вкладке не приходит (ушли на другую сразу после клика) → запасной таймер; started — один запуск.
+      return function(){
+        btn.disabled = oldDisabled;
+        btn.classList.remove("is-busy"); btn.removeAttribute("aria-busy");
+        btn.style.width = ""; btn.innerHTML = oldHtml;
+      };
+    }
+    // Синхронная работа импорта — после отрисовки кадра (иначе браузер не успел бы показать спиннер). Кадр в скрытой
+    // вкладке не приходит → запасной таймер; started — один запуск. finally — флаги назад даже при ошибке (иначе
+    // поднятые searchHold/importHold остановили бы пересчёты таблицы).
+    function afterPaint(work, done){
       var started = false;
       function start(){ if (started) return; started = true; setTimeout(run, 0); }
       function run(){
-        try { applyImport(); }
+        try { work(); }
         catch(e){ alert("Не удалось импортировать: " + e.message); console.error(e); }
-        finally {
-          searchHold = false; importHold = false; importBusy = false;
-          btn.disabled = false; cancel.disabled = false;
-          btn.classList.remove("is-busy"); btn.removeAttribute("aria-busy");
-          btn.style.width = ""; btn.innerHTML = oldHtml;
-        }
+        finally { searchHold = false; importHold = false; done(); }
       }
       requestAnimationFrame(start); setTimeout(start, 100);
     }
-    document.getElementById("import-apply").addEventListener("click", runImport);
-    document.getElementById("import-cancel").addEventListener("click", function(){ importMap.hidden=true; parsed=null; });
+    // «Импортировать колонку «…»» — переназначенные колонки в строки из файла.
+    importApplyBtn.addEventListener("click", function(){
+      if (importBusy || !parsed || importApplyBtn.disabled) return;
+      importBusy = true;
+      var restore = busyButton(importApplyBtn);
+      afterPaint(applyImportColumns, function(){ importBusy = false; restore(); refreshImportPending(); });
+    });
+    // document.getElementById("import-cancel").addEventListener("click", function(){ importMap.hidden=true; parsed=null; });
 
     window.eddaBulkAddRow = addRow; // для проверки/импорта
     window.eddaBulkReadRows = readRows;
