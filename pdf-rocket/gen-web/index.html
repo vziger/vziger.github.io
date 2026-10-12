@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="build" content="211 · 11.10.2026 14:15">
+<meta name="build" content="213 · 12.10.2026 23:32">
 <title>edda — генератор стикеров на транспортный короб</title>
 <style>
   :root{
@@ -159,6 +159,7 @@
   #bulk-back:hover{background:transparent;filter:none;color:var(--ink);}
   .bulk-gen-group{display:inline-flex;align-items:center;gap:10px;margin-left:auto} /* прижата вправо, как .bulk-foot */
   .bulk-count{font-size:13px;color:var(--muted)}
+  .bulk-shown::before{content:"·";margin:0 10px} /* «· показано N из M» внутри счётчика — 10 | 10, как у точек между фразами */
   .bulk-errors{font-size:13px;color:#c0392b}
   .bulk-missing{font-size:13px;color:var(--miss-ink)}
   /* Тулбар: «ошибки · незаполненные · X из Y отмечено» — точка только между видимыми фразами (ошибки/незаполненные
@@ -573,8 +574,8 @@
 </section>
 
 <!-- Номер и время сборки — подставляет build.py -->
-<footer class="build-info">сборка 211 · 11.10.2026 14:15</footer>
-<script>console.info("edda sticker generator — сборка 211 · 11.10.2026 14:15");</script>
+<footer class="build-info">сборка 213 · 12.10.2026 23:32</footer>
+<script>console.info("edda sticker generator — сборка 213 · 12.10.2026 23:32");</script>
 
 <!-- pdf.js (UMD) — ОТКЛЮЧЁН: превью теперь картинкой. Оставлено для возможного возврата.
 <script>/*__PDFJS_LIB__*/</script>
@@ -2182,6 +2183,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function rowAnyFilled(tr){
       return Array.prototype.some.call(tr.querySelectorAll("input[data-col]"), function(i){ return i.value.trim() !== ""; });
     }
+    // Подсказка по ховеру у пустой (сиреневой) обязательной ячейки; месяц/год — в makeDateCell. Иконка — без подсказки
+    // (по ховеру у неё карточка).
+    var MISS_TIP = { name: "Укажите название товара", artikul: "Укажите артикул", kolvo: "Укажите количество",
+      weight: "Укажите вес брутто", srok: "Укажите срок годности", itf14: "Укажите код ITF-14", ean13: "Укажите код EAN-13" };
     // Подсветка одной обязательной ячейки: пусто (при непустой строке) → .cell-empty;
     // непустое, но нарушающее форматное правило → .cell-invalid + текст ошибки в dataset.err (для тултипа).
     function markCellValidity(inp, tr){
@@ -2211,7 +2216,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (ie){ inp.classList.add(v === "" ? "cell-empty" : "cell-invalid"); inp.dataset.err = ie; }
         return;
       }
-      if (v === ""){ inp.classList.remove("cell-soft"); if (rowAnyFilled(tr)) inp.classList.add("cell-empty"); return; }
+      if (v === ""){
+        inp.classList.remove("cell-soft");
+        if (rowAnyFilled(tr)){ inp.classList.add("cell-empty"); if (MISS_TIP[id]) inp.dataset.err = MISS_TIP[id]; } // тултип по ховеру
+        return;
+      }
       var err = fieldError(id, v) || ((id === "itf14" || id === "ean13") ? pairError(tr) : null);
       if (err){ inp.classList.add("cell-invalid"); inp.dataset.err = err; inp.classList.remove("cell-soft"); } // ошибка важнее повтора
       else paintSoft(inp);
@@ -2361,8 +2370,12 @@ document.addEventListener("DOMContentLoaded", function () {
       var checked = tbody.querySelectorAll("input.rowchk:checked").length;
       var countText = checked + " из " + total + " строк отмечено";
       // Поиск/фильтр активен → сколько строк видно (отмеченные скрытые строки всё равно идут в генерацию).
-      if (viewFiltered()) countText += " · показано " + tbody.querySelectorAll("tr:not(.grp):not(.is-filtered)").length + " из " + total;
-      Array.prototype.forEach.call(document.querySelectorAll("[data-bulk-count]"), function(el){ el.textContent = countText; });
+      // Отдельным span — точку перед ним рисует CSS (.bulk-shown::before) с теми же отступами, что у прочих точек.
+      var shownText = viewFiltered() ? "показано " + tbody.querySelectorAll("tr:not(.grp):not(.is-filtered)").length + " из " + total : "";
+      Array.prototype.forEach.call(document.querySelectorAll("[data-bulk-count]"), function(el){
+        el.textContent = countText;
+        if (shownText){ var sh = document.createElement("span"); sh.className = "bulk-shown"; sh.textContent = shownText; el.appendChild(sh); }
+      });
       // Нижний блок — коротко «X из Y».
       var fnCount = document.getElementById("fn-count");
       if (fnCount) fnCount.textContent = checked + " из " + total;
@@ -2830,6 +2843,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (td.parentNode && !dateHold){ updateRowCheck(td.parentNode); updateCheckAll(); }
       }
       msel.addEventListener("change", onChange); ysel.addEventListener("change", onChange);
+      // Пустой (сиреневый, dd-empty) месяц/год → подсказка по ховеру; клик (открытие списка) её закрывает.
+      [[msel, "Выберите месяц"], [ysel, "Выберите год"]].forEach(function(p){
+        var dd = p[0].__dd; if (!dd) return;
+        dd.addEventListener("mouseenter", function(){ if (dd.classList.contains("dd-empty")) showBcTip(dd, p[1]); });
+        dd.addEventListener("mouseleave", hideBcTip);
+        dd.addEventListener("mousedown", hideBcTip);
+      });
       td.appendChild(hid); td.appendChild(my.box);
       return td;
     }
