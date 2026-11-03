@@ -613,8 +613,13 @@
       font-weight: 400;
       line-height: 1.45;
       color: var(--ink);
+      display: grid;
+      grid-template-columns: auto auto;
+      justify-content: start;
+      column-gap: 16px;
+      width: max-content;
     }
-    .price-lines p { margin: 0; }
+    .price-lines p { display: contents; margin: 0; }
     .price-lines .is-total { font-weight: 700; }
     @media (max-width: 720px) {
       .trip { grid-template-columns: 1fr 1fr; }
@@ -844,9 +849,9 @@
     }
     function priceLines() {
       return `<div class="price-lines">
-        <p>Service fee ${money(SERVICE)}</p>
-        <p>Insurance ${money(insPrice())}</p>
-        <p class="is-total">Total ${money(withFee(insPrice()))}</p>
+        <p><span>Service fee</span><span>${money(SERVICE)}</span></p>
+        <p><span>Insurance</span><span>${money(insPrice())}</span></p>
+        <p class="is-total"><span>Total</span><span>${money(withFee(insPrice()))}</span></p>
       </div>`;
     }
     function planList() {
