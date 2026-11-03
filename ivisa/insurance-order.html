@@ -424,15 +424,6 @@
       color: var(--ink);
     }
     .insurer strong { color: var(--ink); font-weight: 700; }
-    .mark {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      background: #1a4d8c;
-      color: #fff;
-      display: grid; place-items: center;
-      font-weight: 700; font-size: 12px;
-      flex: 0 0 36px;
-    }
     .plans {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -589,10 +580,42 @@
       margin-top: 16px;
       color: var(--ink);
     }
+    .upsell > b,
+    .upsell > p,
+    .upsell .insurer,
+    .upsell .price-lines {
+      margin-left: 14px;
+    }
+    .upsell .facts { padding-left: 14px; }
+    .card-paid { overflow: hidden; }
+    .card-paid .upsell {
+      margin-left: -28px;
+      margin-right: -28px;
+      margin-bottom: -26px;
+      border-radius: 0 0 8px 8px;
+    }
+    .paid-line { margin-left: 4px; }
+    .paid-side { margin: 0 -10px 0 0; text-align: right; }
+    .upsell .btn.wide { margin-top: 16px; }
     .list { margin: 8px 0 0; padding-left: 18px; }
     .hidden { display: none !important; }
     .total-box { font-size: 16px; }
     .total-box strong { font-size: 20px; }
+    .fee {
+      margin: 14px 0 0;
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--ink);
+    }
+    .price-lines {
+      margin: 14px 0 0;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.45;
+      color: var(--ink);
+    }
+    .price-lines p { margin: 0; }
+    .price-lines .is-total { font-weight: 700; }
     @media (max-width: 720px) {
       .trip { grid-template-columns: 1fr 1fr; }
       .trip label, .trip-date { border: 0; }
@@ -618,8 +641,8 @@
       <div class="proto-axis">
         <b>Где показываем страховку&nbsp;— в&nbsp;каком месте заказа человек её&nbsp;видит</b>
         <div class="proto-chips" id="bar-scenario" role="radiogroup" aria-label="Где показываем страховку">
-          <label><input type="radio" name="proto-place" value="a" checked /> Вместе с&nbsp;приглашением</label>
-          <label><input type="radio" name="proto-place" value="b" /> После оплаты</label>
+          <label><input type="radio" name="proto-place" value="b" checked /> После оплаты</label>
+          <label><input type="radio" name="proto-place" value="a" /> Вместе с&nbsp;приглашением</label>
           <label><input type="radio" name="proto-place" value="c" /> Отдельная страница</label>
         </div>
       </div>
@@ -641,6 +664,7 @@
 
   <script>
     const INVITE = 29;
+    const SERVICE = 10;
     const PLANS = [
       { id: 'std', name: 'Standard', cover: '€\u202F35,000', price: 12, tag: 'Visa minimum', items: ['Emergency medical care', 'Hospital', 'Dental emergency', 'Repatriation'] },
       { id: 'com', name: 'Comfort', cover: '€\u202F50,000', price: 18, tag: 'Best offer', items: ['Higher medical limit', 'Chronic flare-up', 'Prescribed medicines', 'Doctor call to hotel'] },
@@ -651,8 +675,8 @@
     const icUser = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="#334c6f" stroke-width="1.6"/><path d="M4.5 16c1.2-3 9.8-3 11 0" stroke="#334c6f" stroke-width="1.6" stroke-linecap="round"/></svg>';
     const icShield = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2.5 16 5v4.8c0 3.7-2.4 6.2-6 7.7-3.6-1.5-6-4-6-7.7V5l6-2.5Z" stroke="#334c6f" stroke-width="1.6" stroke-linejoin="round"/><path d="m7.5 10 1.8 1.8 3.4-3.6" stroke="#334c6f" stroke-width="1.6" stroke-linecap="round"/></svg>';
     const state = {
-      scenario: 'a',
-      screen: 'info',
+      scenario: 'b',
+      screen: 'success',
       plan: 'com',
       planUi: 'cards',
       sport: false,
@@ -696,10 +720,11 @@
       const p = PLANS.find((x) => x.id === state.plan);
       return p.price + (state.sport ? 4 : 0);
     };
+    const withFee = (n) => n + (state.skip || insPrice() === 0 ? 0 : SERVICE);
     const total = () => {
-      if (state.scenario === 'c') return insPrice();
-      if (state.scenario === 'b' && state.paidInvite) return insPrice();
-      return INVITE + insPrice();
+      if (state.scenario === 'c') return withFee(insPrice());
+      if (state.scenario === 'b' && state.paidInvite) return withFee(insPrice());
+      return withFee(INVITE + insPrice());
     };
 
     function steps(labels, active) {
@@ -817,15 +842,23 @@
         <b>+$5</b>
       </div>` : ''}`;
     }
+    function priceLines() {
+      return `<div class="price-lines">
+        <p>Service fee ${money(SERVICE)}</p>
+        <p>Insurance ${money(insPrice())}</p>
+        <p class="is-total">Total ${money(withFee(insPrice()))}</p>
+      </div>`;
+    }
     function planList() {
-      const insurer = `<div class="insurer"><div class="mark">SC</div><div><strong>Sovcombank Insurance</strong><div>Electronic policy in English, PDF to email</div></div></div>`;
+      const fee = state.screen === 'success' ? '' : `<p class="fee">Service fee ${money(SERVICE)}</p>`;
+      const insurer = `<div class="insurer"><div><strong>Sovcombank Insurance</strong><div>Electronic policy in English, PDF to email</div></div></div>`;
       if (state.planUi === 'list') {
         return insurer + `<div class="plist">${PLANS.map((p) => `
           <label class="${state.plan === p.id ? 'is-on' : ''}">
             <input type="radio" name="plan" value="${p.id}" ${state.plan === p.id ? 'checked' : ''} />
             <div><b>${p.name}</b> · ${p.cover}<div>${p.items[0]}</div></div>
             <div class="price">${money(p.price)}</div>
-          </label>`).join('')}</div>` + extras();
+          </label>`).join('')}</div>` + extras() + fee;
       }
       if (state.planUi === 'addons') {
         return insurer + `<div class="offer">
@@ -833,15 +866,15 @@
           <div class="name">Comfort · €\u202F50,000</div>
           <div class="price">${money(insPrice())}</div>
           <ul><li>Emergency medical care and hospital</li><li>Chronic flare-up and medicines</li><li>Doctor call to hotel</li><li>Repatriation</li></ul>
-        </div>` + extras();
+        </div>` + extras() + fee;
       }
       if (state.planUi === 'offer') {
         return `<div class="offer">
-          <div class="insurer"><div class="mark">SC</div><div><strong>Sovcombank Insurance</strong><div>The best offer for your dates</div></div></div>
+          <div class="insurer"><div><strong>Sovcombank Insurance</strong><div>The best offer for your dates</div></div></div>
           <div class="price">${money(insPrice())}</div>
           <div>Cover €\u202F50,000 · ${stayDays()}\u00A0days in Russia</div>
           <ul><li>Medical care accepted for a visa application</li><li>Hospital, dental emergency, repatriation</li><li>Policy PDF in English, same day</li></ul>
-        </div>` + extras();
+        </div>` + extras() + fee;
       }
       return insurer + `<div class="plans">${PLANS.map((p) => `
         <label class="plan${state.plan === p.id ? ' is-on' : ''}">
@@ -852,7 +885,7 @@
           <ul>${p.items.map((i) => `<li>${i}</li>`).join('')}</ul>
           <div class="price">${money(p.price)}</div>
         </label>`).join('')}
-      </div>` + extras();
+      </div>` + extras() + fee;
     }
 
     function insuredFields() {
@@ -974,13 +1007,13 @@
           </div>
           <div class="agree"><label><input type="checkbox" checked /> I agree with the insurance rules of Sovcombank Insurance</label></div>
           <div class="skip"><button type="button" data-go="skip">Skip insurance, pay invitation only (${money(INVITE)})</button></div>
-          ${actions({ label: 'confirm', text: '← Back' }, { label: 'payScreen', text: 'Go to pay ' + money(INVITE + insPrice()) + ' →' }, 'goPay')}`;
+          ${actions({ label: 'confirm', text: '← Back' }, { label: 'payScreen', text: 'Go to pay ' + money(withFee(INVITE + insPrice())) + ' →' }, 'goPay')}`;
       }
       if (state.screen === 'pay') {
-        const amount = state.skip ? INVITE : INVITE + insPrice();
+        const amount = state.skip ? INVITE : withFee(INVITE + insPrice());
         return `${steps(labels, 3)}
           <div class="card"><div class="card-b total-box">
-            Invitation ${money(INVITE)}${state.skip ? '' : ' + insurance ' + money(insPrice())}
+            Invitation ${money(INVITE)}${state.skip ? '' : ' + insurance ' + money(insPrice()) + ' + service fee ' + money(SERVICE)}
             <div>To pay: <strong>${money(amount)}</strong></div>
           </div></div>
           ${paymentBlock(amount)}`;
@@ -1000,17 +1033,17 @@
       const labels = ['Information', 'Confirmation', 'Payment', 'Invitation'];
       if (state.screen === 'success') {
         return `${steps(labels, 3)}
-          <div class="card"><div class="card-b">
-            <p class="success-title">Payment received</p>
-            <p>Invitation order <b>N24110817</b> is paid (${money(INVITE)}). The voucher is being prepared and will be emailed to <b>${state.email}</b>.</p>
-            <p><button type="button" class="btn ghost">Download invitation</button></p>
+          <div class="card card-paid"><div class="card-b">
+            <p class="success-title paid-line">Payment received</p>
+            <p class="paid-line">Invitation order <b>N24110817</b> is paid (${money(INVITE)}). The voucher is being prepared and will be emailed to <b>${state.email}</b>.</p>
+            <p class="paid-side"><button type="button" class="btn ghost">Download invitation</button></p>
             <div class="upsell">
               <b>Add travel insurance now</b>
               <p>Consulates usually ask for a medical policy covering the full stay. Dates and visitor data are already in the order.</p>
               ${tripChips()}
               ${planList()}
-              <p class="total-box">Insurance to pay: <strong>${money(insPrice())}</strong></p>
-              <button type="button" class="btn wide" data-go="bPay">Pay insurance ${money(insPrice())}</button>
+              ${priceLines()}
+              <button type="button" class="btn wide" data-go="bPay">Pay insurance ${money(withFee(insPrice()))}</button>
               <div class="skip"><button type="button" data-go="bDone">No thanks, only the invitation</button></div>
             </div>
           </div></div>`;
@@ -1022,7 +1055,8 @@
             <div class="kv"><div class="k">Period</div><div>${stayLine()}</div></div>
             <div class="kv"><div class="k">Cover</div><div>${PLANS.find(p=>p.id===state.plan).cover}</div></div>
           </div></div>
-          ${paymentBlock(insPrice())}`;
+          ${paymentBlock(withFee(insPrice()))}
+          ${actions({ label: 'success', text: '← Back' }, null)}`;
       }
       return `<div class="card"><div class="card-b">
         <p class="success-title">${state.paidIns ? 'Invitation and insurance are ready' : 'Invitation is ready'}</p>
@@ -1060,10 +1094,10 @@
             ${insuredFields()}
           </div>
           <div class="agree"><label><input type="checkbox" checked /> I agree with the insurance rules of Sovcombank Insurance</label></div>
-          ${actions({ label: 'cover', text: '← Back' }, { label: 'cPay', text: 'Go to pay ' + money(insPrice()) + ' →' }, 'goPay')}`;
+          ${actions({ label: 'cover', text: '← Back' }, { label: 'cPay', text: 'Go to pay ' + money(withFee(insPrice())) + ' →' }, 'goPay')}`;
       }
       if (state.screen === 'cPay') {
-        return `${steps(labels, 3)}${paymentBlock(insPrice())}`;
+        return `${steps(labels, 3)}${paymentBlock(withFee(insPrice()))}`;
       }
       return `${steps(labels, 4)}
         <div class="card"><div class="card-b">
